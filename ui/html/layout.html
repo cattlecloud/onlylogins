@@ -1,0 +1,28 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {{with .Head.Section}}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="{{.Description}}" />
+    <meta name="robots" content="{{.Robots}}" />
+    {{- if .Canonical}}
+    <link rel="canonical" href="{{.Canonical}}" />
+    {{end -}}
+    <link rel="stylesheet" href="/ui/css/layout.css">
+    {{- range .Styles}}
+    <link rel="stylesheet" href="/ui/css/{{.}}">
+    {{end -}}
+    <link rel="icon" type="image/svg+xml" href="/ui/images/onlylogins.svg">
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+    <title>{{.Title}}</title>
+    {{end}}
+  </head>
+  <body>
+    <header>{{template "head" .Head}}</header>
+    <main>{{template "middle" .Middle}}</main>
+    <footer>{{template "foot"}}</footer>
+  </body>
+</html>
+{{end}}

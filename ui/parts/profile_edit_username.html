@@ -1,0 +1,14 @@
+{{define "profile_edit_username"}}
+<div class="username" id="edit-username">
+  <form hx-put="/internal/username/edit" hx-swap="outerHTML" class="edit-form">
+    <input
+      type="text" id="value" name="chosen"
+      value="{{.Profile.Username}}"
+      maxlength="16"
+      minlength="2"
+      autocomplete="off">
+    <button class="inline-button" type="submit">update</button>
+  </form>
+  <span id="error"></span>
+</div>
+{{end}}

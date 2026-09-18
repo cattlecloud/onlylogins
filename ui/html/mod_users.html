@@ -1,0 +1,36 @@
+{{define "contains"}}
+<div class="modpage users">
+
+<h4>users</h4>
+
+<div class="help">
+  <p class="instructions">comprehensive list of users</p>
+</div>
+
+<div class="content">
+  <table>
+    <thead>
+      <tr>
+        <th>username</th>
+        <th>id</th>
+        <th>oauth</th>
+        <th>email</th>
+        <th>manage</th>
+      </tr>
+    </thead>
+    <tbody>
+    {{range .Users}}
+      <tr>
+        <td>{{.Username}}</td>
+        <td>{{.ID}}</td>
+        <td>{{.IDP}}</td>
+        <td>{{.Email}}</td>
+        <td><a href="/moderate/users/{{.ID}}">open</a></td>
+      </tr>
+    {{end}}
+    </tbody>
+  </table>
+</div>
+
+</div>
+{{end}}

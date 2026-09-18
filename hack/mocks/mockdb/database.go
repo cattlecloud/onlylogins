@@ -1,0 +1,31 @@
+package mockdb
+
+import (
+	"testing"
+	"time"
+
+	"cattlecloud.net/go/litesql/litesqltest"
+	"cattlecloud.net/go/scope"
+	"cattlecloud.net/onlylogins/database"
+	"github.com/shoenig/test/must"
+)
+
+const (
+	// timeout is long enough for any reasonable testcase to complete; if you
+	// exceed this threshold the test needs to be refactored
+	timeout = 10 * time.Second
+)
+
+// Open an in-memory implementation of database.Store.
+func Open(t *testing.T) database.Store {
+	store, err := database.Testing(litesqltest.TestConfiguration)
+	must.NoError(t, err)
+
+	ctx, cancel := scope.TTL(timeout)
+	t.Cleanup(cancel)
+
+	ierr := store.Init(ctx)
+	must.NoError(t, ierr)
+
+	return store
+}

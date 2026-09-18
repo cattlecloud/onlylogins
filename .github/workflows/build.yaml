@@ -1,0 +1,30 @@
+name: Build Release Artifact
+on:
+  workflow_dispatch:
+jobs:
+  compile:
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: extractions/setup-just@f8a3cce218d9f83db3a2ecd90e41ac3de6cdfd9b
+      - uses: actions/setup-go@v6
+        with:
+          cache: true
+          go-version-file: go.mod
+      - name: Show System
+        run: |
+          uname -a
+          just sysinfo
+      - name: Build Artifact
+        run: |
+          just compile
+      - uses: actions/upload-artifact@v7
+        with:
+          name: "splitbrain"
+          path: ".bin/tickerfeed"
+          retention-days: 4
+          compression-level: 9
+          if-no-files-found: error
+          overwrite: true
+

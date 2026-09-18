@@ -1,0 +1,18 @@
+{{define "profile_edit_about"}}
+<div class="about" id="edit-about">
+  <form
+    hx-put="/internal/profile/edit?key=editabout"
+    hx-swap="outerHTML"
+    class="edit-form">
+  <label class="about">about</label>
+  <textarea
+    rows="3" cols="18"
+    id="value" name="value"
+    autocomplete="off"
+    >{{.}}</textarea>
+  <button class="inline-bottom" type="submit">update</button>
+  </form>
+  <span id="error"></span>
+</div>
+{{end}}
+

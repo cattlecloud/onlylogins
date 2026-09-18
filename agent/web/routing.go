@@ -1,0 +1,282 @@
+package web
+
+import (
+	"fmt"
+	"net/http"
+
+	"cattlecloud.net/go/scope"
+	"cattlecloud.net/go/ulog"
+	"cattlecloud.net/go/webtools/middles"
+	"cattlecloud.net/go/webtools/middles/oauth"
+	"cattlecloud.net/go/webtools/middles/oauth/googlekeys"
+	"cattlecloud.net/go/webtools/middles/oauth/nonces"
+	"cattlecloud.net/go/webtools/runtime"
+	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/memcache"
+	"cattlecloud.net/onlylogins/pkg/users"
+	"cattlecloud.net/onlylogins/ui"
+	"github.com/VictoriaMetrics/metrics"
+	"github.com/gorilla/mux"
+)
+
+type Application struct {
+	config      *Config
+	log         *ulog.Log
+	environment runtime.Environment
+	httpc       *http.Client
+	council     users.Council
+	store       database.Store
+	scache      middles.Sessions[users.Identity]
+	metrics     *metrics.Set
+	mcache      memcache.Client
+	mint        nonces.Mint
+}
+
+func (a *Application) createRoutes(router *mux.Router) {
+	a.handleStatics(router)
+
+	a.handleAPI(router, &robotsAPI{
+		log:         ulog.New("api/robots"),
+		environment: a.environment,
+	})
+
+	a.handleAPI(router, &sitemapAPI{
+		log:         ulog.New("api/sitemap"),
+		environment: a.environment,
+	})
+
+	a.handleAPI(router, &oauthAPI{
+		log:    ulog.New("api/oauth"),
+		config: a.config.Oauth,
+		mint:   a.mint,
+	})
+
+	a.handleAPI(router, &googleAPI{
+		log:      ulog.New("api/oauth/google"),
+		config:   a.config.Oauth,
+		httpc:    a.httpc,
+		store:    a.store,
+		mint:     a.mint,
+		sessions: a.scache,
+		gkeys: googlekeys.New(
+			googlekeys.SetClientID(a.config.Oauth.Google.ClientID),
+			googlekeys.SetHTTP(a.httpc),
+		),
+	})
+
+	a.handleModerate(router, &moderationHTTP{
+		log:   ulog.New("http/mod/home"),
+		store: a.store,
+		html:  ui.Mod("mod_home.html"),
+	})
+
+	a.handleModerate(router, &modUsersHTTP{
+		log:   ulog.New("http/mod/users"),
+		store: a.store,
+		html:  ui.Mod("mod_users.html"),
+	})
+
+	a.handleModerate(router, &modUserHTTP{
+		log:   ulog.New("http/mod/user"),
+		store: a.store,
+		html:  ui.Mod("mod_user.html"),
+	})
+
+	a.handleNormal(router, &loginHTTP{
+		log:  ulog.New("http/login"),
+		html: ui.Load("login.html"),
+	})
+
+	a.handleNormal(router, &profileHTTP{
+		log:   ulog.New("http/profile"),
+		store: a.store,
+		html: ui.Load("profile.html",
+			"profile_edit_showemail.html", "profile_edit_location.html",
+		),
+	})
+
+	a.handleComponent(router, &usernameEditHTMX{
+		log:   ulog.New("htmx/username/edit"),
+		store: a.store,
+	})
+
+	a.handleComponent(router, &profileEditHTMX{
+		log:   ulog.New("htmx/profile/edit"),
+		store: a.store,
+	})
+
+	a.handleNormal(router, &aboutHTTP{
+		log:         ulog.New("http/about"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("about.html"),
+	})
+
+	a.handleNormal(router, &tosHTTP{
+		log:         ulog.New("http/tos"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("tos.html"),
+	})
+
+	a.handleNormal(router, &privacyHTTP{
+		log:         ulog.New("http/privacy"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("privacy.html"),
+	})
+
+	// index must be listed last
+	a.handleNormal(router, &indexHTTP{
+		log:   ulog.New("http/index"),
+		store: a.store,
+		html:  ui.Load("index.html"),
+	})
+}
+
+type Objects struct {
+	Council users.Council
+	Store   database.Store
+	Scache  middles.Sessions[users.Identity]
+	HTTPC   *http.Client
+	Metrics *metrics.Set
+	Mcache  memcache.Client
+	Mint    nonces.Mint
+}
+
+func New(config *Config, objects *Objects) *Application {
+	return &Application{
+		config:  config,
+		log:     ulog.New("http"),
+		httpc:   objects.HTTPC,
+		council: objects.Council,
+		store:   objects.Store,
+		scache:  objects.Scache,
+		metrics: objects.Metrics,
+		mcache:  objects.Mcache,
+		mint:    objects.Mint,
+	}
+}
+
+func (a *Application) Start(ctx scope.C) {
+	router := mux.NewRouter()
+	a.createRoutes(router)
+
+	csrf := http.NewCrossOriginProtection()
+	_ = csrf.AddTrustedOrigin("https://appleid.apple.com")
+
+	address := fmt.Sprintf("%s:%d", a.config.Address, a.config.Port)
+	server := &http.Server{
+		Addr:    address,
+		Handler: csrf.Handler(router),
+	}
+
+	// serve http async in goroutine
+	go func() {
+		_ = server.ListenAndServe()
+	}()
+
+	a.log.I.Fmt("http listening on %s", address)
+
+	// wait for shutdown signal
+	<-ctx.Done()
+
+	// force shutdown http server
+	_ = server.Shutdown(ctx)
+}
+
+type consumer int
+
+const (
+	normal consumer = iota
+	component
+	robotic
+	moderate
+)
+
+type endpoint interface {
+	Consumer() consumer
+	Path() string
+	ServeHTTP(http.ResponseWriter, *http.Request)
+	Methods() []string
+}
+
+type web interface {
+	endpoint
+	Metric() string
+}
+
+type api interface {
+	endpoint
+}
+
+// handleStatics is a single special case for serving embedded statics based on
+// the included /ui/ directory, and includes images, css, html files, etc.
+func (a *Application) handleStatics(router *mux.Router) {
+	router.PathPrefix("/ui/").Handler(&middles.CacheHTTP{
+		Env: a.environment,
+		H:   http.StripPrefix("/ui/", http.FileServerFS(ui.FileTree)),
+	})
+}
+
+func (a *Application) handleNormal(router *mux.Router, h web) {
+	check(normal, h)
+
+	// multi-level session cache (volatile + memcache)
+	ss := sessions(h, a.scache)
+
+	trace := &duration{
+		sum:  a.metrics.NewSummary("th_web_" + h.Metric()),
+		next: ss,
+	}
+
+	router.Handle(h.Path(), trace).Methods(h.Methods()...)
+}
+
+func (a *Application) handleModerate(router *mux.Router, h api) {
+	check(moderate, h)
+
+	gate := &moderationGate{
+		council: a.council,
+		next:    h,
+		log:     ulog.New("middle/moderation-gate"),
+	}
+
+	ss := sessions(gate, a.scache)
+
+	router.Handle(h.Path(), ss).Methods(h.Methods()...)
+}
+
+func (a *Application) handleComponent(router *mux.Router, h api) {
+	check(component, h)
+
+	ss := sessions(h, a.scache)
+
+	router.Handle(h.Path(), ss).Methods(h.Methods()...)
+}
+
+func (a *Application) handleAPI(router *mux.Router, h api) {
+	check(robotic, h)
+
+	router.Handle(h.Path(), h).Methods(h.Methods()...)
+}
+
+func sessions(h http.Handler, scache middles.Sessions[users.Identity]) *middles.SetSession[*oauth.CookieContent[users.Identity], users.Identity] {
+	ss := &middles.SetSession[*oauth.CookieContent[users.Identity], users.Identity]{
+		SessionCookieName: "onlylogins-session",
+		Sessions:          scache,
+		Next:              h,
+	}
+	return ss
+}
+
+// check ensures we have called the correct wrapping handler for the given
+// endpoint - avoiding problems of incorrect security boundary, session scope,
+// etc.
+func check(exp consumer, h endpoint) {
+	implements := h.Consumer()
+	if implements != exp {
+		p := h.Path()
+		panic("web: incorrect handler implementation for path " + p)
+	}
+}

@@ -1,0 +1,32 @@
+{{define "layout"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="The administration pages for moderating the OnlyLogins pages.">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/ui/css/moderation.css">
+  <link rel="icon" type="image/svg+xml" href="/ui/images/onlylogins.svg">
+  <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
+  <title>Moderation | OnlyLogins</title>
+</head>
+
+<body>
+  <section class="title">
+    <h2>Moderation</h2>
+  </section>
+
+  <section class="nav">
+    <div class="nav-link"><a href="/">site</a></div>
+    <div class="nav-link"><a href="/moderate">home</a></div>
+    <div class="nav-link"><a href="/moderate/users">users</a></div>
+  </section>
+
+  <section class="contains">
+    {{template "contains" .}}
+  </section>
+</body>
+
+</html>
+{{end}}

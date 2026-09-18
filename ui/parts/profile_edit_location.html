@@ -1,0 +1,19 @@
+{{define "profile_edit_location"}}
+<div class="location" id="edit-location">
+  <form
+    hx-put="/internal/profile/edit?key=editloc"
+    hx-swap="outerHTML"
+    class="edit-form">
+    <label class="location">location</label>
+    <input
+      type="text" id="value" name="value"
+      value="{{.}}"
+      maxlength="32"
+      minlength="2"
+      autocomplete="off">
+    <button class="inline-button" type="submit">update</button>
+  </form>
+  <span id="error"></span>
+</div>
+{{end}}
+

@@ -1,0 +1,111 @@
+:root {
+  --font-color: rgb(89, 89, 89);
+  --font-color-high: rgb(60, 60, 60);
+}
+
+header {
+  display: flex; flex-flow: row nowrap;
+  justify-content: center;
+}
+
+header > a {
+  margin-top: 2rem;
+}
+
+main {
+  display: flex; flex-flow: row nowrap;
+  justify-content: center;
+}
+
+main > article {
+  display: flex; flex-flow: column nowrap;
+  justify-content: flex-start; align-items: center;
+}
+
+main > article > form {
+  margin-top: 0.8rem;
+}
+
+main > article > form > .button-sso {
+  display: flex; flex-flow: row nowrap;
+  justify-content: center; align-items: center;
+  width: 300px;
+  height: 2.8rem;
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid rgb(220, 220, 220);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+
+main > article > form > .button-sso:hover {
+	border-color: rgb(169, 168, 166);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+main > article > form > .button-sso > svg {
+  margin-right: 5px;
+}
+
+main > article > form > .button-sso > span {
+  margin-left: 5px;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  font-size: 14px;
+  color: black;
+}
+
+main > article > .explain {
+  margin-top: 1rem;
+  font-size: small;
+  font-weight: normal;
+  color: var(--font-color);
+}
+
+main > article > .first-timers {
+  font-size: small;
+  color: var(--font-color);
+  margin-top: 3rem;
+}
+
+main > article > .first-timers > a {
+  color: var(--font-color);
+}
+
+main > article > .first-timers > a:visited {
+  color: var(--font-color);
+}
+
+main > article > .first-timers > a:hover {
+  color: var(--font-color-high);
+}
+
+main > article > p > strong {
+  font-weight: bold;
+}
+
+footer {
+  display: flex; flex-flow: row nowrap;
+  justify-content: space-around; align-items: center;
+}
+
+footer > p {
+  margin-top: 5rem;
+  max-width: 480px;
+  font-size: small;
+  color: rgb(100, 100, 100);
+}
+
+footer > p > a {
+  color: var(--font-color);
+}
+
+footer > p > a:visited {
+  color: var(--font-color);
+}
+
+footer > p > a:hover {
+  color: var(--font-color-high);
+}
