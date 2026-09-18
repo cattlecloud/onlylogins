@@ -15,7 +15,8 @@ import (
 func TestUsernameEdit_get(t *testing.T) {
 	t.Parallel()
 
-	const userID = 4
+	const userID = 2
+
 	store := mockdb.Open(t)
 
 	target := &usernameEditHTMX{
@@ -60,7 +61,7 @@ func TestUsernameEdit_put_forbidden(t *testing.T) {
 func TestUsernameEdit_put_allow(t *testing.T) {
 	t.Parallel()
 
-	const userID = 4 // a test user
+	const userID = 2 // a test user
 	store := mockdb.Open(t)
 
 	target := &usernameEditHTMX{
