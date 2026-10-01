@@ -2,8 +2,8 @@ cattlecloud.net/go/babycli v0.2.0 h1:niw4uPiFQT7bekq8OJ3LoiIsz2B7L6EZcO+esMx9AP0
 cattlecloud.net/go/babycli v0.2.0/go.mod h1:IhC9GNNMMlDr5sx/lMFBDa1d7jvkI1sluTPsKbpvoAU=
 cattlecloud.net/go/forms v1.1.0 h1:ZTIyg4AMG9IY87tfNHmRnRgy8X4ZPiui1JYwNT3562s=
 cattlecloud.net/go/forms v1.1.0/go.mod h1:B8PMCKE7VtjbvirdXJpvxZIDdU8F/ybaKgNsOqZMkCw=
-cattlecloud.net/go/litesql v1.3.5 h1:TljFTmxH1MjuT7I6Okzcq/kopMgqysDzKFHZD4xSrPk=
-cattlecloud.net/go/litesql v1.3.5/go.mod h1:xGB4FNoU/OU1czDMJyrvnuv3O+9wTxyYXhOpBMV4RRU=
+cattlecloud.net/go/litesql v1.3.6 h1:1vHJwBmqpauu8o+WLdNCes3jDNJuYweVyNsgzGQN3yU=
+cattlecloud.net/go/litesql v1.3.6/go.mod h1:VBqVWoSccWvUcrSHer0CPMUSEPhQ8I6gsb2zuMTgMLI=
 cattlecloud.net/go/memc v0.6.0 h1:rWRnnOu8lw/64g/kaI8Gv3K2qlMgOiHgGPfqi4wJaPc=
 cattlecloud.net/go/memc v0.6.0/go.mod h1:F5VmVaZlR2i4Zr+W7U4wrzv+9fuX/HEJw0sns0btAUw=
 cattlecloud.net/go/scope v1.3.0 h1:mtcE3vo9aB0tQK60CKzxysNAXhfqsTfrc2R+yi9q+Wc=
