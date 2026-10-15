@@ -11,12 +11,11 @@ import (
 	"cattlecloud.net/onlylogins/agent/web/htmx"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
-	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type indexContent struct {
-	Profile *sitecontent.UserInfo
+	Profile *users.Profile
 	Message string
 }
 
@@ -57,7 +56,7 @@ func (h *indexHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
-	profile, perr := getUserInfo(ctx, h.store.Users(), session)
+	profile, perr := getUserProfile(ctx, h.store.Users(), session)
 	if perr != nil {
 		return perr
 	}

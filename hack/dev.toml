@@ -12,18 +12,6 @@ address   = "localhost"
 port      = 3000
 advertise = "http://localhost:3000"
 
-[http.oauth.google]
-client-id     = "" # (lookup internal)
-client-secret = "" # (lookup internal)
-callback-uri  = "http://localhost:3000/login/oauth/google"
-
-[oauth.apple]
-team-id          = "" # (not supported for local development)
-client-id        = "" # (not supported for local development)
-key-id           = "" # (not supported for local development)
-private-key-path = "" # (not supported for local development)
-callback-uri     = "" # (not supported for local development)
-
 [database]
 path = "/tmp/onlylogins.database"
 

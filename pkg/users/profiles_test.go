@@ -1,14 +1,27 @@
 package users
 
 import (
-	"regexp"
 	"testing"
-	"testing/synctest"
-	"time"
 
-	"github.com/hashicorp/go-set/v3"
+	"github.com/shoenig/go-conceal"
 	"github.com/shoenig/test/must"
 )
+
+func TestValidatePasskey(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ok", func(t *testing.T) {
+		p := conceal.New("abcdefghijklmnopqrstuvwxyz")
+		err := ValidatePasskey(p)
+		must.NoError(t, err)
+	})
+
+	t.Run("short", func(t *testing.T) {
+		p := conceal.New("abc123")
+		err := ValidatePasskey(p)
+		must.Error(t, err)
+	})
+}
 
 func TestProfile_Active(t *testing.T) {
 	t.Parallel()
@@ -39,31 +52,5 @@ func TestProfile_Identity(t *testing.T) {
 	t.Run("inactive", func(t *testing.T) {
 		p := (*Profile)(nil)
 		must.Eq(t, Inactive, p.Identity())
-	})
-}
-
-func TestGenerateUsername(t *testing.T) {
-	t.Parallel()
-
-	t.Run("format", func(t *testing.T) {
-		now := time.Date(2025, 1, 21, 5, 30, 0, 0, time.UTC)
-		name := GenerateUsername(now)
-		var nameRe = regexp.MustCompile(`user_o7cyoj2[a-z]{2}`)
-		must.RegexMatch(t, nameRe, name)
-	})
-
-	t.Run("duplicates", func(t *testing.T) {
-		used := set.New[string](3)
-		synctest.Test(t, func(t *testing.T) {
-			for i := range 100 {
-				now := time.Now()
-				name := GenerateUsername(now)
-				if used.Contains(name) {
-					t.Fatalf("conflict i: %d, name: %s", i, name)
-				}
-				used.Insert(name)
-				time.Sleep(1 * time.Second)
-			}
-		})
 	})
 }

@@ -7,11 +7,11 @@ import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/onlylogins/database"
-	"cattlecloud.net/onlylogins/pkg/sitecontent"
+	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type modUsersContent struct {
-	Users []*sitecontent.UserInfo
+	Profiles []*users.Profile
 }
 
 type modUsersHTTP struct {
@@ -44,13 +44,10 @@ func (h *modUsersHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *modUsersHTTP) get(ctx scope.C, w http.ResponseWriter, _ *http.Request) error {
-	users, uerr := h.store.Users().List(ctx)
-	if uerr != nil {
-		return abort(h.log, w, uerr)
-	}
+	_ = ctx
 
 	content := &modUsersContent{
-		Users: users,
+		// TODO
 	}
 
 	return h.html.ExecuteTemplate(w, "layout", content)

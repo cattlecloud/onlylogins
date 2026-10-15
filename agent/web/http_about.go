@@ -52,7 +52,7 @@ func (h *aboutHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 func (h *aboutHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
-	profile, perr := getUserInfo(ctx, h.store.Users(), session)
+	profile, perr := getUserProfile(ctx, h.store.Users(), session)
 	if perr != nil {
 		return perr
 	}
