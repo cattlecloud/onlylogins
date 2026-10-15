@@ -3,7 +3,7 @@ set shell := ["bash", "-u", "-c"]
 # export environment variables
 export GOBIN := `echo $PWD/.bin`
 export GOFLAGS := '--tags=fts5'
-export GOTOOLCHAIN := 'go1.27.1'
+export GOTOOLCHAIN := 'go1.27.2'
 export scripts := ".github/workflows/scripts"
 export memcached := env("MEMCACHED", "/tmp/mc.sock")
 
@@ -62,7 +62,7 @@ generate:
 # locally install build tools
 [group('build')]
 init:
-    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.13.2
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
     go install github.com/pelletier/go-toml/v2/cmd/tomljson@v2.2.4
 
 # start memcached instance for local development
