@@ -5,7 +5,7 @@ go 1.27
 require (
 	cattlecloud.net/go/babycli v0.2.0
 	cattlecloud.net/go/forms v1.1.0
-	cattlecloud.net/go/litesql v1.3.5
+	cattlecloud.net/go/litesql v1.3.6
 	cattlecloud.net/go/memc v0.6.0
 	cattlecloud.net/go/scope v1.3.0
 	cattlecloud.net/go/sitemaps v1.0.2
@@ -13,7 +13,7 @@ require (
 	cattlecloud.net/go/urlpath v1.1.0
 	cattlecloud.net/go/webtools v0.6.3
 	github.com/BurntSushi/toml v1.6.0
-	github.com/VictoriaMetrics/metrics v1.44.0
+	github.com/VictoriaMetrics/metrics v1.44.1
 	github.com/dustin/go-humanize v1.1.0
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/go-set/v3 v3.0.1
@@ -31,5 +31,5 @@ require (
 	github.com/mileusna/useragent v1.3.5 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/valyala/histogram v1.2.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
 )
