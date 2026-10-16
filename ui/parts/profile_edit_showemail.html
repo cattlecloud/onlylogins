@@ -1,7 +1,0 @@
-{{define "profile_edit_showemail"}}
-<input
-  hx-swap="outerHTML"
-  hx-put="/internal/profile/edit?key=showemail&value={{not .}}"
-  class="value" type="checkbox" name="showemail" {{if .}}checked{{end}}>
-{{end}}
-

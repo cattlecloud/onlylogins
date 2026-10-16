@@ -8,7 +8,6 @@ import (
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/middles/oauth"
-	"cattlecloud.net/go/webtools/middles/oauth/googlekeys"
 	"cattlecloud.net/go/webtools/middles/oauth/nonces"
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/database"
@@ -45,25 +44,6 @@ func (a *Application) createRoutes(router *mux.Router) {
 		environment: a.environment,
 	})
 
-	a.handleAPI(router, &oauthAPI{
-		log:    ulog.New("api/oauth"),
-		config: a.config.Oauth,
-		mint:   a.mint,
-	})
-
-	a.handleAPI(router, &googleAPI{
-		log:      ulog.New("api/oauth/google"),
-		config:   a.config.Oauth,
-		httpc:    a.httpc,
-		store:    a.store,
-		mint:     a.mint,
-		sessions: a.scache,
-		gkeys: googlekeys.New(
-			googlekeys.SetClientID(a.config.Oauth.Google.ClientID),
-			googlekeys.SetHTTP(a.httpc),
-		),
-	})
-
 	a.handleModerate(router, &moderationHTTP{
 		log:   ulog.New("http/mod/home"),
 		store: a.store,
@@ -90,19 +70,7 @@ func (a *Application) createRoutes(router *mux.Router) {
 	a.handleNormal(router, &profileHTTP{
 		log:   ulog.New("http/profile"),
 		store: a.store,
-		html: ui.Load("profile.html",
-			"profile_edit_showemail.html", "profile_edit_location.html",
-		),
-	})
-
-	a.handleComponent(router, &usernameEditHTMX{
-		log:   ulog.New("htmx/username/edit"),
-		store: a.store,
-	})
-
-	a.handleComponent(router, &profileEditHTMX{
-		log:   ulog.New("htmx/profile/edit"),
-		store: a.store,
+		html:  ui.Load("profile.html"),
 	})
 
 	a.handleNormal(router, &aboutHTTP{
@@ -163,8 +131,6 @@ func (a *Application) Start(ctx scope.C) {
 	a.createRoutes(router)
 
 	csrf := http.NewCrossOriginProtection()
-	_ = csrf.AddTrustedOrigin("https://appleid.apple.com")
-
 	address := fmt.Sprintf("%s:%d", a.config.Address, a.config.Port)
 	server := &http.Server{
 		Addr:    address,
@@ -226,7 +192,7 @@ func (a *Application) handleNormal(router *mux.Router, h web) {
 	ss := sessions(h, a.scache)
 
 	trace := &duration{
-		sum:  a.metrics.NewSummary("th_web_" + h.Metric()),
+		sum:  a.metrics.NewSummary("ol_web_" + h.Metric()),
 		next: ss,
 	}
 
@@ -247,13 +213,11 @@ func (a *Application) handleModerate(router *mux.Router, h api) {
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
-func (a *Application) handleComponent(router *mux.Router, h api) {
-	check(component, h)
-
-	ss := sessions(h, a.scache)
-
-	router.Handle(h.Path(), ss).Methods(h.Methods()...)
-}
+// func (a *Application) handleComponent(router *mux.Router, h api) {
+// 	check(component, h)
+// 	ss := sessions(h, a.scache)
+// 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
+// }
 
 func (a *Application) handleAPI(router *mux.Router, h api) {
 	check(robotic, h)

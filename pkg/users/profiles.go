@@ -1,14 +1,11 @@
 package users
 
 import (
-	"math/rand/v2"
-	"strings"
-	"time"
+	"errors"
 
+	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/webtools/middles/identity"
-	"cattlecloud.net/onlylogins/database/records"
-	"cattlecloud.net/onlylogins/pkg/format"
-	"cattlecloud.net/onlylogins/pkg/users/oauths"
+	"github.com/shoenig/go-conceal"
 )
 
 const (
@@ -19,13 +16,12 @@ const (
 // Identitiy is the unique database id assigned to each user profile.
 //
 // It is just an auto increment, but that is an implementation detail.
-type Identity records.Auto
+type Identity litesql.ID
 
 type Profile struct {
 	ID       Identity
 	Username string
-	Email    string
-	IDP      oauths.IDP
+	Standing Standing
 }
 
 func (up *Profile) Active() bool {
@@ -39,31 +35,24 @@ func (up *Profile) Identity() identity.UserIdentity {
 	return up.ID
 }
 
-func InitialProfile(idp oauths.IDP, sub oauths.Subject, email string) *CreateUserRequest {
-	now := time.Now()
-	u := GenerateUsername(now)
-	return &CreateUserRequest{
-		IDP:      idp,
-		Subject:  sub,
-		Email:    email,
-		Username: u,
-	}
-}
-
-func GenerateUsername(now time.Time) string {
-	sb := new(strings.Builder)
-	sb.WriteString("user_")
-	b32 := format.Base32(now.Unix())
-	sb.WriteString(b32)
-	suffix1 := byte(rand.IntN(26) + 97)
-	suffix2 := byte(rand.IntN(26) + 97)
-	sb.Write([]byte{suffix1, suffix2})
-	return sb.String()
-}
-
 type CreateUserRequest struct {
-	Username string
-	Email    string
-	Subject  oauths.Subject
-	IDP      oauths.IDP
+	Username   string
+	Shibboleth *conceal.Text
+	Passkey    *conceal.Text
+}
+
+func (c *CreateUserRequest) Validate() error {
+	if c == nil {
+		return errors.New("must not be nil")
+	}
+
+	if err := ValidateShibboleth(c.Shibboleth); err != nil {
+		return err
+	}
+
+	if err := ValidatePasskey(c.Passkey); err != nil {
+		return err
+	}
+
+	return nil
 }

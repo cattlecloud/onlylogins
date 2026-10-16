@@ -1,3 +1,3 @@
 package records
 
-type Auto int64
+// this is where auto types will go

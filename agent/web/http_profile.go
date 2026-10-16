@@ -11,12 +11,13 @@ import (
 	"cattlecloud.net/onlylogins/agent/web/htmx"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
-	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type profileContent struct {
-	Profile *sitecontent.UserProfile
+	// TODO: we may want to expand this one
+	// so that we have additional information, like quota and usage, etc.
+	Profile *users.Profile
 }
 
 type profileHTTP struct {
@@ -70,7 +71,7 @@ func (h *profileHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		Title:       "Profile | OnlyLogins",
 		Styles:      []string{"profile.css"},
 		Description: h.description(),
-		Profile:     &profile.UserInfo,
+		Profile:     profile,
 	}
 
 	middle := &profileContent{

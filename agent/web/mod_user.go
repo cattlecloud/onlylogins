@@ -6,15 +6,12 @@ import (
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
-	"cattlecloud.net/go/urlpath"
 	"cattlecloud.net/onlylogins/database"
-	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type modUserContent struct {
-	User        *sitecontent.UserInfo
-	NameChanges []*sitecontent.NameChange
+	User *users.Profile
 }
 
 type modUserHTTP struct {
@@ -47,31 +44,10 @@ func (h *modUserHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *modUserHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
-	id := h.idFrom(r)
-	u := h.store.Users()
+	_ = ctx
+	_ = r
 
-	info, ierr := u.Info(ctx, id)
-	if ierr != nil {
-		return abort(h.log, w, ierr)
-	}
-
-	changes, cerr := u.ListUsernameChanges(ctx, id)
-	if cerr != nil {
-		return abort(h.log, w, cerr)
-	}
-
-	content := &modUserContent{
-		User:        info,
-		NameChanges: changes,
-	}
+	content := &modUserContent{}
 
 	return h.html.ExecuteTemplate(w, "layout", content)
-}
-
-func (h *modUserHTTP) idFrom(request *http.Request) users.Identity {
-	var id users.Identity
-	_ = urlpath.Parse(request, urlpath.Schema{
-		"id": urlpath.Int(&id),
-	})
-	return id
 }

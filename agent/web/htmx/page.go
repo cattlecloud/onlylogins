@@ -6,7 +6,6 @@ import (
 	"net/http"
 
 	"cattlecloud.net/go/webtools/middles/identity"
-	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/lang"
 )
@@ -17,7 +16,7 @@ type Head struct {
 	Styles      []string
 	Canonical   template.URL
 	Description string
-	Profile     *sitecontent.UserInfo
+	Profile     *users.Profile
 }
 
 func (h *Head) Robots() string {
