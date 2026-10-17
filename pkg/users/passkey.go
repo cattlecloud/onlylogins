@@ -3,6 +3,7 @@ package users
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"uuid"
 
 	"github.com/shoenig/go-conceal"
@@ -12,28 +13,36 @@ const (
 	minimumPasskeyLength = 24
 )
 
-func ValidateShibboleth(text *conceal.Text) error {
-	if text == nil {
-		return errors.New("shibboleth must not be nil")
+func ValidateEmail(s string) error {
+	if len(s) < 3 {
+		return errors.New("email is too short")
 	}
 
-	s := text.Unveil()
-
-	if _, err := uuid.Parse(s); err != nil {
-		return fmt.Errorf("shibboleth must be uuid: %w", err)
+	if !strings.Contains(s, "@") {
+		return errors.New("email must contain @ symbol")
 	}
 
 	return nil
 }
 
-func ValidatePasskey(text *conceal.Text) error {
+func ValidateIntermediate(secret *conceal.Text) error {
+	if secret == nil {
+		return errors.New("intermediate must not be nil")
+	}
+
+	if _, err := uuid.Parse(secret.Unveil()); err != nil {
+		return fmt.Errorf("intermediate must be uuid: %w", err)
+	}
+
+	return nil
+}
+
+func ValidatePassphrase(text *conceal.Text) error {
 	if text == nil {
 		return errors.New("passkey must not be nil")
 	}
 
-	s := text.Unveil()
-
-	if len(s) < minimumPasskeyLength {
+	if len(text.Unveil()) < minimumPasskeyLength {
 		return errors.New("passkey must be at least 16 characters long")
 	}
 

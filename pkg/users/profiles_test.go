@@ -12,13 +12,13 @@ func TestValidatePasskey(t *testing.T) {
 
 	t.Run("ok", func(t *testing.T) {
 		p := conceal.New("abcdefghijklmnopqrstuvwxyz")
-		err := ValidatePasskey(p)
+		err := ValidatePassphrase(p)
 		must.NoError(t, err)
 	})
 
 	t.Run("short", func(t *testing.T) {
 		p := conceal.New("abc123")
-		err := ValidatePasskey(p)
+		err := ValidatePassphrase(p)
 		must.Error(t, err)
 	})
 }

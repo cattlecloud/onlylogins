@@ -1,6 +1,8 @@
 package web
 
 import (
+	"fmt"
+
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/webtools/middles/identity"
 	"cattlecloud.net/onlylogins/database"
@@ -12,16 +14,10 @@ func getUserProfile(ctx scope.C, u database.Users, session identity.UserSession[
 		return nil, nil //nolint: nilnil
 	}
 
-	_ = ctx
-	_ = u
-	_ = session
+	p, perr := u.Lookup(ctx, session.Identity())
+	if perr != nil {
+		return nil, fmt.Errorf("unable to get user profile: %w", perr)
+	}
 
-	// todo get from database
-	//	ui, uerr := u.Info(ctx, session.Identity())
-	//	if uerr != nil {
-	//		return nil, fmt.Errorf("unable to get profile from session: %w", uerr)
-	//	}
-
-	// return ui, nil
-	return nil, nil //nolint: nilnil
+	return p, nil
 }

@@ -7,6 +7,7 @@ import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/onlylogins/pkg/users"
+	"github.com/shoenig/go-conceal"
 )
 
 type Users interface {
@@ -14,7 +15,8 @@ type Users interface {
 	Count(scope.C) (int, error)
 
 	// user management
-	Create(scope.C, *users.CreateUserRequest) (users.Identity, error)
+	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
+	Lookup(scope.C, users.Identity) (*users.Profile, error)
 }
 
 type usersql struct {
@@ -44,11 +46,34 @@ func (s *usersql) Count(ctx scope.C) (int, error) {
 		return i, err
 	}
 
-	count, err := litesql.QueryRow(ctx, tx, f, statement)
-	return count, err
+	return litesql.QueryRow(ctx, tx, f, statement)
 }
 
-func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest) (users.Identity, error) {
+func (s *usersql) Lookup(ctx scope.C, id users.Identity) (*users.Profile, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, xerr
+	}
+	defer done()
+
+	const statement = `
+	select
+		id,
+		username,
+		standings_id
+	from users
+	where id = ?`
+
+	f := func(sf litesql.ScanFunc) (*users.Profile, error) {
+		var profile users.Profile
+		err := sf(&profile.ID, &profile.Username, &profile.Standing)
+		return &profile, err
+	}
+
+	return litesql.QueryRow(ctx, tx, f, statement, id)
+}
+
+func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, expect *conceal.Bytes) (users.Identity, error) {
 	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
 		return 0, fmt.Errorf("unable to create user: %w", xerr)
@@ -60,7 +85,7 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest) (users.I
 		username
 	) values ( ? )`
 
-	id, uerr := s.ldb.ExecID(ctx, tx, statement,
+	userID, uerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Username,
 	)
 	if uerr != nil {
@@ -70,21 +95,19 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest) (users.I
 	const statement2 = `
 	insert into authorize (
 		users_id,
-		shibboleth,
+		intermediate,
 		expectation
 	) values (
 		?, ?, ?
 	)`
 
-	xx := request.Shibboleth.Unveil()
-	fmt.Println("xx is", xx)
-
-	_, serr := s.ldb.ExecID(ctx, tx, statement2,
-		id, request.Shibboleth.Unveil(), []byte("abc"),
-	)
-	if serr != nil {
+	if _, serr := s.ldb.ExecID(ctx, tx, statement2,
+		userID,
+		request.Intermediate.Unveil(),
+		expect.Unveil(),
+	); serr != nil {
 		return litesql.ExecFailure, fmt.Errorf("unable to create shibboleth: %w", serr)
 	}
 
-	return users.Identity(id), tx.Commit()
+	return users.Identity(userID), tx.Commit()
 }
