@@ -1,111 +1,186 @@
-:root {
-  --font-color: rgb(89, 89, 89);
-  --font-color-high: rgb(60, 60, 60);
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
 }
 
+/* Branding */
 header {
-  display: flex; flex-flow: row nowrap;
+  width: 100%;
+  display: flex;
   justify-content: center;
+  padding: 3rem 1rem 1rem;
 }
 
-header > a {
-  margin-top: 2rem;
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
 }
 
+.brand-mark {
+  font-size: 1.75rem;
+  line-height: 1;
+}
+
+.brand-name {
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.brand-name::first-letter {
+  color: var(--primary);
+}
+
+/* Main layout */
 main {
-  display: flex; flex-flow: row nowrap;
+  width: 100%;
+  max-width: 880px;
+  display: flex;
+  flex-flow: row wrap;
+  gap: 1.5rem;
+  align-items: stretch;
   justify-content: center;
+  padding: 2rem 1rem;
 }
 
-main > article {
-  display: flex; flex-flow: column nowrap;
-  justify-content: flex-start; align-items: center;
+/* Cards */
+.card {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
-main > article > form {
-  margin-top: 0.8rem;
+.card h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
 }
 
-main > article > form > .button-sso {
-  display: flex; flex-flow: row nowrap;
-  justify-content: center; align-items: center;
-  width: 300px;
-  height: 2.8rem;
+.card-subtitle {
+  margin: 0 0 1.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 1rem;
+}
+
+.field {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.field input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+  color: var(--text);
+  caret-color: var(--primary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field input::placeholder {
+  color: var(--text-muted);
+}
+
+.field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+/* Checkboxes */
+.checkbox {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-start;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.checkbox input {
+  margin-top: 0.2rem;
+  accent-color: var(--primary);
+}
+
+.checkbox label {
   cursor: pointer;
-  background-color: white;
-  border: 1px solid rgb(220, 220, 220);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  transition: border-color 200ms ease, box-shadow 200ms ease;
 }
 
-
-main > article > form > .button-sso:hover {
-	border-color: rgb(169, 168, 166);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+/* Buttons */
+button {
+  width: 100%;
 }
 
-main > article > form > .button-sso > svg {
-  margin-right: 5px;
+/* Notes */
+.notes {
+  flex: 1 1 100%;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-muted);
 }
 
-main > article > form > .button-sso > span {
-  margin-left: 5px;
-  font-optical-sizing: auto;
-  font-weight: 500;
-  font-style: normal;
-  font-size: 14px;
-  color: black;
+.notes p {
+  margin: 0;
 }
 
-main > article > .explain {
-  margin-top: 1rem;
-  font-size: small;
-  font-weight: normal;
-  color: var(--font-color);
+.notes strong {
+  color: var(--text);
 }
 
-main > article > .first-timers {
-  font-size: small;
-  color: var(--font-color);
-  margin-top: 3rem;
-}
-
-main > article > .first-timers > a {
-  color: var(--font-color);
-}
-
-main > article > .first-timers > a:visited {
-  color: var(--font-color);
-}
-
-main > article > .first-timers > a:hover {
-  color: var(--font-color-high);
-}
-
-main > article > p > strong {
-  font-weight: bold;
-}
-
+/* Footer */
 footer {
-  display: flex; flex-flow: row nowrap;
-  justify-content: space-around; align-items: center;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 1rem 1rem 3rem;
 }
 
-footer > p {
-  margin-top: 5rem;
+footer p {
+  margin: 0;
   max-width: 480px;
-  font-size: small;
-  color: rgb(100, 100, 100);
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
-footer > p > a {
-  color: var(--font-color);
-}
+/* Responsive */
+@media (max-width: 640px) {
+  main {
+    flex-flow: column nowrap;
+    align-items: center;
+  }
 
-footer > p > a:visited {
-  color: var(--font-color);
-}
-
-footer > p > a:hover {
-  color: var(--font-color-high);
+  .card {
+    width: 100%;
+    max-width: 420px;
+  }
 }
