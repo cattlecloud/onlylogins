@@ -30,19 +30,22 @@ func TestUsers_Count(t *testing.T) {
 func insertUser(t *testing.T, ctx scope.C, store Store, username string) users.Identity {
 	t.Helper()
 
+	salt, serr := encrypt.NewSalt()
+	must.NoError(t, serr)
+
 	request := &users.CreateUserRequest{
 		Email:         username + "@example.com",
 		Username:      username,
-		Intermediate:  conceal.UUIDv4(),
+		Salt:          salt,
 		Passphrase:    conceal.New("pass+" + username),
 		Notifications: true,
 		Spam:          true,
 	}
 
-	expect, eerr := encrypt.Expect(request.Passphrase, request.Intermediate)
-	must.NoError(t, eerr)
+	key := encrypt.DeriveKey(request.Passphrase, request.Salt)
+	verifier := encrypt.MakeVerifier(key)
 
-	id, err := store.Users().Create(ctx, request, expect)
+	id, err := store.Users().Create(ctx, request, verifier)
 	must.NoError(t, err)
 	return id
 }

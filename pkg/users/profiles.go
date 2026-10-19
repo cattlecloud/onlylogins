@@ -38,7 +38,7 @@ func (up *Profile) Identity() identity.UserIdentity {
 type CreateUserRequest struct {
 	Email         string
 	Username      string
-	Intermediate  *conceal.Text
+	Salt          *conceal.Bytes
 	Passphrase    *conceal.Text
 	Notifications bool
 	Spam          bool
@@ -53,7 +53,11 @@ func (r *CreateUserRequest) Validate() error {
 		return err
 	}
 
-	if err := ValidateIntermediate(r.Intermediate); err != nil {
+	if !AllowUsername(r.Username) {
+		return errors.New("username is not allowed")
+	}
+
+	if err := ValidateSalt(r.Salt); err != nil {
 		return err
 	}
 

@@ -20,6 +20,7 @@ require (
 	github.com/shoenig/ignore v0.4.0
 	github.com/shoenig/lang v0.0.8
 	github.com/shoenig/test v1.13.2
+	golang.org/x/crypto v0.58.0
 )
 
 require (

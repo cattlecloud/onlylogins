@@ -98,7 +98,6 @@ func (*loginHTTP) signupFields(r *http.Request) *users.CreateUserRequest {
 	return &users.CreateUserRequest{
 		Email:         email,
 		Username:      username,
-		Intermediate:  conceal.UUIDv4(),
 		Passphrase:    passphrase,
 		Notifications: notifications,
 		Spam:          spam,
@@ -119,8 +118,6 @@ func (*loginHTTP) loginFields(r *http.Request) *users.LoginRequest {
 }
 
 func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
-	fmt.Println("login to existing account")
-
 	request := h.loginFields(r)
 
 	if err := request.Validate(); err != nil {
@@ -128,20 +125,14 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		return err
 	}
 
-	// make sure the passphrase checks out
-	if err := h.store.Users().Check(ctx, request); err != nil {
+	// verify the passphrase and recover the derived key
+	id, key, cerr := h.store.Users().Check(ctx, request)
+	if cerr != nil {
 		// TODO: set graceful error on the page
-		return err
+		return cerr
 	}
 
-	id, intermediate, ierr := h.store.Users().Intermediate(ctx, request.Username)
-	if ierr != nil {
-		// TODO: graceful error
-		return ierr
-	}
-
-	secret := encrypt.Combine(request.Passphrase, intermediate)
-	http.SetCookie(w, cookie(secret))
+	http.SetCookie(w, cookie(key))
 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
@@ -152,9 +143,15 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 }
 
 func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
-	fmt.Println("create an account")
-
 	request := h.signupFields(r)
+
+	// generate the per-user salt
+	salt, serr := encrypt.NewSalt()
+	if serr != nil {
+		// TODO: encryption is broken, now what?
+		return serr
+	}
+	request.Salt = salt
 
 	if err := request.Validate(); err != nil {
 		// TODO: graceful set error on the page so user can correct
@@ -162,21 +159,17 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 		return err
 	}
 
-	secret := encrypt.Combine(request.Passphrase, request.Intermediate)
-	expect, eerr := encrypt.Expect(request.Passphrase, request.Intermediate)
-	if eerr != nil {
-		// TODO: encryption is broken, now what?
-		return eerr
-	}
+	key := encrypt.DeriveKey(request.Passphrase, request.Salt)
+	verifier := encrypt.MakeVerifier(key)
 
 	// insert the newly created user into the database
-	userID, cerr := h.store.Users().Create(ctx, request, expect)
+	userID, cerr := h.store.Users().Create(ctx, request, verifier)
 	if cerr != nil {
 		return cerr
 	}
 
 	// set the encryption cookie
-	http.SetCookie(w, cookie(secret))
+	http.SetCookie(w, cookie(key))
 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(userID, cookieTTL))
@@ -188,10 +181,10 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 
 const cookieTTL = 10 * time.Minute
 
-func cookie(secret *conceal.Bytes) *http.Cookie {
+func cookie(key *conceal.Bytes) *http.Cookie {
 	return &http.Cookie{
 		Name:     "onlylogins-encryption",
-		Value:    base64.StdEncoding.EncodeToString(secret.Unveil()),
+		Value:    base64.StdEncoding.EncodeToString(key.Unveil()),
 		Path:     "/",
 		HttpOnly: true,
 		Expires:  time.Now().Add(cookieTTL),
