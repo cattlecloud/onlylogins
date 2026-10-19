@@ -127,14 +127,9 @@ func (s *usersql) Delete(ctx scope.C, user users.Identity) error {
 	}
 	defer done()
 
-	// remove the authorization row first (foreign key)
-	const statement = `delete from authorize where users_id = ?`
+	// the authorize row is removed automatically via on delete cascade
+	const statement = `delete from users where id = ?`
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement, user); err != nil {
-		return fmt.Errorf("unable to delete authorization: %w", err)
-	}
-
-	const statement2 = `delete from users where id = ?`
-	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement2, user); err != nil {
 		return fmt.Errorf("unable to delete user: %w", err)
 	}
 
