@@ -20,13 +20,15 @@ type vault struct {
 	key [32]byte
 }
 
-func New(c *Config) Vault {
-	salt := c.Salt.Unveil()
-	pass := c.Passkey.Unveil()
-	b := salt + "+salty+" + pass
-	return &vault{
-		key: sha256.Sum256([]byte(b)),
-	}
+func New(c *Inputs) Vault {
+	secret := c.Secret.Unveil()
+	intermediate := []byte(c.Intermediate.Unveil())
+	salt := []byte("+salty+")
+	combined := make([]byte, 0, len(secret)+len(salt)+len(intermediate))
+	combined = append(combined, secret...)
+	combined = append(combined, salt...)
+	combined = append(combined, intermediate...)
+	return &vault{key: sha256.Sum256(combined)}
 }
 
 func (v *vault) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {

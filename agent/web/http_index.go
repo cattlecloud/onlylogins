@@ -1,6 +1,7 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -58,7 +59,12 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 
 	profile, perr := getUserProfile(ctx, h.store.Users(), session)
 	if perr != nil {
+		fmt.Println("failed to get profile", perr)
 		return perr
+	}
+
+	if profile == nil {
+		fmt.Println("NIL PROFILE")
 	}
 
 	head := &htmx.Head{

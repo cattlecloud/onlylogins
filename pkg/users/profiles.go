@@ -36,9 +36,12 @@ func (up *Profile) Identity() identity.UserIdentity {
 }
 
 type CreateUserRequest struct {
-	Username   string
-	Shibboleth *conceal.Text
-	Passkey    *conceal.Text
+	Email         string
+	Username      string
+	Intermediate  *conceal.Text
+	Passphrase    *conceal.Text
+	Notifications bool
+	Spam          bool
 }
 
 func (c *CreateUserRequest) Validate() error {
@@ -46,11 +49,15 @@ func (c *CreateUserRequest) Validate() error {
 		return errors.New("must not be nil")
 	}
 
-	if err := ValidateShibboleth(c.Shibboleth); err != nil {
+	if err := ValidateEmail(c.Email); err != nil {
 		return err
 	}
 
-	if err := ValidatePasskey(c.Passkey); err != nil {
+	if err := ValidateIntermediate(c.Intermediate); err != nil {
+		return err
+	}
+
+	if err := ValidatePassphrase(c.Passphrase); err != nil {
 		return err
 	}
 

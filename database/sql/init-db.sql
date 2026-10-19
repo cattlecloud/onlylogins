@@ -39,11 +39,13 @@ create table if not exists authorize (
     users_id integer primary key not null,
     -- foreign key into users table
 
-    shibboleth text check(length(shibboleth) == 36) not null,
-    -- what the passphrase encrypts
+    intermediate text check(length(intermediate) == 36) not null,
+    -- the intermediate secret (a per-user salt)
+    -- hash(passphrase + intermediate) = encryptor
 
     expectation blob check(length(expectation) > 0) not null,
-    -- what is expected when the user encrypts the shibboleth
+    -- the target for checking user knows the passphrase
+    -- encryptor | "testcase" = expectation
 
     foreign key (users_id) references users(id)
 ) strict;

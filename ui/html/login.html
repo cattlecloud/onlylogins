@@ -15,7 +15,7 @@
 <body>
   <header>
     <span class="brand">
-      <span class="brand-mark" aria-hidden="true">&#128274;</span>
+      <img class="brand-mark" src="/ui/images/onlylogins.svg" alt="" aria-hidden="true">
       <span class="brand-name">OnlyLogins</span>
     </span>
   </header>
@@ -24,10 +24,10 @@
     <section class="card">
       <h2>Login</h2>
       <p class="card-subtitle">Welcome back to your OnlyLogins account</p>
-      <form method="POST" action="/login">
+      <form method="POST" action="/login?do=login">
         <div class="field">
           <label for="login-username">Username</label>
-          <input type="text" id="login-username" name="username" placeholder="Username" autocomplete="off" required>
+          <input type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="off" required>
         </div>
         <div class="field">
           <label for="login-passphrase">Passphrase</label>
@@ -40,29 +40,33 @@
     <section class="card">
       <h2>Create Account</h2>
       <p class="card-subtitle">New to OnlyLogins? Sign up in seconds</p>
-      <form method="POST" action="/login">
+      <form method="POST" action="/login?do=create">
         <div class="field">
           <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" name="email" placeholder="you@example.com" autocomplete="off" required>
+          <input type="email" id="signup-email" name="signup-email" placeholder="you@example.com" autocomplete="off" required>
         </div>
         <div class="field">
           <label for="signup-username">Username</label>
-          <input type="text" id="signup-username" name="username" placeholder="Choose a username" autocomplete="off" required>
+          <input type="text" id="signup-username" name="signup-username" placeholder="Choose a username" autocomplete="off" required>
         </div>
         <div class="field">
           <label for="signup-passphrase">Passphrase</label>
-          <input type="password" id="signup-passphrase" name="passphrase" placeholder="At least 24 characters" minlength="24" autocomplete="off" required>
+          <input type="password" id="signup-passphrase" name="signup-passphrase" placeholder="At least 24 characters" minlength="24" autocomplete="off" required>
         </div>
         <div class="checkbox">
-          <input type="checkbox" id="marketing" name="marketing" value="marketing">
-          <label for="marketing">Receive account alerts in your inbox</label>
+          <input type="checkbox" id="notifications" name="notifications" value="true">
+          <label for="notifications">Get security notifications in your inbox</label>
         </div>
         <div class="checkbox">
-          <input type="checkbox" id="unique" name="unique" value="unique">
+          <input type="checkbox" id="marketing" name="marketing" value="true">
+          <label for="marketing">Get marketing spam in your inbox</label>
+        </div>
+        <div class="checkbox">
+          <input type="checkbox" id="unique" name="unique" value="true">
           <label for="unique">This is a <a href="/help" target="_blank" rel="noopener">unique</a> passphrase</label>
         </div>
         <div class="checkbox">
-          <input type="checkbox" id="no-recovery" name="no-recovery" value="no-recovery" required>
+          <input type="checkbox" id="no-recovery" name="no-recovery" value="true" required>
           <label for="no-recovery">I understand there is no recovery mechanism if I forget my passphrase</label>
         </div>
         <button type="submit">Create Account</button>

@@ -10,9 +10,9 @@ import (
 func TestVault_EncryptDecrypt(t *testing.T) {
 	t.Parallel()
 
-	v := New(&Config{
-		Salt:    conceal.UUIDv4(),
-		Passkey: conceal.UUIDv4(),
+	v := New(&Inputs{
+		Secret:       conceal.NewBytes([]byte{1, 2, 3, 4, 5}),
+		Intermediate: conceal.UUIDv4(),
 	})
 	original := conceal.New("hello world")
 

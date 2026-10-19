@@ -63,8 +63,10 @@ func (a *Application) createRoutes(router *mux.Router) {
 	})
 
 	a.handleNormal(router, &loginHTTP{
-		log:  ulog.New("http/login"),
-		html: ui.Load("login.html"),
+		log:      ulog.New("http/login"),
+		sessions: a.scache,
+		store:    a.store,
+		html:     ui.Load("login.html"),
 	})
 
 	a.handleNormal(router, &profileHTTP{
