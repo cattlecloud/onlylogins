@@ -44,20 +44,41 @@ type CreateUserRequest struct {
 	Spam          bool
 }
 
-func (c *CreateUserRequest) Validate() error {
-	if c == nil {
+func (r *CreateUserRequest) Validate() error {
+	if r == nil {
 		return errors.New("must not be nil")
 	}
 
-	if err := ValidateEmail(c.Email); err != nil {
+	if err := ValidateEmail(r.Email); err != nil {
 		return err
 	}
 
-	if err := ValidateIntermediate(c.Intermediate); err != nil {
+	if err := ValidateIntermediate(r.Intermediate); err != nil {
 		return err
 	}
 
-	if err := ValidatePassphrase(c.Passphrase); err != nil {
+	if err := ValidatePassphrase(r.Passphrase); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+type LoginRequest struct {
+	Username   string
+	Passphrase *conceal.Text
+}
+
+func (r *LoginRequest) Validate() error {
+	if r == nil {
+		return errors.New("must not be nil")
+	}
+
+	if r.Username == "" {
+		return errors.New("username must be set")
+	}
+
+	if err := ValidatePassphrase(r.Passphrase); err != nil {
 		return err
 	}
 
