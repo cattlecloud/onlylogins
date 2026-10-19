@@ -47,5 +47,5 @@ create table if not exists authorize (
     -- the key check value for verifying the passphrase
     -- hmac-sha256(key, "onlylogins-verifier") = verifier
 
-    foreign key (users_id) references users(id)
+    foreign key (users_id) references users(id) on delete cascade
 ) strict;
