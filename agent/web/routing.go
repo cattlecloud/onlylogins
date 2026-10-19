@@ -44,6 +44,11 @@ func (a *Application) createRoutes(router *mux.Router) {
 		environment: a.environment,
 	})
 
+	a.handleComponent(router, &accountHTMX{
+		log:   ulog.New("internal/account"),
+		store: a.store,
+	})
+
 	a.handleModerate(router, &moderationHTTP{
 		log:   ulog.New("http/mod/home"),
 		store: a.store,
@@ -215,11 +220,11 @@ func (a *Application) handleModerate(router *mux.Router, h api) {
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
-// func (a *Application) handleComponent(router *mux.Router, h api) {
-// 	check(component, h)
-// 	ss := sessions(h, a.scache)
-// 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
-// }
+func (a *Application) handleComponent(router *mux.Router, h api) {
+	check(component, h)
+	ss := sessions(h, a.scache)
+	router.Handle(h.Path(), ss).Methods(h.Methods()...)
+}
 
 func (a *Application) handleAPI(router *mux.Router, h api) {
 	check(robotic, h)

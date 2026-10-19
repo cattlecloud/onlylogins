@@ -2,16 +2,18 @@
 <div class="left">
   <a href="/"><h1>OnlyLogins</h1></a>
   <div class="links">
-    <a href="/one">one</a> |
-    <a href="/two">two</a> |
-    <a href="/three">three</a>
+    <a href="/flashpaper">flashpaper</a> <span>|</span>
+    <a href="/takeout">takeout</a> <span>|</span>
+    <a href="/plans">plans</a>
   </div>
 </div>
 <div class="right">
   <div class="profile">
     {{if .Session.Active}}
     <span class="username">{{.Section.Profile.Username}}</span>
-    <span class="karma">(<span class="count">0</span>)</span>
+    <span class="logout"><a href="#" hx-post="/internal/logout" hx-swap="none">logout</a></span>
+    {{else}}
+    <span class="login"><a href="/login">login</a></span>
     {{end}}
   </div>
 </div>
