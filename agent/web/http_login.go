@@ -105,23 +105,49 @@ func (*loginHTTP) signupFields(r *http.Request) *users.CreateUserRequest {
 	}
 }
 
-func (*loginHTTP) loginFields(r *http.Request) (string, *conceal.Text) {
+func (*loginHTTP) loginFields(r *http.Request) *users.LoginRequest {
 	var username string
 	var passphrase *conceal.Text
 	forms.MustParse(r, forms.Schema{
 		"username":   forms.String(&username),
 		"passphrase": forms.Secret(&passphrase),
 	})
-	return username, passphrase
+	return &users.LoginRequest{
+		Username:   username,
+		Passphrase: passphrase,
+	}
 }
 
 func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	fmt.Println("login to existing account")
 
-	_ = ctx
-	_ = w
-	_, _ = h.loginFields(r)
+	request := h.loginFields(r)
 
+	if err := request.Validate(); err != nil {
+		// TODO: graceful set error on the page
+		return err
+	}
+
+	// make sure the passphrase checks out
+	if err := h.store.Users().Check(ctx, request); err != nil {
+		// TODO: set graceful error on the page
+		return err
+	}
+
+	id, intermediate, ierr := h.store.Users().Intermediate(ctx, request.Username)
+	if ierr != nil {
+		// TODO: graceful error
+		return ierr
+	}
+
+	secret := encrypt.Combine(request.Passphrase, intermediate)
+	http.SetCookie(w, cookie(secret))
+
+	// set the session cookie
+	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
+
+	// set to the homepage
+	http.Redirect(w, r, "/", http.StatusFound)
 	return nil
 }
 
