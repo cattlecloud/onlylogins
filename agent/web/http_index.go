@@ -63,10 +63,6 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		return perr
 	}
 
-	if profile == nil {
-		fmt.Println("NIL PROFILE")
-	}
-
 	head := &htmx.Head{
 		Title:       "OnlyLogins | Come up with a Title",
 		Styles:      []string{"index.css"},

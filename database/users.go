@@ -16,6 +16,7 @@ type Users interface {
 
 	// user management
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
+	Delete(scope.C, users.Identity) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
 }
 
@@ -110,4 +111,11 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, expect *
 	}
 
 	return users.Identity(userID), tx.Commit()
+}
+
+func (s *usersql) Delete(ctx scope.C, user users.Identity) error {
+	// TODO: implement me
+	_ = ctx
+	_ = user
+	return nil
 }
