@@ -37,7 +37,7 @@ func TestSignupFields(t *testing.T) {
 		must.Eq(t, "correct horse battery staple", got.Passphrase.Unveil())
 		must.True(t, got.Notifications)
 		must.True(t, got.Spam)
-		must.NotNil(t, got.Intermediate)
+		must.Nil(t, got.Salt)
 	})
 
 	t.Run("checkboxes unchecked", func(t *testing.T) {

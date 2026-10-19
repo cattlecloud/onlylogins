@@ -24,8 +24,7 @@ type Users interface {
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
 	Delete(scope.C, users.Identity) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
-	Check(scope.C, *users.LoginRequest) error
-	Intermediate(scope.C, string) (users.Identity, *conceal.Text, error)
+	Check(scope.C, *users.LoginRequest) (users.Identity, *conceal.Bytes, error)
 }
 
 type usersql struct {
@@ -82,46 +81,7 @@ func (s *usersql) Lookup(ctx scope.C, id users.Identity) (*users.Profile, error)
 	return litesql.QueryRow(ctx, tx, f, statement, id)
 }
 
-func (s *usersql) Intermediate(ctx scope.C, username string) (users.Identity, *conceal.Text, error) {
-	tx, done, xerr := s.ldb.StartRead(ctx)
-	if xerr != nil {
-		return 0, nil, xerr
-	}
-	defer done()
-
-	const statement = `
-	select
-		users.id,
-		authorize.intermediate
-	from authorize
-		join users on users.id = authorize.users_id
-	where
-		users.username = ?`
-
-	type result struct {
-		id           users.Identity
-		intermediate *conceal.Text
-	}
-
-	f := func(sf litesql.ScanFunc) (result, error) {
-		var id users.Identity
-		var intermediate string
-		err := sf(&id, &intermediate)
-		return result{
-			id:           id,
-			intermediate: conceal.New(intermediate),
-		}, err
-	}
-
-	r, qerr := litesql.QueryRow(ctx, tx, f, statement, username)
-	if qerr != nil {
-		return 0, nil, qerr
-	}
-
-	return r.id, r.intermediate, nil
-}
-
-func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, expect *conceal.Bytes) (users.Identity, error) {
+func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, verifier *conceal.Bytes) (users.Identity, error) {
 	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
 		return 0, fmt.Errorf("unable to create user: %w", xerr)
@@ -143,85 +103,96 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, expect *
 	const statement2 = `
 	insert into authorize (
 		users_id,
-		intermediate,
-		expectation
+		salt,
+		verifier
 	) values (
 		?, ?, ?
 	)`
 
 	if _, serr := s.ldb.ExecID(ctx, tx, statement2,
 		userID,
-		request.Intermediate.Unveil(),
-		expect.Unveil(),
+		request.Salt.Unveil(),
+		verifier.Unveil(),
 	); serr != nil {
-		return litesql.ExecFailure, fmt.Errorf("unable to create shibboleth: %w", serr)
+		return litesql.ExecFailure, fmt.Errorf("unable to create verifier: %w", serr)
 	}
 
 	return users.Identity(userID), tx.Commit()
 }
 
 func (s *usersql) Delete(ctx scope.C, user users.Identity) error {
-	// TODO: implement me
-	_ = ctx
-	_ = user
-	return nil
-}
-
-func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) error {
-	tx, done, xerr := s.ldb.StartRead(ctx)
+	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
 		return xerr
 	}
 	defer done()
 
+	// remove the authorization row first (foreign key)
+	const statement = `delete from authorize where users_id = ?`
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement, user); err != nil {
+		return fmt.Errorf("unable to delete authorization: %w", err)
+	}
+
+	const statement2 = `delete from users where id = ?`
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement2, user); err != nil {
+		return fmt.Errorf("unable to delete user: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identity, *conceal.Bytes, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return 0, nil, xerr
+	}
+	defer done()
+
 	const statement = `
 	select
-		authorize.intermediate,
-		authorize.expectation
+		users.id,
+		authorize.salt,
+		authorize.verifier
 	from authorize
 		join users on users.id = authorize.users_id
 	where
 		users.username = ?`
 
 	type inputs struct {
-		intermediate *conceal.Text
-		expectation  *conceal.Bytes
+		id       users.Identity
+		salt     *conceal.Bytes
+		verifier *conceal.Bytes
 	}
 
 	f := func(sf litesql.ScanFunc) (inputs, error) {
-		var intermediate string
-		var expectation []byte
-		err := sf(&intermediate, &expectation)
+		var id users.Identity
+		var salt []byte
+		var verifier []byte
+		err := sf(&id, &salt, &verifier)
 		return inputs{
-			intermediate: conceal.New(intermediate),
-			expectation:  conceal.NewBytes(expectation),
+			id:       id,
+			salt:     conceal.NewBytes(salt),
+			verifier: conceal.NewBytes(verifier),
 		}, err
 	}
 
 	credentials, cerr := litesql.QueryRow(ctx, tx, f, statement, request.Username)
 	if cerr != nil {
 		s.log.W.Fmt("unable to query user authorization: %v", cerr)
-		return ErrIncorrectCredentials
+		// substitute dummy credentials so the key derivation still runs,
+		// keeping the response time independent of whether the username exists
+		credentials = inputs{
+			salt:     encrypt.DummySalt,
+			verifier: encrypt.DummyVerifier,
+		}
 	}
 
-	// recompute the secret from the passphrase and intermediate, then decrypt
-	// the stored expectation and verify it matches the litmus test
-	secret := encrypt.Combine(request.Passphrase, credentials.intermediate)
-	vault := encrypt.New(&encrypt.Inputs{
-		Secret:       secret,
-		Intermediate: credentials.intermediate,
-	})
-
-	plaintext, derr := vault.Decrypt(credentials.expectation)
-	if derr != nil {
-		s.log.W.Fmt("unable to decrypt litmus test: %v", derr)
-		return ErrIncorrectCredentials
+	// derive the key from the passphrase and salt, then verify it matches the
+	// stored key check value
+	key := encrypt.DeriveKey(request.Passphrase, credentials.salt)
+	if !encrypt.Verify(key, credentials.verifier) {
+		return 0, nil, ErrIncorrectCredentials
 	}
 
-	if !plaintext.Equal(encrypt.Litmus) {
-		s.log.W.Fmt("passphrase comparison does not match for %s", request.Username)
-		return ErrIncorrectCredentials
-	}
-
-	return nil
+	return credentials.id, key, nil
 }

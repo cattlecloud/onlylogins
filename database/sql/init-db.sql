@@ -39,13 +39,13 @@ create table if not exists authorize (
     users_id integer primary key not null,
     -- foreign key into users table
 
-    intermediate text check(length(intermediate) == 36) not null,
-    -- the intermediate secret (a per-user salt)
-    -- hash(passphrase + intermediate) = encryptor
+    salt blob check(length(salt) == 16) not null,
+    -- the per-user salt
+    -- argon2id(passphrase, salt) = key
 
-    expectation blob check(length(expectation) > 0) not null,
-    -- the target for checking user knows the passphrase
-    -- encryptor | "testcase" = expectation
+    verifier blob check(length(verifier) > 0) not null,
+    -- the key check value for verifying the passphrase
+    -- hmac-sha256(key, "onlylogins-verifier") = verifier
 
     foreign key (users_id) references users(id)
 ) strict;

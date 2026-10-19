@@ -2,15 +2,14 @@ package users
 
 import (
 	"errors"
-	"fmt"
 	"strings"
-	"uuid"
 
 	"github.com/shoenig/go-conceal"
 )
 
 const (
 	minimumPasskeyLength = 24
+	saltLength           = 16
 )
 
 func ValidateEmail(s string) error {
@@ -25,13 +24,13 @@ func ValidateEmail(s string) error {
 	return nil
 }
 
-func ValidateIntermediate(secret *conceal.Text) error {
-	if secret == nil {
-		return errors.New("intermediate must not be nil")
+func ValidateSalt(salt *conceal.Bytes) error {
+	if salt == nil {
+		return errors.New("salt must not be nil")
 	}
 
-	if _, err := uuid.Parse(secret.Unveil()); err != nil {
-		return fmt.Errorf("intermediate must be uuid: %w", err)
+	if salt.Len() != saltLength {
+		return errors.New("salt must be 16 bytes")
 	}
 
 	return nil
@@ -43,7 +42,7 @@ func ValidatePassphrase(text *conceal.Text) error {
 	}
 
 	if len(text.Unveil()) < minimumPasskeyLength {
-		return errors.New("passkey must be at least 16 characters long")
+		return errors.New("passkey must be at least 24 characters long")
 	}
 
 	return nil

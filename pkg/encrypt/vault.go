@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"crypto/sha256"
 	"fmt"
 	"io"
 
@@ -20,15 +19,10 @@ type vault struct {
 	key [32]byte
 }
 
-func New(c *Inputs) Vault {
-	secret := c.Secret.Unveil()
-	intermediate := []byte(c.Intermediate.Unveil())
-	salt := []byte("+salty+")
-	combined := make([]byte, 0, len(secret)+len(salt)+len(intermediate))
-	combined = append(combined, secret...)
-	combined = append(combined, salt...)
-	combined = append(combined, intermediate...)
-	return &vault{key: sha256.Sum256(combined)}
+func New(key *conceal.Bytes) Vault {
+	var k [32]byte
+	copy(k[:], key.Unveil())
+	return &vault{key: k}
 }
 
 func (v *vault) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {
