@@ -149,9 +149,6 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
 
-	// insert attempt into audit log
-	go func() { h.audit(request, true) }()
-
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
 }
