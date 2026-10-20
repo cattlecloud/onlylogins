@@ -9,7 +9,7 @@ import (
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/middles/identity"
 	"cattlecloud.net/go/webtools/runtime"
-	"cattlecloud.net/onlylogins/agent/web/htmx"
+	"cattlecloud.net/onlylogins/agent/web/pages"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/users"
@@ -57,7 +57,7 @@ func (h *aboutHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		return perr
 	}
 
-	head := &htmx.Head{
+	head := &pages.Head{
 		Title:       "About OnlyLogins | The place to store login information.",
 		Styles:      []string{"basics.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
@@ -67,7 +67,7 @@ func (h *aboutHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 
 	middle := struct{}{}
 
-	return htmx.Page[identity.UserSession[users.Identity]](h.html, head, middle).Render(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
 }
 
 func (h *aboutHTTP) description() string {

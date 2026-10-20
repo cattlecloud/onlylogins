@@ -9,7 +9,7 @@ import (
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/middles/identity"
-	"cattlecloud.net/onlylogins/agent/web/htmx"
+	"cattlecloud.net/onlylogins/agent/web/pages"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/users"
@@ -63,7 +63,7 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		return perr
 	}
 
-	head := &htmx.Head{
+	head := &pages.Head{
 		Title:       "OnlyLogins | Come up with a Title",
 		Styles:      []string{"index.css"},
 		Description: h.description(),
@@ -75,7 +75,7 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		Profile: profile,
 	}
 
-	return htmx.Page[identity.UserSession[users.Identity]](h.html, head, middle).Render(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
 }
 
 func (h *indexHTTP) head(_ scope.C, w http.ResponseWriter, _ *http.Request) error {
