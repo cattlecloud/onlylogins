@@ -72,6 +72,8 @@ func (r *CreateUserRequest) Validate() error {
 type LoginRequest struct {
 	Username   string
 	Passphrase *conceal.Text
+	UserAgent  string
+	IP         string
 }
 
 func (r *LoginRequest) Validate() error {

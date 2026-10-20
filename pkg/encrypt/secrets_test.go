@@ -32,7 +32,6 @@ func TestMakeVerifier_Verify(t *testing.T) {
 func TestNewSalt(t *testing.T) {
 	t.Parallel()
 
-	salt, err := NewSalt()
-	must.NoError(t, err)
+	salt := Salt()
 	must.Eq(t, saltLength, salt.Len())
 }

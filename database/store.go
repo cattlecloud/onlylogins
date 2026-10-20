@@ -11,6 +11,7 @@ import (
 type Store interface {
 	Init(scope.C) error
 	Users() Users
+	Audit() Audits
 	Close() error
 }
 

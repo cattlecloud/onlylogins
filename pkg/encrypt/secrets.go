@@ -40,13 +40,15 @@ var (
 	DummyVerifier = conceal.NewBytes(make([]byte, sha256.Size))
 )
 
-// NewSalt generates a random per-user salt.
-func NewSalt() (*conceal.Bytes, error) {
+// Salt generates a random per-user salt.
+func Salt() *conceal.Bytes {
 	salt := make([]byte, saltLength)
 	if _, err := io.ReadFull(rand.Reader, salt); err != nil {
-		return nil, err
+		// if crypto/rand is not working we may as well stop the process
+		// and go into an outage state
+		panic("encrypt: unable to read from crypto/rand")
 	}
-	return conceal.NewBytes(salt), nil
+	return conceal.NewBytes(salt)
 }
 
 // DeriveKey derives the 32-byte encryption key from the passphrase and salt
