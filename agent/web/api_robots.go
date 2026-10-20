@@ -58,6 +58,7 @@ Crawl-delay: 10
 Allow: /about
 Allow: /privacy
 Allow: /terms
+Allow: /help
 Allow: /$
 Disallow: /*
 

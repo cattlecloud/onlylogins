@@ -61,7 +61,7 @@ func (h *sitemapAPI) get(ctx scope.C, w http.ResponseWriter, _ *http.Request) er
 func (h *sitemapAPI) create(ctx scope.C) (sitemaps.Site, error) {
 	_ = ctx
 
-	const basics = 4
+	const basics = 5
 	today := sitemaps.DayFrom(time.Now())
 	origin := sitemaps.CalendarDay{Year: 2026, Month: 3, Day: 5}
 	urls := make(sitemaps.Site, 0, basics)
@@ -89,6 +89,13 @@ func (h *sitemapAPI) create(ctx scope.C) (sitemaps.Site, error) {
 
 	urls = append(urls, &sitemaps.URL{
 		Location:  h.url("/privacy"),
+		Modified:  origin,
+		Frequency: sitemaps.Yearly,
+		Priority:  sitemaps.Low,
+	})
+
+	urls = append(urls, &sitemaps.URL{
+		Location:  h.url("/help"),
 		Modified:  origin,
 		Frequency: sitemaps.Yearly,
 		Priority:  sitemaps.Low,
