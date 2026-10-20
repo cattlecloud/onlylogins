@@ -70,13 +70,14 @@ func (s *usersql) Lookup(ctx scope.C, id users.Identity) (*users.Profile, error)
 	select
 		id,
 		username,
+		email,
 		standings_id
 	from users
 	where id = ?`
 
 	f := func(sf litesql.ScanFunc) (*users.Profile, error) {
 		var profile users.Profile
-		err := sf(&profile.ID, &profile.Username, &profile.Standing)
+		err := sf(&profile.ID, &profile.Username, &profile.Email, &profile.Standing)
 		return &profile, err
 	}
 
@@ -92,11 +93,13 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, verifier
 
 	const statement = `
 	insert into users (
-		username
-	) values ( ? )`
+		username,
+		email
+	) values ( ?, ? )`
 
 	userID, uerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Username,
+		request.Email,
 	)
 	if isUsernameTaken(uerr) {
 		return litesql.ExecFailure, fmt.Errorf("unable to create user: %w", ErrUsernameTaken)
