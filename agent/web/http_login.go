@@ -11,6 +11,7 @@ import (
 	"cattlecloud.net/go/forms"
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
+	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/database"
@@ -121,25 +122,23 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	request := h.loginFields(r)
 
 	if err := request.Validate(); err != nil {
-		// TODO: graceful set error on the page
-		return err
+		return problem(w, err)
 	}
 
 	// verify the passphrase and recover the derived key
 	id, key, cerr := h.store.Users().Check(ctx, request)
 	if cerr != nil {
-		// TODO: set graceful error on the page
-		return cerr
+		return problem(w, cerr)
 	}
 
+	// set the key cookie
 	http.SetCookie(w, cookie(key))
 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
 
-	// set to the homepage
-	http.Redirect(w, r, "/", http.StatusFound)
-	return nil
+	// send user to the homepage
+	return htmx.SetRedirect(w, "/")
 }
 
 func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
