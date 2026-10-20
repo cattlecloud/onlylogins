@@ -42,7 +42,7 @@
     <section class="card">
       <h2>Create Account</h2>
       <p class="card-subtitle">New to OnlyLogins? Sign up in seconds</p>
-      <form method="POST" action="/login?do=create">
+      <form hx-post="/login?do=create" hx-swap="none">
         <div class="field">
           <label for="signup-email">Email</label>
           <input type="email" id="signup-email" name="signup-email" placeholder="you@example.com" autocomplete="off" required>

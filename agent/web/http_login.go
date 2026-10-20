@@ -147,24 +147,25 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	// generate the per-user salt
 	salt, serr := encrypt.NewSalt()
 	if serr != nil {
-		// TODO: encryption is broken, now what?
-		return serr
+		// encryption is broken; surface a graceful error so the user
+		// can try again rather than blowing up the response
+		return problem(w, serr)
 	}
 	request.Salt = salt
 
 	if err := request.Validate(); err != nil {
-		// TODO: graceful set error on the page so user can correct
-		// their input fields
-		return err
+		return problem(w, err)
 	}
 
 	key := encrypt.DeriveKey(request.Passphrase, request.Salt)
 	verifier := encrypt.MakeVerifier(key)
 
 	// insert the newly created user into the database
-	userID, cerr := h.store.Users().Create(ctx, request, verifier)
-	if cerr != nil {
-		return cerr
+	userID, uerr := h.store.Users().Create(ctx, request, verifier)
+	if errors.Is(uerr, database.ErrUsernameTaken) {
+		return problem(w, database.ErrUsernameTaken)
+	} else if uerr != nil {
+		return problem(w, uerr)
 	}
 
 	// set the encryption cookie
@@ -173,9 +174,8 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(userID, cookieTTL))
 
-	// set to the homepage
-	http.Redirect(w, r, "/", http.StatusFound)
-	return nil
+	// send user to the homepage
+	return htmx.SetRedirect(w, "/")
 }
 
 const cookieTTL = 10 * time.Minute

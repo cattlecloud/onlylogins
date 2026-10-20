@@ -3,6 +3,7 @@ package database
 import (
 	"errors"
 	"fmt"
+	"strings"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -14,6 +15,7 @@ import (
 
 var (
 	ErrIncorrectCredentials = errors.New("incorrect credentials")
+	ErrUsernameTaken        = errors.New("username is already taken")
 )
 
 type Users interface {
@@ -96,7 +98,9 @@ func (s *usersql) Create(ctx scope.C, request *users.CreateUserRequest, verifier
 	userID, uerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Username,
 	)
-	if uerr != nil {
+	if isUsernameTaken(uerr) {
+		return litesql.ExecFailure, fmt.Errorf("unable to create user: %w", ErrUsernameTaken)
+	} else if uerr != nil {
 		return litesql.ExecFailure, fmt.Errorf("unable to create user: %w", uerr)
 	}
 
@@ -190,4 +194,10 @@ func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identit
 	}
 
 	return credentials.id, key, nil
+}
+
+// isUsernameTaken reports whether err indicates that the users.username
+// UNIQUE constraint failed during an insert.
+func isUsernameTaken(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.username")
 }
