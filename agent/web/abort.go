@@ -7,6 +7,7 @@ import (
 
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools"
+	"cattlecloud.net/go/webtools/htmx"
 )
 
 var (
@@ -36,4 +37,21 @@ func lost(log *ulog.Log, w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusNotFound)
 	_, _ = io.WriteString(w, "page not found")
 	return nil
+}
+
+// problem sets the <id:error> element with the content of err.
+//
+// it also explicitly sets no-swap, so that the htmx component originating
+// the request is left alone; i.e. retaining the problematic input
+func problem(w http.ResponseWriter, err error) error {
+	// leave the form content in place
+	_ = htmx.SetNoSwap(w)
+
+	// set the active error message; out of bounds update
+	return htmx.Write(w,
+		&htmx.Component{
+			HTML:   `<span id="error" hx-swap-oob="true">{{.}}</span>`,
+			Fields: err.Error(),
+		},
+	)
 }
