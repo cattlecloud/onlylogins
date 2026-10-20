@@ -30,8 +30,7 @@ func TestUsers_Count(t *testing.T) {
 func insertUser(t *testing.T, ctx scope.C, store Store, username string) users.Identity {
 	t.Helper()
 
-	salt, serr := encrypt.NewSalt()
-	must.NoError(t, serr)
+	salt := encrypt.Salt()
 
 	request := &users.CreateUserRequest{
 		Email:         username + "@example.com",

@@ -52,3 +52,39 @@ create table if not exists authorize (
 
     foreign key (users_id) references users(id) on delete cascade
 ) strict;
+
+create table if not exists logins (
+    id integer primary key autoincrement,
+    -- auto
+
+    users_id integer not null,
+    -- foreign key into users; the user logging in [attempt]
+
+    ip text check(length(ip) > 0 and length(ip) < 64) not null,
+    -- the ip address of the client
+
+    ua text check(length(ua) < 512) not null,
+    -- the user agent of the client
+
+    success integer check(success in (0, 1)) not null,
+    -- enum; 1: success, 0: failure
+
+    creation integer default (unixepoch('now')) not null,
+    -- timestamp of the login attempt
+
+    foreign key (users_id) references users(id) on delete cascade
+) strict;
+
+create table if not exists bogus (
+    id integer primary key autoincrement,
+    -- auto
+
+    ip text check(length(ip) > 0 and length(ip) < 64) not null,
+    -- the ip address of the client
+
+    ua text check(length(ua) < 512) not null,
+    -- the user agent of the client
+
+    creation integer default (unixepoch('now')) not null
+    -- timestamp of the login attempt
+) strict;

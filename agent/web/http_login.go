@@ -11,6 +11,7 @@ import (
 	"cattlecloud.net/go/forms"
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
+	"cattlecloud.net/go/webtools"
 	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/runtime"
@@ -112,9 +113,12 @@ func (*loginHTTP) loginFields(r *http.Request) *users.LoginRequest {
 		"username":   forms.String(&username),
 		"passphrase": forms.Secret(&passphrase),
 	})
+	o := webtools.Origins(r)
 	return &users.LoginRequest{
 		Username:   username,
 		Passphrase: passphrase,
+		UserAgent:  o.UserAgent.String,
+		IP:         o.From(),
 	}
 }
 
@@ -122,20 +126,31 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	request := h.loginFields(r)
 
 	if err := request.Validate(); err != nil {
+		go func() { h.audit(request, false) }()
 		return problem(w, err)
 	}
 
 	// verify the passphrase and recover the derived key
 	id, key, cerr := h.store.Users().Check(ctx, request)
-	if cerr != nil {
+	switch {
+	case cerr != nil:
+		go func() { h.audit(request, false) }()
 		return problem(w, cerr)
+	case id <= 0:
+		go func() { h.bogus(request) }()
+		return problem(w, cerr)
+	default:
+		go func() { h.audit(request, true) }()
 	}
 
 	// set the key cookie
-	http.SetCookie(w, cookie(key))
+	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
+
+	// insert attempt into audit log
+	go func() { h.audit(request, true) }()
 
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
@@ -145,18 +160,14 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	request := h.signupFields(r)
 
 	// generate the per-user salt
-	salt, serr := encrypt.NewSalt()
-	if serr != nil {
-		// encryption is broken; surface a graceful error so the user
-		// can try again rather than blowing up the response
-		return problem(w, serr)
-	}
-	request.Salt = salt
+	request.Salt = encrypt.Salt()
 
+	// ensure the request contains valid parameters
 	if err := request.Validate(); err != nil {
 		return problem(w, err)
 	}
 
+	// derive the encryption key for the user
 	key := encrypt.DeriveKey(request.Passphrase, request.Salt)
 	verifier := encrypt.MakeVerifier(key)
 
@@ -169,7 +180,7 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	}
 
 	// set the encryption cookie
-	http.SetCookie(w, cookie(key))
+	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
 	http.SetCookie(w, h.sessions.Create(userID, cookieTTL))
@@ -180,7 +191,7 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 
 const cookieTTL = 10 * time.Minute
 
-func cookie(key *conceal.Bytes) *http.Cookie {
+func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 	return &http.Cookie{
 		Name:     "onlylogins-encryption",
 		Value:    base64.StdEncoding.EncodeToString(key.Unveil()),
@@ -190,4 +201,16 @@ func cookie(key *conceal.Bytes) *http.Cookie {
 		SameSite: http.SameSiteStrictMode,
 		Secure:   false, // todo
 	}
+}
+
+func (h *loginHTTP) audit(request *users.LoginRequest, success bool) {
+	ctx, cancel := scope.TTL(3 * time.Second)
+	defer cancel()
+	_ = h.store.Audit().Record(ctx, request, success)
+}
+
+func (h *loginHTTP) bogus(request *users.LoginRequest) {
+	ctx, cancel := scope.TTL(3 * time.Second)
+	defer cancel()
+	_ = h.store.Audit().RecordBogus(ctx, request)
 }
