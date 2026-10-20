@@ -2,6 +2,7 @@ package database
 
 import (
 	// anonymous import to embed sql file
+	"database/sql"
 	_ "embed"
 	"fmt"
 
@@ -29,9 +30,24 @@ func (s *store) Init(ctx scope.C) error {
 	}
 
 	// next initialize the built-in users
-	if err := s.ldb.Exec(ctx, tx, litesql.ExpectAnything, initUsers); err != nil {
-		return fmt.Errorf("unable to initialize built-in users: %w", err)
+	if err := s.initUsers(ctx, tx); err != nil {
+		return err
 	}
 
 	return tx.Commit()
+}
+
+func (s *store) initUsers(ctx scope.C, tx *sql.Tx) error {
+	const statement = `select count(id) from users`
+	count, cerr := litesql.QueryRow(ctx, tx, scanCount, statement)
+	if cerr != nil {
+		return fmt.Errorf("unable to count users: %w", cerr)
+	}
+
+	if count == 0 {
+		if err := s.ldb.Exec(ctx, tx, litesql.ExpectAnything, initUsers); err != nil {
+			return fmt.Errorf("unable to initialize users: %w", err)
+		}
+	}
+	return nil
 }
