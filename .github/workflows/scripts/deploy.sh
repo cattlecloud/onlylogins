@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-binary="treehouse"
+binary="onlylogins"
 
 archives=$(curl -s -L \
   -H "Accept: application/vnd.github+json" \
