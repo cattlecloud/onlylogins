@@ -21,6 +21,7 @@ type Identity litesql.ID
 type Profile struct {
 	ID       Identity
 	Username string
+	Email    string
 	Standing Standing
 }
 

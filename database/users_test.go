@@ -78,15 +78,18 @@ func TestUsers_Lookup(t *testing.T) {
 		u, err := db.Users().Lookup(ctx, alice)
 		must.NoError(t, err)
 		must.Eq(t, "alice", u.Username)
+		must.Eq(t, "alice@example.com", u.Email)
 	})
 	t.Run("lookup bob", func(t *testing.T) {
 		u, err := db.Users().Lookup(ctx, bob)
 		must.NoError(t, err)
 		must.Eq(t, "bob", u.Username)
+		must.Eq(t, "bob@example.com", u.Email)
 	})
 	t.Run("lookup carol", func(t *testing.T) {
 		u, err := db.Users().Lookup(ctx, carol)
 		must.NoError(t, err)
 		must.Eq(t, "carol", u.Username)
+		must.Eq(t, "carol@example.com", u.Email)
 	})
 }

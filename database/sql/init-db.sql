@@ -23,6 +23,9 @@ create table if not exists users (
     username text check(length(username) > 1 and length(username) < 48) not null unique,
     -- the chosen username (unique)
 
+    email text check(length(email) >= 3 and length(email) < 128) not null,
+    -- the email address (not unique)
+
     standings_id integer not null default 1,
     -- foreign key into standings table
 
