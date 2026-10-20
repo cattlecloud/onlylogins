@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"strings"
@@ -16,6 +17,7 @@ import (
 var (
 	ErrIncorrectCredentials = errors.New("incorrect credentials")
 	ErrUsernameTaken        = errors.New("username is already taken")
+	ErrUserNotFound         = errors.New("user not found")
 )
 
 type Users interface {
@@ -181,19 +183,30 @@ func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identit
 	credentials, cerr := litesql.QueryRow(ctx, tx, f, statement, request.Username)
 	if cerr != nil {
 		s.log.W.Fmt("unable to query user authorization: %v", cerr)
-		// substitute dummy credentials so the key derivation still runs,
-		// keeping the response time independent of whether the username exists
+		// substitute dummy credentials so the key derivation below still
+		// runs, keeping the response time independent of whether the
+		// username exists (timing-attack mitigation)
 		credentials = inputs{
 			salt:     encrypt.DummySalt,
 			verifier: encrypt.DummyVerifier,
 		}
 	}
 
-	// derive the key from the passphrase and salt, then verify it matches the
-	// stored key check value
+	// derive the key from the passphrase and salt, then verify it against
+	// the stored verifier (or the dummy verifier when the username didn't
+	// match, preserving timing). the verify result combined with cerr tells
+	// us which kind of failure occurred, so callers can route audits
+	// appropriately (e.g. bogus table for missing usernames).
 	key := encrypt.DeriveKey(request.Passphrase, credentials.salt)
 	if !encrypt.Verify(key, credentials.verifier) {
-		return 0, nil, ErrIncorrectCredentials
+		switch {
+		case errors.Is(cerr, sql.ErrNoRows):
+			return 0, nil, ErrUserNotFound
+		case cerr != nil:
+			return 0, nil, fmt.Errorf("unable to check credentials: %w", cerr)
+		default:
+			return 0, nil, ErrIncorrectCredentials
+		}
 	}
 
 	return credentials.id, key, nil

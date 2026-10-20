@@ -133,11 +133,14 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	// verify the passphrase and recover the derived key
 	id, key, cerr := h.store.Users().Check(ctx, request)
 	switch {
+	case errors.Is(cerr, database.ErrUserNotFound):
+		// no such user; record under bogus table
+		go func() { h.bogus(request) }()
+		// respond with the generic "incorrect credentials" message so
+		// usernames cannot be enumerated from the response
+		return problem(w, database.ErrIncorrectCredentials)
 	case cerr != nil:
 		go func() { h.audit(request, false) }()
-		return problem(w, cerr)
-	case id <= 0:
-		go func() { h.bogus(request) }()
 		return problem(w, cerr)
 	default:
 		go func() { h.audit(request, true) }()
