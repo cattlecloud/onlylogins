@@ -1,0 +1,216 @@
+body {
+  min-height: 100vh;
+}
+
+.middle.index {
+  width: 100%;
+  max-width: 880px;
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 2.5rem;
+  padding: 2rem 1rem 3rem;
+}
+
+.middle.index section {
+  width: 100%;
+}
+
+.middle.index .hero {
+  text-align: center;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0 0;
+}
+
+.middle.index .hero h1 {
+  margin: 0;
+  font-size: 2.4rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  color: var(--text);
+  max-width: 720px;
+}
+
+.middle.index .hero h1 .accent {
+  color: var(--primary);
+}
+
+.middle.index .hero p {
+  margin: 0;
+  font-size: 1.05rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+  max-width: 620px;
+}
+
+.middle.index .button-cta {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.middle.index .button-cta:hover {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+  text-decoration: none;
+}
+
+.middle.index .button-cta:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+}
+
+.middle.index section > h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.middle.index .use-cases > h2 {
+  margin-top: 1.5rem;
+}
+
+.middle.index .feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.middle.index .feature-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.middle.index .feature-card h3 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.middle.index .feature-card p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.middle.index .use-case-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.middle.index .use-case {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.middle.index .use-case h4 {
+  margin: 0 0 0.4rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.middle.index .use-case p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.middle.index .trust {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.middle.index .trust-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.index .trust-item::before {
+  content: "\2713";
+  color: var(--primary);
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.middle.index .cta-footer {
+  text-align: center;
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0 0;
+}
+
+.middle.index .cta-footer p {
+  margin: 0;
+  max-width: 540px;
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 720px) {
+  .middle.index .hero h1 {
+    font-size: 1.85rem;
+  }
+
+  .middle.index .feature-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .middle.index .use-case-list {
+    grid-template-columns: 1fr;
+  }
+
+  .middle.index .trust {
+    flex-flow: column nowrap;
+    gap: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .middle.index .hero h1 {
+    font-size: 1.6rem;
+  }
+
+  .middle.index .hero p {
+    font-size: 0.95rem;
+  }
+}
