@@ -3,4 +3,9 @@
 
 package records
 
-// this is where auto types will go
+import "cattlecloud.net/go/litesql"
+
+type (
+	// table folders
+	FoldersAuto litesql.ID
+)

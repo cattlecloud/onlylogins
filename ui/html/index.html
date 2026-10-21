@@ -2,8 +2,17 @@
 <div class="middle index">
 {{if .Session.Active}}
   <section class="logged-in">
-    <p>You are logged in! Wow!</p>
-    <!-- TODO ignore this case for now. -->
+
+    <section class="folders-list">
+      {{range .Section.Folders}}
+      <div class="folder">
+        <img class="folder-icon" src="{{Icon .Icon}}" alt="" aria-hidden="true">
+        <span class="folder-label">{{.Label}}</span>
+      </div>
+      {{end}}
+    </section>
+
+    <!-- TODO will add more elements in the future -->
   </section>
 {{else}}
   <section class="logged-out">
