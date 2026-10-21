@@ -15,12 +15,13 @@ import (
 	"cattlecloud.net/onlylogins/agent/web/pages"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type indexContent struct {
 	Profile *users.Profile
-	Message string
+	Folders []*sitecontent.Folder
 }
 
 type indexHTTP struct {
@@ -74,8 +75,11 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	}
 
 	middle := &indexContent{
-		Message: "testing456",
 		Profile: profile,
+	}
+
+	if session.Active() {
+		middle.Folders, _ = h.store.Folders().List(ctx, session.Identity())
 	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)

@@ -88,3 +88,34 @@ create table if not exists bogus (
     creation integer default (unixepoch('now')) not null
     -- timestamp of the login attempt
 ) strict;
+
+create table if not exists folders (
+    id integer primary key autoincrement,
+    -- auto
+
+    users_id integer not null,
+    -- foreign key into users; the user owning the folder
+
+    label text check(length(label) > 0 and length(label) < 32) not null,
+    -- the name of the folder; unique per user
+
+    icon integer not null check(icon >= 0 and icon <= 11) not null default 0,
+    -- enum; the associated icon
+
+    perma integer not null check(perma in (0, 1)) default 0,
+    -- enum; 1: permenant, 0: can be modified / deleted
+
+    unique(users_id, label),
+    foreign key (users_id) references users(id) on delete cascade
+) strict;
+
+-- upon inserting into the users table, automatically create a default
+-- "miscellaneous" folder for the new user (icon = 3, perma = 1)
+
+create trigger if not exists default_folder_after_user_insert
+after insert on users
+for each row
+begin
+    insert into folders (users_id, label, icon, perma)
+    values (new.id, "miscellaneous", 3, 1);
+end;

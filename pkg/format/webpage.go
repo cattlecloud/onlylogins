@@ -5,8 +5,20 @@ package format
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
+
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 )
+
+// Icon gets the SVG associated with an icon enum.
+func Icon(number sitecontent.Icon) string {
+	size := len(sitecontent.FolderIcons)
+	if number < 0 || number > sitecontent.Icon(size) {
+		number = 0
+	}
+	return filepath.Join("ui/images", sitecontent.FolderIcons[number])
+}
 
 // PageDescription takes a chunk of format text and fixes spacing issues,
 // then uses the given args to format the string.

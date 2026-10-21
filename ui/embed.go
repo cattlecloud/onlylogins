@@ -50,7 +50,7 @@ func Load(filename string, parts ...string) *template.Template {
 
 	// configure custom functions for formatting text
 	funcs := template.FuncMap{
-		// some funcs
+		"Icon": format.Icon,
 	}
 
 	// parse template files

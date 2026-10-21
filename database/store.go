@@ -16,6 +16,7 @@ type Store interface {
 	Users() Users
 	Audit() Audits
 	Close() error
+	Folders() Folders
 }
 
 // Open a database using the given configuration.
