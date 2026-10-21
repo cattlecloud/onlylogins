@@ -199,7 +199,7 @@ func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 		HttpOnly: true,
 		Expires:  time.Now().Add(cookieTTL),
 		SameSite: http.SameSiteStrictMode,
-		Secure:   false, // todo
+		Secure:   h.environment.NonLocal(),
 	}
 }
 
