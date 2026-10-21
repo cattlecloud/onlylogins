@@ -1,5 +1,99 @@
 {{define "middle"}}
 <div class="middle index">
-  <p>message is {{.Section.Message}}</p>
+{{if .Session.Active}}
+  <section class="logged-in">
+    <p>You are logged in! Wow!</p>
+    <!-- TODO ignore this case for now. -->
+  </section>
+{{else}}
+  <section class="logged-out">
+    <section class="hero">
+      <h1>Your secrets. <span class="accent">One passphrase.</span><br>Zero lockouts.</h1>
+      <p>
+        OnlyLogins is a free and open source password manager that keeps your
+        usernames, passwords and other login credentials secure. Your data is
+        encrypted by your own passphrase and cannot be accessed without it. No
+        2FA, passkeys, or any other third-party account is required.
+      </p>
+      <a class="button-cta" href="/login">Get Started</a>
+    </section>
+
+    <section class="features">
+      <h2>What's inside</h2>
+      <div class="feature-grid">
+        <div class="feature-card">
+          <h3>Open source</h3>
+          <p>
+            The AGPL source <a href="github.com/cattlecloud/onlylogins">code</a> is
+            free to read, audit, and self-host. Run your own instance locally
+            and keep your data on hardware you control.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h3>One passphrase</h3>
+          <p>
+            A single strong 24+ character passphrase replaces 2FA codes,
+            hardware passkeys, and email verifications. As long as you remember
+            your passphrase, your data stays secure and accessible.
+          </p>
+        </div>
+        <div class="feature-card">
+          <h3>Organize</h3>
+          <p>
+            Keep your usersnames, passwords, and other login credentials
+            organized into categorized folders. Never lose track of anything
+            again.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="use-cases">
+      <h2>What you can store</h2>
+      <div class="use-case-list">
+        <div class="use-case">
+          <h4>Account Logins</h4>
+          <p>
+            Store website login information including usernames and passwords.
+            Include direct links to wherever you want to go.
+          </p>
+        </div>
+        <div class="use-case">
+          <h4>Private Notes</h4>
+          <p>
+            Write down private information in a digital secure note.
+          </p>
+        </div>
+        <div class="use-case">
+          <h4>Backup codes</h4>
+          <p>
+            Stash backup codes, license keys, Wi-Fi passwords, and other
+            single-secret items in a notes-only entry.
+          </p>
+        </div>
+        <div class="use-case">
+          <h4>Self Host</h4>
+          <p>
+            Operate an OnlyLogins instance on your own hardware and maintain
+            full control of your data.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust">
+      <span class="trust-item">No 2FA required</span>
+      <span class="trust-item">No hardware passkey required</span>
+      <span class="trust-item">No vendor lock-in</span>
+    </section>
+
+    <section class="cta-footer">
+      <p>
+        Create one strong passphrase and your digital vault is yours.
+      </p>
+      <a class="button-cta" href="/login">Get Started</a>
+    </section>
+  </section>
+{{end}}
 </div>
 {{end}}
