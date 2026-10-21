@@ -9,6 +9,7 @@ import (
 	"cattlecloud.net/go/webtools/httpclient"
 	"cattlecloud.net/go/webtools/middles/oauth"
 	"cattlecloud.net/go/webtools/middles/oauth/nonces"
+	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/agent/web"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/memcache"
@@ -56,10 +57,13 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	// create an http client we can use everywhere
 	httpc := httpclient.Get()
 
+	// create the environment configuration
+	env := runtime.Setup(l.config.Runtime)
+
 	// create a cookies factory
 	cookies := &oauth.CookieFactory[users.Identity]{
 		Name:   "onlylogins-session",
-		Secure: false, // TODO
+		Secure: env.NonLocal(),
 		Clock:  time.Now,
 	}
 
@@ -74,13 +78,14 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 
 	// startup http web application
 	webapp := web.New(l.config.HTTP, &web.Objects{
-		Council: council,
-		Store:   db,
-		Scache:  scache,
-		HTTPC:   httpc,
-		Metrics: mets,
-		Mcache:  mcache,
-		Mint:    mint,
+		Environment: env,
+		Council:     council,
+		Store:       db,
+		Scache:      scache,
+		HTTPC:       httpc,
+		Metrics:     mets,
+		Mcache:      mcache,
+		Mint:        mint,
 	})
 	go webapp.Start(parent)
 

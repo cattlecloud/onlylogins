@@ -68,10 +68,11 @@ func (a *Application) createRoutes(router *mux.Router) {
 	})
 
 	a.handleNormal(router, &loginHTTP{
-		log:      ulog.New("http/login"),
-		sessions: a.scache,
-		store:    a.store,
-		html:     ui.Load("login.html"),
+		log:         ulog.New("http/login"),
+		environment: a.environment,
+		sessions:    a.scache,
+		store:       a.store,
+		html:        ui.Load("login.html"),
 	})
 
 	a.handleNormal(router, &profileHTTP{
@@ -117,26 +118,28 @@ func (a *Application) createRoutes(router *mux.Router) {
 }
 
 type Objects struct {
-	Council users.Council
-	Store   database.Store
-	Scache  middles.Sessions[users.Identity]
-	HTTPC   *http.Client
-	Metrics *metrics.Set
-	Mcache  memcache.Client
-	Mint    nonces.Mint
+	Environment runtime.Environment
+	Council     users.Council
+	Store       database.Store
+	Scache      middles.Sessions[users.Identity]
+	HTTPC       *http.Client
+	Metrics     *metrics.Set
+	Mcache      memcache.Client
+	Mint        nonces.Mint
 }
 
 func New(config *Config, objects *Objects) *Application {
 	return &Application{
-		config:  config,
-		log:     ulog.New("http"),
-		httpc:   objects.HTTPC,
-		council: objects.Council,
-		store:   objects.Store,
-		scache:  objects.Scache,
-		metrics: objects.Metrics,
-		mcache:  objects.Mcache,
-		mint:    objects.Mint,
+		config:      config,
+		log:         ulog.New("http"),
+		environment: objects.Environment,
+		httpc:       objects.HTTPC,
+		council:     objects.Council,
+		store:       objects.Store,
+		scache:      objects.Scache,
+		metrics:     objects.Metrics,
+		mcache:      objects.Mcache,
+		mint:        objects.Mint,
 	}
 }
 
