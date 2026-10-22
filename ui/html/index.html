@@ -4,6 +4,10 @@
   <section class="logged-in">
 
     <section class="folders-list">
+      <a href="/folders" class="folder folder-create" aria-label="Manage folders">
+        <span class="folder-create-glyph" aria-hidden="true">+/-</span>
+        <span class="folder-label">add folders</span>
+      </a>
       {{range .Section.Folders}}
       <div class="folder">
         <img class="folder-icon" src="{{Icon .Icon}}" alt="" aria-hidden="true">
@@ -12,7 +16,6 @@
       {{end}}
     </section>
 
-    <!-- TODO will add more elements in the future -->
   </section>
 {{else}}
   <section class="logged-out">

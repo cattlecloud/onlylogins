@@ -4,7 +4,6 @@
 package web
 
 import (
-	"net/http"
 	"net/http/httptest"
 	"testing"
 
@@ -15,12 +14,6 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/shoenig/test/must"
 )
-
-func requestGet(t *testing.T, path string) *http.Request {
-	r, err := http.NewRequestWithContext(t.Context(), http.MethodGet, path, nil)
-	must.NoError(t, err)
-	return r
-}
 
 func TestAbout_ServeHTTP(t *testing.T) {
 	t.Parallel()
@@ -39,7 +32,7 @@ func TestAbout_ServeHTTP(t *testing.T) {
 		html:        ui.Load("about.html"),
 	})
 
-	request := requestGet(t, "/about")
+	request := requestGet(t, "/about", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 

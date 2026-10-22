@@ -32,7 +32,7 @@ func TestTOS_ServeHTTP(t *testing.T) {
 		html:        ui.Load("tos.html"),
 	})
 
-	request := requestGet(t, "/terms")
+	request := requestGet(t, "/terms", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 

@@ -112,6 +112,13 @@ func (a *Application) createRoutes(router *mux.Router) {
 		html:        ui.Load("help.html"),
 	})
 
+	a.handleNormal(router, &foldersHTTP{
+		log:         ulog.New("http/folders"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("folders.html"),
+	})
+
 	// index must be listed last
 	a.handleNormal(router, &indexHTTP{
 		log:   ulog.New("http/index"),

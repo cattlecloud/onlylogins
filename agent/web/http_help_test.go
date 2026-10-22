@@ -32,7 +32,7 @@ func TestHelp_ServeHTTP(t *testing.T) {
 		html:        ui.Load("help.html"),
 	})
 
-	request := requestGet(t, "/help")
+	request := requestGet(t, "/help", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
