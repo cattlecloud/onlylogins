@@ -99,7 +99,7 @@ create table if not exists folders (
     label text check(length(label) > 0 and length(label) < 32) not null,
     -- the name of the folder; unique per user
 
-    icon integer not null check(icon >= 0 and icon <= 11) not null,
+    icon integer not null check(icon >= 0 and icon <= 17) not null,
     -- enum; the associated icon
 
     perma integer not null check(perma in (0, 1)) default 0,

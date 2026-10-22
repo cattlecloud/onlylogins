@@ -32,6 +32,12 @@ var FolderIcons = map[Icon]string{
 	9:  "tag.svg",
 	10: "thumbup.svg",
 	11: "tower.svg",
+	12: "branch.svg",
+	13: "clock.svg",
+	14: "cplus.svg",
+	15: "cup.svg",
+	16: "ghost.svg",
+	17: "mail.svg",
 }
 
 // labelRe restricts folder labels to alphanumeric characters so they may be
@@ -53,8 +59,8 @@ func (r *CreateFolderRequest) Validate() error {
 		return errors.New("label must contain only alphanumeric characters")
 	}
 
-	if r.Icon < 0 || r.Icon > 11 {
-		return errors.New("icon must be between 0 and 11")
+	if r.Icon < 0 || r.Icon > 17 {
+		return errors.New("icon must be between 0 and 17")
 	}
 
 	return nil

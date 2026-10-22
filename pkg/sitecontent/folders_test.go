@@ -90,17 +90,17 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(-1),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "icon must be between 0 and 11")
+		must.ErrorContains(t, err, "icon must be between 0 and 17")
 	})
 
 	t.Run("icon too high", func(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
-			Icon:  Icon(12),
+			Icon:  Icon(18),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "icon must be between 0 and 11")
+		must.ErrorContains(t, err, "icon must be between 0 and 17")
 	})
 
 	t.Run("ok", func(t *testing.T) {
@@ -117,7 +117,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
-			Icon:  Icon(11),
+			Icon:  Icon(17),
 		}
 		err := r.Validate()
 		must.NoError(t, err)
