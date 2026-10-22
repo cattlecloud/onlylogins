@@ -25,7 +25,7 @@ func TestModUsers_ServeHTTP(t *testing.T) {
 		html:  ui.Mod("mod_users.html"),
 	})
 
-	request := requestGet(t, "/moderate/users")
+	request := requestGet(t, "/moderate/users", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 

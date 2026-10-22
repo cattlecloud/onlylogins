@@ -103,6 +103,35 @@ body {
   color: var(--text);
 }
 
+.middle.index .folder-create {
+  color: var(--text-muted);
+  text-decoration: none;
+}
+
+.middle.index .folder-create:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.middle.index .folder-create-glyph {
+  flex: 0 0 auto;
+  width: 4rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.75rem;
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  color: var(--primary);
+  opacity: 0.85;
+  transition: opacity 0.15s ease;
+}
+
+.middle.index .folder-create:hover .folder-create-glyph {
+  opacity: 1;
+}
+
 .middle.index .button-cta {
   display: inline-block;
   margin-top: 0.5rem;
@@ -277,5 +306,11 @@ body {
   .middle.index .folder-icon {
     width: 3rem;
     height: 3rem;
+  }
+
+  .middle.index .folder-create-glyph {
+    width: 3rem;
+    height: 3rem;
+    font-size: 2.1rem;
   }
 }

@@ -1,47 +1,125 @@
+// SPDX-License-Identifier: AGPL-3.0
+// Copyright (c) 2026 Cattle Cloud LLC
+
 package sitecontent
 
 import (
 	"testing"
 
+	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/test/must"
 )
 
-func TestValidateLabel(t *testing.T) {
+func TestCreateFolderRequest_Validate(t *testing.T) {
 	t.Parallel()
 
-	t.Run("letters", func(t *testing.T) {
-		must.NoError(t, ValidateLabel("FooBar"))
+	t.Run("no user", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  0,
+			Label: "work",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "user must be set")
 	})
 
-	t.Run("digits", func(t *testing.T) {
-		must.NoError(t, ValidateLabel("12345"))
+	t.Run("negative user", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(-1),
+			Label: "work",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "user must be set")
 	})
 
-	t.Run("mixed", func(t *testing.T) {
-		must.NoError(t, ValidateLabel("R2D2"))
+	t.Run("empty label", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
 	})
 
-	t.Run("empty", func(t *testing.T) {
-		must.Error(t, ValidateLabel(""))
+	t.Run("uppercase label", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "Work",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
 	})
 
-	t.Run("space", func(t *testing.T) {
-		must.Error(t, ValidateLabel("foo bar"))
+	t.Run("label with dash", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "my-folder",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
 	})
 
-	t.Run("hyphen", func(t *testing.T) {
-		must.Error(t, ValidateLabel("foo-bar"))
+	t.Run("label with space", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "my folder",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
 	})
 
-	t.Run("underscore", func(t *testing.T) {
-		must.Error(t, ValidateLabel("foo_bar"))
+	t.Run("label with unicode", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "café",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
 	})
 
-	t.Run("slash", func(t *testing.T) {
-		must.Error(t, ValidateLabel("foo/bar"))
+	t.Run("icon too low", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "work",
+			Icon:  Icon(-1),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "icon must be between 0 and 11")
 	})
 
-	t.Run("unicode", func(t *testing.T) {
-		must.Error(t, ValidateLabel("café"))
+	t.Run("icon too high", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "work",
+			Icon:  Icon(12),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "icon must be between 0 and 11")
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "work",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+
+	t.Run("ok boundary icon high", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "work",
+			Icon:  Icon(11),
+		}
+		err := r.Validate()
+		must.NoError(t, err)
 	})
 }

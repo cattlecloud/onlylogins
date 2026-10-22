@@ -32,7 +32,7 @@ func TestPrivacy_ServeHTTP(t *testing.T) {
 		html:        ui.Load("privacy.html"),
 	})
 
-	request := requestGet(t, "/privacy")
+	request := requestGet(t, "/privacy", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 

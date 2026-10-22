@@ -5,6 +5,7 @@ import (
 	"regexp"
 
 	"cattlecloud.net/onlylogins/database/records"
+	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 // A Folder is the categorization unit for each user to store
@@ -35,14 +36,26 @@ var FolderIcons = map[Icon]string{
 
 // labelRe restricts folder labels to alphanumeric characters so they may be
 // used directly as URL path elements without requiring percent-encoding.
-var labelRe = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
+var labelRe = regexp.MustCompile(`^[a-z0-9]+$`)
 
-// ValidateLabel returns an error if s is not a usable folder label. A valid
-// label consists of one or more alphanumeric characters and is therefore
-// safe to embed in a URL path segment.
-func ValidateLabel(s string) error {
-	if !labelRe.MatchString(s) {
+type CreateFolderRequest struct {
+	User  users.Identity
+	Label string
+	Icon  Icon
+}
+
+func (r *CreateFolderRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if !labelRe.MatchString(r.Label) {
 		return errors.New("label must contain only alphanumeric characters")
 	}
+
+	if r.Icon < 0 || r.Icon > 11 {
+		return errors.New("icon must be between 0 and 11")
+	}
+
 	return nil
 }

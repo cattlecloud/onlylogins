@@ -1,7 +1,9 @@
 package database
 
 import (
+	"errors"
 	"fmt"
+	"strings"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -10,11 +12,14 @@ import (
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
+var ErrFolderLabelTaken = errors.New("folder name is already in use")
+
 type Folders interface {
 	// metrics
 	Count(scope.C) (int, error)
 
 	// folder operations
+	Create(scope.C, *sitecontent.CreateFolderRequest) error
 	List(scope.C, users.Identity) ([]*sitecontent.Folder, error)
 }
 
@@ -39,13 +44,32 @@ func (s *foldersql) Count(ctx scope.C) (int, error) {
 
 	const statement = `select count(id) from folders`
 
-	f := func(sf litesql.ScanFunc) (int, error) {
-		var i int
-		err := sf(&i)
-		return i, err
+	return litesql.QueryRow(ctx, tx, scanCount, statement)
+}
+
+func (s *foldersql) Create(ctx scope.C, request *sitecontent.CreateFolderRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return xerr
+	}
+	defer done()
+
+	const statement = `
+	insert into folders (
+		users_id, label, icon
+	) values ( ?, ?, ? )`
+
+	if _, ferr := s.ldb.ExecID(ctx, tx, statement,
+		request.User,
+		request.Label,
+		int(request.Icon),
+	); isFolderLabelTaken(ferr) {
+		return fmt.Errorf("unable to create folder: %w", ErrFolderLabelTaken)
+	} else if ferr != nil {
+		return fmt.Errorf("unable to create folder: %w", ferr)
 	}
 
-	return litesql.QueryRow(ctx, tx, f, statement)
+	return tx.Commit()
 }
 
 func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folder, error) {
@@ -66,10 +90,16 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 	order by label asc`
 
 	f := func(sf litesql.ScanFunc) (*sitecontent.Folder, error) {
-		var folder sitecontent.Folder
+		folder := new(sitecontent.Folder)
 		err := sf(&folder.ID, &folder.Label, &folder.Icon)
-		return &folder, err
+		return folder, err
 	}
 
 	return litesql.QueryRows(ctx, tx, f, statement, user)
+}
+
+// isFolderLabelTaken reports whether err indicates that the folders
+// (users_id, label) UNIQUE constraint failed during an insert.
+func isFolderLabelTaken(err error) bool {
+	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: folders.users_id, folders.label")
 }

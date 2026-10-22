@@ -1,0 +1,38 @@
+{{define "middle"}}
+<div class="middle folders">
+  <section>
+    <h1>Create a folder</h1>
+    <form hx-post="/folders">
+      <div class="field">
+        <label for="folder-label">Label</label>
+        <input
+          type="text"
+          id="folder-label"
+          name="label"
+          placeholder="my bookmarks"
+          pattern="[a-z0-9]+"
+          title="lower case letters or numbers only"
+          autocomplete="off"
+          required>
+      </div>
+
+      <fieldset class="icon-picker">
+        <legend>Icon</legend>
+        {{range $k, $v := .Section.Icons}}
+        <label class="icon-option">
+          <input
+            type="radio"
+            name="icon"
+            value="{{$k}}"
+            {{if eq $k 0}}checked{{end}}>
+          <img src="/{{Icon $k}}" alt="" aria-hidden="true">
+          <span class="sr-only">{{$v}}</span>
+        </label>
+        {{end}}
+      </fieldset>
+
+      <button type="submit">Create</button>
+    </form>
+  </section>
+</div>
+{{end}}

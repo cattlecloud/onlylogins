@@ -1,0 +1,171 @@
+/* --- folders page (new-folder form) --- */
+
+.middle.folders {
+  display: flex;
+  justify-content: center;
+  padding: 1rem 0 2rem;
+}
+
+.middle.folders > section {
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.middle.folders h1 {
+  margin: 0 0 1.25rem;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.middle.folders form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 1.25rem;
+}
+
+.middle.folders .field {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+.middle.folders .field label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.middle.folders .field input {
+  width: 100%;
+  padding: 0.65rem 0.8rem;
+  font-size: 1rem;
+  color: var(--text);
+  caret-color: var(--primary);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.middle.folders .field input::placeholder {
+  color: var(--text-muted);
+}
+
+.middle.folders .field input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.folders .icon-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 0.75rem;
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+
+.middle.folders .icon-picker legend {
+  grid-column: 1 / -1;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.25rem;
+}
+
+.middle.folders .icon-option {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  padding: 0.5rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.middle.folders .icon-option:hover {
+  border-color: var(--primary);
+}
+
+.middle.folders .icon-option input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.middle.folders .icon-option img {
+  width: 3rem;
+  height: 3rem;
+  filter: invert(1);
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+.middle.folders .icon-option:hover img {
+  opacity: 0.95;
+}
+
+.middle.folders .icon-option:has(input[type="radio"]:checked) {
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  box-shadow: 0 0 0 1px var(--primary);
+}
+
+.middle.folders .icon-option:has(input[type="radio"]:checked) img {
+  opacity: 1;
+}
+
+.middle.folders .icon-option:has(input[type="radio"]:focus-visible) {
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+}
+
+.middle.folders button {
+  align-self: flex-start;
+  min-width: 8rem;
+}
+
+.middle.folders .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .middle.folders > section {
+    padding: 1.25rem;
+  }
+
+  .middle.folders .icon-picker {
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .middle.folders .icon-option img {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+}
