@@ -13,8 +13,8 @@ import (
 
 // Icon gets the SVG associated with an icon enum.
 func Icon(number sitecontent.Icon) string {
-	size := len(sitecontent.FolderIcons)
-	if number < 0 || number > sitecontent.Icon(size) {
+	size := sitecontent.Icon(len(sitecontent.FolderIcons))
+	if number < 0 || number >= size {
 		number = 0
 	}
 	return filepath.Join("ui/images", sitecontent.FolderIcons[number])
