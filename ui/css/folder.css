@@ -70,8 +70,58 @@
   min-width: 8rem;
 }
 
+.middle.folder h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.middle.folder .documents-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.middle.folder .documents-list li {
+  border-top: 1px solid var(--border);
+}
+
+.middle.folder .documents-list li:first-child {
+  border-top: none;
+}
+
+.middle.folder .documents-list a {
+  display: block;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.1s ease, color 0.1s ease;
+}
+
+.middle.folder .documents-list a:hover,
+.middle.folder .documents-list a:focus-visible {
+  background: var(--surface-raised);
+  color: var(--primary-hover);
+  text-decoration: none;
+  outline: none;
+}
+
+.middle.folder .empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
 @media (max-width: 640px) {
   .middle.folder > section {
     padding: 1.25rem;
+  }
+
+  .middle.folder .documents-list a {
+    padding: 0.5rem 0.2rem;
+    font-size: 0.92rem;
   }
 }

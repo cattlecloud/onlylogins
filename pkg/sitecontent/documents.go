@@ -38,14 +38,26 @@ type Note struct {
 	V  *conceal.Bytes
 }
 
+type DocumentListing struct {
+	ID    records.DocumentsAuto
+	Label string
+}
+
 type Document struct {
-	ID records.DocumentsAuto
+	ID    records.DocumentsAuto
+	Label string
+	// TODO get all the things
 }
 
 type CreateDocumentRequest struct {
 	User   users.Identity
 	Folder string
 	Label  string
+}
+
+type ListDocumentsRequest struct {
+	User   users.Identity
+	Folder string
 }
 
 // docRe restricts document labels to alphanumeric characters so as to be

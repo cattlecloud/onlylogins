@@ -26,6 +26,7 @@ type Documents interface {
 
 	// document operations
 	Create(scope.C, *sitecontent.CreateDocumentRequest) (records.DocumentsAuto, error)
+	List(scope.C, *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error)
 }
 
 type documentsql struct {
@@ -102,4 +103,31 @@ func isFolderMissing(err error) bool {
 		err.Error(),
 		"litesql: expected to affect 1 row, actual was 0",
 	)
+}
+
+func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to list documents: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select
+		d.id,
+		d.label
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ?
+	order by d.modification desc`
+
+	f := func(sf litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
+		listing := new(sitecontent.DocumentListing)
+		err := sf(&listing.ID, &listing.Label)
+		return listing, err
+	}
+
+	return litesql.QueryRows(ctx, tx, f, statement, request.User, request.Folder)
 }

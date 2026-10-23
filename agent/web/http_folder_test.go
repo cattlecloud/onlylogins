@@ -10,11 +10,13 @@ import (
 	"testing"
 	"time"
 
+	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/gorilla/mux"
 	"github.com/shoenig/test/must"
@@ -140,4 +142,90 @@ func TestFolder_CreateDocument_DuplicateLabel(t *testing.T) {
 	count, err := store.Documents().Count(t.Context())
 	must.NoError(t, err)
 	must.One(t, count)
+}
+
+func TestFolder_Get_Empty(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &folderHTTP{
+		log:         ulog.New("test"),
+		store:       store,
+		environment: env,
+		html:        ui.Load("folder.html"),
+	}
+
+	scache := mocks.NewSessions()
+	ss := sessions(handler, scache)
+
+	routes := mux.NewRouter()
+	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet)
+
+	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
+
+	request := requestGet(t, "/folders/miscellaneous", cookie)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `<h2>Documents</h2>`)
+	must.StrContains(t, body, "No documents yet")
+	must.StrContains(t, body, `class="empty"`)
+	must.StrNotContains(t, body, `class="documents-list"`)
+}
+
+func TestFolder_Get_WithDocuments(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &folderHTTP{
+		log:         ulog.New("test"),
+		store:       store,
+		environment: env,
+		html:        ui.Load("folder.html"),
+	}
+
+	scache := mocks.NewSessions()
+	ss := sessions(handler, scache)
+
+	routes := mux.NewRouter()
+	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet)
+
+	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
+
+	ctx, cancel := scope.TTL(timeout)
+	defer cancel()
+
+	_, err := store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+	})
+	must.NoError(t, err)
+
+	_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "gitlab",
+	})
+	must.NoError(t, err)
+
+	request := requestGet(t, "/folders/miscellaneous", cookie)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+
+	// the rendered list contains both labels as anchor text, in URLs that
+	// match the redirect target emitted by the POST handler
+	must.StrContains(t, body, `href="/folders/miscellaneous/github"`)
+	must.StrContains(t, body, `href="/folders/miscellaneous/gitlab"`)
+	must.StrContains(t, body, `class="documents-list"`)
+
+	// the empty-state copy is absent when there are documents
+	must.StrContains(t, body, `<h2>Documents</h2>`)
+	must.StrNotContains(t, body, "No documents yet")
+	must.StrNotContains(t, body, `class="empty"`)
 }
