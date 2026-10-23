@@ -9,10 +9,10 @@
         <span class="folder-label">add folders</span>
       </a>
       {{range .Section.Folders}}
-      <div class="folder">
+      <a href="/folders/{{.Label}}" class="folder" aria-label="{{.Label}}">
         <img class="folder-icon" src="{{Icon .Icon}}" alt="" aria-hidden="true">
         <span class="folder-label">{{.Label}}</span>
-      </div>
+      </a>
       {{end}}
     </section>
 

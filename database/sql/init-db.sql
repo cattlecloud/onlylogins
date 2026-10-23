@@ -1,3 +1,6 @@
+-- SPDX-License-Identifier: AGPL-3.0
+-- Copyright (c) 2026 Cattle Cloud LLC
+--
 -- init-db.sql; initialize the database, including migrations
 -- APPEND ONLY ONCE IN PRODUCTION
 
@@ -111,7 +114,6 @@ create table if not exists folders (
 
 -- upon inserting into the users table, automatically create a default
 -- "miscellaneous" folder for the new user (icon = 7, perma = 1)
-
 create trigger if not exists default_folder_after_user_insert
 after insert on users
 for each row
@@ -119,3 +121,91 @@ begin
     insert into folders (users_id, label, icon, perma)
     values (new.id, "miscellaneous", 7, 1);
 end;
+
+create table if not exists documents (
+    id integer primary key autoincrement,
+    -- auto
+
+    folders_id integer not null,
+    -- foreign key into folders; the folder in which this document belongs
+
+    label text check(length(label) > 0 and length(label) < 32) not null,
+    -- the name of the document; unique per folder
+
+    creation integer default (unixepoch('now')) not null,
+    -- creation timestamp
+
+    modification integer default (unixepoch('now')) not null,
+    -- modification timestamp
+
+    unique(folders_id, label),
+    foreign key (folders_id) references folders(id) on delete cascade
+) strict;
+
+create table if not exists weblinks (
+    id integer primary key autoincrement,
+    -- auto
+
+    did integer not null,
+    -- foreign key into documents
+
+    v blob check(length(v) > 0 and length(v) < 1024) not null,
+    -- encrypted weblink value
+
+    foreign key (did) references documents(id) on delete cascade
+) strict;
+
+create table if not exists usernames (
+    id integer primary key autoincrement,
+    -- auto
+
+    did integer not null,
+    -- foreign key into documents
+
+    v blob check(length(v) > 0 and length(v) < 1024) not null,
+    -- encrypted username value
+
+    foreign key (did) references documents(id) on delete cascade
+) strict;
+
+create table if not exists passwords (
+    id integer primary key autoincrement,
+    -- auto
+
+    did integer not null,
+    -- foreign key into documents
+
+    v blob check(length(v) > 0 and length(v) < 1024) not null,
+    -- encrypted password value
+
+    foreign key (did) references documents(id) on delete cascade
+) strict;
+
+create table if not exists keyvals (
+    id integer primary key autoincrement,
+    -- auto
+
+    did integer not null,
+    -- foreign key into documents
+
+    k text check(length(k) > 0 and length(k) < 1024) not null,
+    -- the name of the key:value pair
+
+    v blob check(length(v) > 0 and length(v) < 1024) not null,
+    -- encrypted value of the key:value pair
+
+    foreign key (did) references documents(id) on delete cascade
+) strict;
+
+create table if not exists notes (
+    id integer primary key autoincrement,
+    -- auto
+
+    did integer not null,
+    -- foreign key into documents
+
+    v blob check(length(v) > 0 and length(v) < 8192) not null,
+    -- encrypted content of the note
+
+    foreign key (did) references documents(id) on delete cascade
+) strict;

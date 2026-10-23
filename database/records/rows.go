@@ -8,4 +8,22 @@ import "cattlecloud.net/go/litesql"
 type (
 	// table folders
 	FoldersAuto litesql.ID
+
+	// table documents
+	DocumentsAuto litesql.ID
+
+	// table weblinks
+	WeblinksAuto litesql.ID
+
+	// table usernames
+	UsernamesAuto litesql.ID
+
+	// table passwords
+	PasswordsAuto litesql.ID
+
+	// table keyvals
+	KeyvalsAuto litesql.ID
+
+	// table notes
+	NotesAuto litesql.ID
 )
