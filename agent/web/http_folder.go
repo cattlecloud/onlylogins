@@ -22,8 +22,8 @@ import (
 )
 
 type folderContent struct {
-	Name  string
-	Items []string
+	Name      string
+	Documents []*sitecontent.DocumentListing
 }
 
 type folderHTTP struct {
@@ -77,6 +77,14 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 
 	name := h.folder(r)
 
+	documents, lerr := h.store.Documents().List(ctx, &sitecontent.ListDocumentsRequest{
+		User:   session.Identity(),
+		Folder: name,
+	})
+	if lerr != nil {
+		return abort(h.log, w, lerr)
+	}
+
 	head := &pages.Head{
 		Title:       "Manage folder | OnlyLogins",
 		Styles:      []string{"folder.css"},
@@ -85,8 +93,8 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 	}
 
 	middle := &folderContent{
-		Name:  name,
-		Items: []string{"hello"},
+		Name:      name,
+		Documents: documents,
 	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)

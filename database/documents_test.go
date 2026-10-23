@@ -5,6 +5,7 @@ package database
 
 import (
 	"testing"
+	"time"
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/onlylogins/database/records"
@@ -72,5 +73,47 @@ func TestDocuments_Create(t *testing.T) {
 		_, err := d.Create(ctx, request)
 		must.Error(t, err)
 		must.ErrorIs(t, err, ErrDocumentLabelTaken)
+	})
+}
+
+func TestDocuments_List(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
+
+	t.Run("empty", func(t *testing.T) {
+		list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
+			User:   mocks.Nobody,
+			Folder: folder,
+		})
+		must.NoError(t, err)
+		must.SliceEmpty(t, list)
+	})
+
+	t.Run("after inserts", func(t *testing.T) {
+		id1 := insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		// sleep before inserting second document
+		time.Sleep(time.Second)
+
+		// insert second document
+		id2 := insertDocument(t, ctx, db, mocks.Nobody, "gitlab")
+
+		list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
+			User:   mocks.Nobody,
+			Folder: folder,
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 2, list)
+
+		// most recent insert appears first
+		must.Eq(t, id2, list[0].ID)
+		must.Eq(t, "gitlab", list[0].Label)
+
+		// first insert appears last
+		must.Eq(t, id1, list[1].ID)
+		must.Eq(t, "github", list[1].Label)
 	})
 }

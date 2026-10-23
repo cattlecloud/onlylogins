@@ -21,11 +21,18 @@
   </section>
 
   <section>
-    <p>List of documents</p>
-    <!-- TODO: we will show a list of documents in this folder.
-      Those documents do not actually exist yet in our code base
-      so just ignore this section for now.
-    -->
+    <h2>Documents</h2>
+    {{if .Section.Documents}}
+    <ul class="documents-list">
+      {{range .Section.Documents}}
+      <li>
+        <a href="/folders/{{$.Section.Name}}/{{.Label}}">{{.Label}}</a>
+      </li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">No documents yet</p>
+    {{end}}
   </section>
 </div>
 {{end}}
