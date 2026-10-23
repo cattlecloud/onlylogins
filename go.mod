@@ -10,6 +10,7 @@ require (
 	cattlecloud.net/go/scope v1.3.0
 	cattlecloud.net/go/sitemaps v1.0.2
 	cattlecloud.net/go/ulog v1.1.3
+	cattlecloud.net/go/urlpath v1.1.0
 	cattlecloud.net/go/webtools v0.6.4
 	github.com/BurntSushi/toml v1.6.0
 	github.com/VictoriaMetrics/metrics v1.44.1

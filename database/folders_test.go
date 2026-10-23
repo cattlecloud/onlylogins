@@ -1,7 +1,9 @@
+// SPDX-License-Identifier: AGPL-3.0
+// Copyright (c) 2026 Cattle Cloud LLC
+
 package database
 
 import (
-	"errors"
 	"testing"
 
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
@@ -69,6 +71,6 @@ func TestFolders_Create(t *testing.T) {
 		}
 		err := f.Create(ctx, request)
 		must.Error(t, err)
-		must.True(t, errors.Is(err, ErrFolderLabelTaken))
+		must.ErrorIs(t, err, ErrFolderLabelTaken)
 	})
 }

@@ -1,0 +1,31 @@
+{{define "middle"}}
+<div class="middle folder">
+  <section>
+    <h1>Add a document to <span>{{.Section.Name}}</span></h1>
+    <form hx-post="/folders/{{.Section.Name}}">
+      <div class="field">
+        <label for="document-label">Document name</label>
+        <input
+          type="text"
+          id="document-label"
+          name="label"
+          placeholder="name of document"
+          pattern="[a-zA-Z0-9]+"
+          title="alphanumeric letters or numbers only"
+          autocomplete="off"
+          required>
+      </div>
+
+      <button type="submit">Create</button>
+    </form>
+  </section>
+
+  <section>
+    <p>List of documents</p>
+    <!-- TODO: we will show a list of documents in this folder.
+      Those documents do not actually exist yet in our code base
+      so just ignore this section for now.
+    -->
+  </section>
+</div>
+{{end}}
