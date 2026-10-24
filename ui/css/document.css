@@ -1,0 +1,395 @@
+.middle.document {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1rem 0 2rem;
+}
+
+.middle.document > section {
+  width: 100%;
+  max-width: 640px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.75rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.middle.document .doc-header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.middle.document .doc-header h1 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.middle.document .back-link {
+  flex-shrink: 0;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.middle.document .back-link:hover,
+.middle.document .back-link:focus-visible {
+  color: var(--primary);
+  text-decoration: underline;
+  outline: none;
+}
+
+.middle.document h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.middle.document .section-header {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.middle.document .section-header h3 {
+  margin: 0;
+}
+
+.middle.document .add-btn {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .add-btn:hover,
+.middle.document .add-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document #weblinks-form-container {
+  margin-bottom: 0.75rem;
+}
+
+.middle.document .add-weblink-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.document .add-weblink-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .add-weblink-form .url-input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .add-weblink-form .url-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .add-weblink-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .add-weblink-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .add-weblink-form .cancel {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.document .add-weblink-form .cancel:hover,
+.middle.document .add-weblink-form .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.middle.document .add-weblink-form #error:empty {
+  display: none;
+}
+
+.middle.document .add-weblink-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.middle.document .fields .empty-li {
+  border-top: none;
+  padding: 0.25rem 0;
+}
+
+.middle.document .fields .empty-li .empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.middle.document .fields {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.middle.document .fields li {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.55rem 0.25rem;
+  font-size: 0.95rem;
+  border-top: 1px solid var(--border);
+}
+
+.middle.document .fields li:first-child {
+  border-top: none;
+}
+
+.middle.document .fields .key {
+  flex-shrink: 0;
+  min-width: 8rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+
+.middle.document .fields .value {
+  color: var(--text);
+  word-break: break-all;
+}
+
+.middle.document .fields.weblinks a {
+  color: var(--primary);
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.middle.document .fields.weblinks a:hover,
+.middle.document .fields.weblinks a:focus-visible {
+  color: var(--primary-hover);
+  text-decoration: underline;
+  outline: none;
+}
+
+.middle.document .fields .weblink-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.middle.document .fields .weblink-value {
+  flex: 1;
+  min-width: 0;
+}
+
+.middle.document .fields .weblink-actions {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.middle.document .fields .weblink-edit-btn,
+.middle.document .fields .weblink-delete-btn {
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .fields .weblink-edit-btn img,
+.middle.document .fields .weblink-delete-btn img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  filter: invert(1) opacity(0.7);
+  transition: filter 0.15s ease;
+}
+
+.middle.document .fields .weblink-edit-btn:hover img,
+.middle.document .fields .weblink-edit-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .fields .weblink-delete-btn:hover img,
+.middle.document .fields .weblink-delete-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
+}
+
+.middle.document .fields .weblink-edit-btn:hover,
+.middle.document .fields .weblink-edit-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .weblink-delete-btn:hover,
+.middle.document .fields .weblink-delete-btn:focus-visible {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .weblink-row.editing {
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form .url-input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form .url-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form #error:empty {
+  display: none;
+}
+
+.middle.document .fields .weblink-row.editing .weblink-edit-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.middle.document .note {
+  width: 100%;
+  white-space: pre-wrap;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.middle.document .empty {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+@media (max-width: 640px) {
+  .middle.document > section {
+    padding: 1.25rem;
+  }
+
+  .middle.document .doc-header {
+    flex-flow: column nowrap;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .middle.document .fields li {
+    padding: 0.5rem 0.2rem;
+    font-size: 0.92rem;
+  }
+
+  .middle.document .fields .key {
+    min-width: 5.5rem;
+  }
+}

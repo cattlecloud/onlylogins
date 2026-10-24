@@ -12,8 +12,224 @@ import (
 	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
+	"github.com/shoenig/go-conceal"
 	"github.com/shoenig/test/must"
 )
+
+func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity,
+	doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
+	t.Helper()
+
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(url))
+	must.NoError(t, cerr)
+
+	id, err := store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
+		User:      user,
+		Folder:    miscFolderOf(t, ctx, store, user),
+		Document:  doc,
+		URL:       url,
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+	return id
+}
+
+func TestDocuments_CreateWeblink(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		must.Positive(t, id)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Weblinks)
+		must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://attacker.example.com"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			URL:       "https://attacker.example.com",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://nope.example.com"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "nope",
+			URL:       "https://nope.example.com",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_UpdateWeblink(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://original.example.com", crypt)
+
+		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://updated.example.com"))
+		must.NoError(t, cerr)
+
+		uerr := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
+			ID:        id,
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			URL:       "https://updated.example.com",
+			Encrypted: newCiphertext,
+		})
+		must.NoError(t, uerr)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Weblinks)
+		must.Eq(t, "https://updated.example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://attacker.example.com"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
+			ID:        id,
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			URL:       "https://attacker.example.com",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent weblink", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://nowhere.example.com"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
+			ID:        records.WeblinksAuto(9999),
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			URL:       "https://nowhere.example.com",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_DeleteWeblink(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Weblinks)
+
+		derr := db.Documents().DeleteWeblink(ctx, &sitecontent.DeleteWeblinkRequest{
+			ID:       doc.Weblinks[0].ID,
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.NoError(t, derr)
+
+		doc, err = db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 0, doc.Weblinks)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+
+		err := db.Documents().DeleteWeblink(ctx, &sitecontent.DeleteWeblinkRequest{
+			ID:       id,
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent weblink", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		err := db.Documents().DeleteWeblink(ctx, &sitecontent.DeleteWeblinkRequest{
+			ID:       records.WeblinksAuto(9999),
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
 
 func TestDocuments_Count(t *testing.T) {
 	t.Parallel()

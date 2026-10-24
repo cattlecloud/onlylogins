@@ -1,0 +1,18 @@
+{{define "weblink_row"}}
+<li class="weblink-row">
+  <a class="weblink-value" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.URL}}</a>
+  <span class="weblink-actions">
+    <button class="weblink-edit-btn"
+      hx-get="/internal/weblink/edit/{{.Folder}}/{{.Document}}/{{.ID}}?url={{.URL}}"
+      hx-target="closest .weblink-row"
+      hx-swap="outerHTML"
+      title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+    <button class="weblink-delete-btn"
+      hx-delete="/internal/weblink/delete/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-confirm="Delete this weblink?"
+      hx-target="closest .weblink-row"
+      hx-swap="delete"
+      title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+  </span>
+</li>
+{{end}}

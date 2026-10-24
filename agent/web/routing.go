@@ -52,6 +52,16 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store: a.store,
 	})
 
+	a.handleComponent(router, &weblinkHTMX{
+		log:   ulog.New("htmx/weblink"),
+		store: a.store,
+	})
+
+	a.handleComponent(router, &weblinkEntryHTMX{
+		log:   ulog.New("htmx/weblink/entry"),
+		store: a.store,
+	})
+
 	a.handleModerate(router, &moderationHTTP{
 		log:   ulog.New("http/mod/home"),
 		store: a.store,
@@ -110,6 +120,13 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store:       a.store,
 		environment: a.environment,
 		html:        ui.Load("help.html"),
+	})
+
+	a.handleNormal(router, &documentHTTP{
+		log:         ulog.New("document"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("document.html"),
 	})
 
 	a.handleNormal(router, &folderHTTP{
