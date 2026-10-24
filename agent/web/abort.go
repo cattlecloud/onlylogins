@@ -16,7 +16,15 @@ import (
 var (
 	ErrPageProblem    = errors.New("problem loading page")
 	ErrMissingSession = errors.New("no such session")
+	ErrMissingVault   = errors.New("no encryption key cookie")
+	ErrInvalidVault   = errors.New("invalid encryption key cookie")
 )
+
+func login(log *ulog.Log, w http.ResponseWriter, r *http.Request) error {
+	log.T.Fmt("redirecting user to login page")
+	http.Redirect(w, r, "/login", http.StatusTemporaryRedirect)
+	return nil
+}
 
 func abort(log *ulog.Log, w http.ResponseWriter, err error) error {
 	log.E.Fmt("aborting request: %v", err)

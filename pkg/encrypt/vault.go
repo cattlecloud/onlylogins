@@ -19,7 +19,16 @@ type Vault interface {
 }
 
 type vault struct {
+	_   [0]func()
 	key [32]byte
+}
+
+func (v *vault) String() string {
+	return "(vault)"
+}
+
+func (v *vault) GoString() string {
+	return "encrypt.vault{}"
 }
 
 func New(key *conceal.Bytes) Vault {

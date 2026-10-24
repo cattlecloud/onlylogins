@@ -1,0 +1,22 @@
+{{define "weblink_edit_form"}}
+<li class="weblink-row editing">
+  <form
+    class="weblink-edit-form"
+    hx-put="/internal/weblink/update/{{.Folder}}/{{.Document}}/{{.ID}}"
+    hx-target="closest .weblink-row"
+    hx-swap="outerHTML"
+  >
+    <div class="form-row">
+      <input
+        type="text" name="url"
+        class="url-input"
+        value="{{.URL}}"
+        autocomplete="off"
+        required
+        autofocus>
+      <button type="submit" class="submit">Update</button>
+    </div>
+    <span id="error"></span>
+  </form>
+</li>
+{{end}}

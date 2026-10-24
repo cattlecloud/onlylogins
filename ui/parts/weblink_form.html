@@ -1,0 +1,21 @@
+{{define "weblink_form"}}
+<form
+  class="add-weblink-form"
+  hx-post="/internal/weblink/create/{{.Folder}}/{{.Document}}"
+>
+  <div class="form-row">
+    <input
+      type="text" name="url"
+      class="url-input"
+      placeholder="https://example.com"
+      autocomplete="off"
+      required
+      autofocus>
+    <button type="submit" class="submit">Add</button>
+    <button type="button" class="cancel"
+      onclick="document.getElementById('weblinks-form-container').innerHTML=''"
+    >Cancel</button>
+  </div>
+  <span id="error"></span>
+</form>
+{{end}}

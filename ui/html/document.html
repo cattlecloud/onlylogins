@@ -1,0 +1,102 @@
+{{define "middle"}}
+<div class="middle document">
+  <section class="doc-header">
+    <h1>{{.Section.Document.Label}}</h1>
+    <a class="back-link" href="/folders/{{.Section.Document.Folder}}">&larr; back to {{.Section.Document.Folder}}</a>
+  </section>
+
+  <section class="doc-section">
+    <div class="section-header">
+      <h3>Web Links</h3>
+      <button
+        class="add-btn"
+        hx-get="/internal/weblink/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-target="#weblinks-form-container"
+        hx-swap="innerHTML"
+      >+ Weblink</button>
+    </div>
+    <div id="weblinks-form-container"></div>
+    <ul id="weblinks-list" class="fields weblinks">
+      {{if .Section.Document.Weblinks}}
+        {{range .Section.Document.Weblinks}}
+        {{$u := .Unlock $.Section.Vault}}
+        <li class="weblink-row">
+          <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
+          <span class="weblink-actions">
+            <button class="weblink-edit-btn"
+              hx-get="/internal/weblink/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}?url={{$u}}"
+              hx-target="closest .weblink-row"
+              hx-swap="outerHTML"
+              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+            <button class="weblink-delete-btn"
+              hx-delete="/internal/weblink/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-confirm="Delete this weblink?"
+              hx-target="closest .weblink-row"
+              hx-swap="delete"
+              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+          </span>
+        </li>
+        {{end}}
+      {{else}}
+        <li class="empty-li"><p class="empty">No web links yet</p></li>
+      {{end}}
+    </ul>
+  </section>
+
+  <section class="doc-section">
+    <h3>Usernames</h3>
+    {{if .Section.Document.Usernames}}
+    <ul class="fields usernames">
+      {{range .Section.Document.Usernames}}
+      {{$u := .Unlock $.Section.Vault}}
+      <li><span class="value">{{$u}}</span></li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">No usernames yet</p>
+    {{end}}
+  </section>
+
+  <section class="doc-section">
+    <h3>Passwords</h3>
+    {{if .Section.Document.Passwords}}
+    <ul class="fields passwords">
+      {{range .Section.Document.Passwords}}
+      {{$u := .Unlock $.Section.Vault}}
+      <li><span class="value">{{$u}}</span></li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">No passwords yet</p>
+    {{end}}
+  </section>
+
+  <section class="doc-section">
+    <h3>Key Values</h3>
+    {{if .Section.Document.Keyvals}}
+    <ul class="fields keyvals">
+      {{range .Section.Document.Keyvals}}
+      {{$u := .Unlock $.Section.Vault}}
+      <li><span class="key">{{.K.Unveil}}</span><span class="value">{{$u}}</span></li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">No key/value pairs yet</p>
+    {{end}}
+  </section>
+
+  <section class="doc-section">
+    <h3>Notes</h3>
+    {{if .Section.Document.Notes}}
+    <ul class="fields notes">
+      {{range .Section.Document.Notes}}
+      {{$u := .Unlock $.Section.Vault}}
+      <li><div class="note">{{$u}}</div></li>
+      {{end}}
+    </ul>
+    {{else}}
+    <p class="empty">No notes yet</p>
+    {{end}}
+  </section>
+</div>
+{{end}}
