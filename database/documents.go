@@ -48,7 +48,13 @@ type Documents interface {
 	UpdatePassword(scope.C, *sitecontent.UpdatePasswordRequest) error
 	DeletePassword(scope.C, *sitecontent.DeletePasswordRequest) error
 
-	// document > note (at most one per document)
+	// document > keyvals
+	CreateKeyval(scope.C, *sitecontent.CreateKeyvalRequest) (records.KeyvalsAuto, error)
+	GetKeyval(scope.C, *sitecontent.GetKeyvalRequest) (*sitecontent.Keyval, error)
+	UpdateKeyval(scope.C, *sitecontent.UpdateKeyvalRequest) error
+	DeleteKeyval(scope.C, *sitecontent.DeleteKeyvalRequest) error
+
+	// document > note
 	CreateNote(scope.C, *sitecontent.CreateNoteRequest) (records.NotesAuto, error)
 	GetNote(scope.C, *sitecontent.GetNoteRequest) (*sitecontent.Note, error)
 	UpdateNote(scope.C, *sitecontent.UpdateNoteRequest) error
@@ -129,6 +135,13 @@ func isNoteAlreadyExists(err error) bool {
 	return err != nil && strings.Contains(
 		err.Error(),
 		"UNIQUE constraint failed: notes.did",
+	)
+}
+
+func isKeyvalKeyExists(err error) bool {
+	return err != nil && strings.Contains(
+		err.Error(),
+		"UNIQUE constraint failed: keyvals.did, keyvals.k",
 	)
 }
 
@@ -766,6 +779,162 @@ func (s *documentsql) DeleteNote(ctx scope.C, request *sitecontent.DeleteNoteReq
 		}
 		s.log.E.Fmt("unable to delete note: %v", rerr)
 		return fmt.Errorf("unable to delete note: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) CreateKeyval(ctx scope.C, request *sitecontent.CreateKeyvalRequest) (records.KeyvalsAuto, error) {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return litesql.TxFailure, xerr
+	}
+	defer done()
+
+	const statement = `
+	insert into keyvals (did, k, v)
+	select d.id, ?, ?
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?`
+
+	id, rerr := s.ldb.ExecID(ctx, tx, statement,
+		request.Key,
+		request.Encrypted.Unveil(),
+		request.User,
+		request.Folder,
+		request.Document,
+	)
+	switch {
+	case isKeyvalKeyExists(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", sitecontent.ErrKeyvalKeyExists)
+	case isFolderMissing(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", ErrDocumentNotFound)
+	case rerr != nil:
+		s.log.E.Fmt("unable to insert keyval: %v", rerr)
+		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", rerr)
+	}
+
+	return records.KeyvalsAuto(id), tx.Commit()
+}
+
+func (s *documentsql) GetKeyval(ctx scope.C, request *sitecontent.GetKeyvalRequest) (*sitecontent.Keyval, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get keyval: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select k.id, k.k, k.v
+	from keyvals k
+	join documents d on d.id = k.did
+	join folders f on f.id = d.folders_id
+	where
+		k.id = ? and
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	limit 1`
+
+	scanKeyval := func(sf litesql.ScanFunc) (*sitecontent.Keyval, error) {
+		kv := new(sitecontent.Keyval)
+		var k string
+		var v []byte
+		err := sf(&kv.ID, &k, &v)
+		kv.K = conceal.New(k)
+		kv.V = conceal.NewBytes(v)
+		return kv, err
+	}
+	rows, kerr := litesql.QueryRows(ctx, tx, scanKeyval, statement,
+		request.ID, request.User, request.Folder, request.Document,
+	)
+	if kerr != nil {
+		return nil, fmt.Errorf("unable to get keyval: %w", kerr)
+	}
+	switch {
+	case errors.Is(kerr, sql.ErrNoRows):
+		return nil, fmt.Errorf("unable to get keyval: %w", ErrDocumentNotFound)
+	case len(rows) == 0:
+		return nil, nil //nolint:nilnil
+	}
+	return rows[0], nil
+}
+
+func (s *documentsql) UpdateKeyval(ctx scope.C, request *sitecontent.UpdateKeyvalRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to update keyval: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	update keyvals
+	set k = ?, v = ?
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.Key,
+		request.Encrypted.Unveil(),
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		switch {
+		case isKeyvalKeyExists(rerr):
+			return fmt.Errorf("unable to update keyval: %w", sitecontent.ErrKeyvalKeyExists)
+		case isFolderMissing(rerr):
+			return fmt.Errorf("unable to update keyval: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to update keyval: %v", rerr)
+		return fmt.Errorf("unable to update keyval: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) DeleteKeyval(ctx scope.C, request *sitecontent.DeleteKeyvalRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to delete keyval: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	delete from keyvals
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to delete keyval: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to delete keyval: %v", rerr)
+		return fmt.Errorf("unable to delete keyval: %w", rerr)
 	}
 
 	return tx.Commit()

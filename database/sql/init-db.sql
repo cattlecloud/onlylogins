@@ -194,6 +194,9 @@ create table if not exists keyvals (
     v blob check(length(v) > 0 and length(v) < 1024) not null,
     -- encrypted value of the key:value pair
 
+    unique(did, k),
+    -- at most one row per (document, key) pair
+
     foreign key (did) references documents(id) on delete cascade
 ) strict;
 

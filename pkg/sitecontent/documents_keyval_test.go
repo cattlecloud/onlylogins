@@ -1,0 +1,174 @@
+// SPDX-License-Identifier: AGPL-3.0
+// Copyright (c) 2026 Cattle Cloud LLC
+
+package sitecontent
+
+import (
+	"strings"
+	"testing"
+
+	"github.com/shoenig/test/must"
+)
+
+func TestValidateKeyvalValue(t *testing.T) {
+	t.Parallel()
+
+	t.Run("empty is rejected", func(t *testing.T) {
+		err := ValidateKeyvalValue("")
+		must.Error(t, err)
+	})
+
+	t.Run("whitespace only is accepted", func(t *testing.T) {
+		// whitespace is valid in values, anywhere
+		err := ValidateKeyvalValue("   ")
+		must.NoError(t, err)
+	})
+
+	t.Run("normal value is accepted", func(t *testing.T) {
+		err := ValidateKeyvalValue("s3cret!")
+		must.NoError(t, err)
+	})
+
+	t.Run("max length is accepted", func(t *testing.T) {
+		err := ValidateKeyvalValue(strings.Repeat("a", maxKeyvalValueLength))
+		must.NoError(t, err)
+	})
+
+	t.Run("over max length is rejected", func(t *testing.T) {
+		err := ValidateKeyvalValue(strings.Repeat("a", maxKeyvalValueLength+1))
+		must.Error(t, err)
+	})
+}
+
+func TestCreateKeyvalRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &CreateKeyvalRequest{Folder: "f", Document: "d", Key: "k"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing folder is rejected", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Document: "d", Key: "k"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing document is rejected", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Folder: "f", Key: "k"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("empty key is rejected", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Folder: "f", Document: "d", Key: "  "}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("whitespacey key is trimmed", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Folder: "f", Document: "d", Key: "  api_key  "}
+		err := r.Validate()
+		must.NoError(t, err)
+		must.Eq(t, "api_key", r.Key)
+	})
+
+	t.Run("overlong key is rejected", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Folder: "f", Document: "d",
+			Key: strings.Repeat("a", maxKeyLength+1)}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &CreateKeyvalRequest{User: 1, Folder: "f", Document: "d",
+			Key: "api_endpoint"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
+func TestUpdateKeyvalRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing id is rejected", func(t *testing.T) {
+		r := &UpdateKeyvalRequest{User: 1, Folder: "f", Document: "d", Key: "k"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("empty key is rejected", func(t *testing.T) {
+		r := &UpdateKeyvalRequest{ID: 1, User: 1, Folder: "f", Document: "d",
+			Key: "   "}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path trims key", func(t *testing.T) {
+		r := &UpdateKeyvalRequest{ID: 1, User: 1, Folder: "f", Document: "d",
+			Key: "  k  "}
+		err := r.Validate()
+		must.NoError(t, err)
+		must.Eq(t, "k", r.Key)
+	})
+}
+
+func TestDeleteKeyvalRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing id is rejected", func(t *testing.T) {
+		r := &DeleteKeyvalRequest{User: 1, Folder: "f", Document: "d"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &DeleteKeyvalRequest{ID: 1, Folder: "f", Document: "d"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing folder is rejected", func(t *testing.T) {
+		r := &DeleteKeyvalRequest{ID: 1, User: 1, Document: "d"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing document is rejected", func(t *testing.T) {
+		r := &DeleteKeyvalRequest{ID: 1, User: 1, Folder: "f"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &DeleteKeyvalRequest{ID: 1, User: 1, Folder: "f", Document: "d"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
+func TestGetKeyvalRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &GetKeyvalRequest{ID: 1, User: 1, Folder: "f", Document: "d"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+
+	for _, tc := range []struct {
+		name string
+		r    *GetKeyvalRequest
+	}{
+		{"missing id", &GetKeyvalRequest{User: 1, Folder: "f", Document: "d"}},
+		{"missing user", &GetKeyvalRequest{ID: 1, Folder: "f", Document: "d"}},
+		{"missing folder", &GetKeyvalRequest{ID: 1, User: 1, Document: "d"}},
+		{"missing document", &GetKeyvalRequest{ID: 1, User: 1, Folder: "f"}},
+	} {
+		t.Run(tc.name+" is rejected", func(t *testing.T) {
+			err := tc.r.Validate()
+			must.Error(t, err)
+		})
+	}
+}
