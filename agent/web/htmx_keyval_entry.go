@@ -73,17 +73,17 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 		return abort(h.log, w, verr)
 	}
 
-	dbKeyval, gerr := h.store.Documents().GetKeyval(ctx, &sitecontent.GetKeyvalRequest{
+	kv, kverr := h.store.Documents().GetKeyval(ctx, &sitecontent.GetKeyvalRequest{
 		ID:       keyvalID,
 		User:     session.Identity(),
 		Folder:   folder,
 		Document: document,
 	})
-	if gerr != nil {
-		return abort(h.log, w, gerr)
+	if kverr != nil {
+		return abort(h.log, w, kverr)
 	}
-	if dbKeyval == nil || dbKeyval.ID != keyvalID {
-		return abort(h.log, w, errors.New("record not found"))
+	if kv == nil || kv.ID != keyvalID {
+		return abort(h.log, w, errors.New("kv not found"))
 	}
 
 	fields := struct {
@@ -94,8 +94,8 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 		Document string
 	}{
 		ID:       keyvalID,
-		Key:      dbKeyval.K.Unveil(),
-		Value:    dbKeyval.Unlock(vault),
+		Key:      kv.K.Unveil(),
+		Value:    kv.Unlock(vault),
 		Folder:   folder,
 		Document: document,
 	}
