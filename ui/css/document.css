@@ -257,6 +257,256 @@
   color: var(--danger);
 }
 
+.middle.document #passwords-form-container {
+  margin-bottom: 0.75rem;
+}
+
+.middle.document .add-password-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.document .add-password-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .add-password-form .password-input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .add-password-form .password-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .add-password-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .add-password-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .add-password-form .cancel {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.document .add-password-form .cancel:hover,
+.middle.document .add-password-form .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.middle.document .add-password-form #error:empty {
+  display: none;
+}
+
+.middle.document .add-password-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+.middle.document .form-hint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.middle.document .form-hint a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.middle.document .form-hint a:hover,
+.middle.document .form-hint a:focus-visible {
+  color: var(--primary-hover);
+  text-decoration: underline;
+  outline: none;
+}
+
+.middle.document .fields.passwords .password-value {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.middle.document .fields .password-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.middle.document .fields .password-actions {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.middle.document .fields .password-copy-btn,
+.middle.document .fields .password-show-btn,
+.middle.document .fields .password-hide-btn,
+.middle.document .fields .password-edit-btn,
+.middle.document .fields .password-delete-btn {
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.3rem 0.55rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .fields .password-copy-btn:hover,
+.middle.document .fields .password-copy-btn:focus-visible,
+.middle.document .fields .password-show-btn:hover,
+.middle.document .fields .password-show-btn:focus-visible,
+.middle.document .fields .password-hide-btn:hover,
+.middle.document .fields .password-hide-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .password-edit-btn img,
+.middle.document .fields .password-delete-btn img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  filter: invert(1) opacity(0.7);
+  transition: filter 0.15s ease;
+}
+
+.middle.document .fields .password-edit-btn:hover img,
+.middle.document .fields .password-edit-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .fields .password-delete-btn:hover img,
+.middle.document .fields .password-delete-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
+}
+
+.middle.document .fields .password-edit-btn:hover,
+.middle.document .fields .password-edit-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .password-delete-btn:hover,
+.middle.document .fields .password-delete-btn:focus-visible {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .password-row.editing {
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.middle.document .fields .password-row.editing .password-edit-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+.middle.document .fields .password-row.editing .password-edit-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .fields .password-row.editing .password-edit-form .password-input {
+  flex: 1;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .fields .password-row.editing .password-edit-form .password-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .fields .password-row.editing .password-edit-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .fields .password-row.editing .password-edit-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .fields .password-row.editing .password-edit-form #error:empty {
+  display: none;
+}
+
+.middle.document .fields .password-row.editing .password-edit-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
 .middle.document .fields .empty-li {
   border-top: none;
   padding: 0.25rem 0;

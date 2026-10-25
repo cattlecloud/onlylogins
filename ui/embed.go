@@ -19,6 +19,7 @@ import (
 //go:embed html/*
 //go:embed css/*
 //go:embed images/*
+//go:embed scripts/*
 var FileTree embed.FS
 
 // HTMX contains templates for components rendered dynamically via htmx.

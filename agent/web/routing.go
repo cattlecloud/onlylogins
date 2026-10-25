@@ -72,6 +72,16 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store: a.store,
 	})
 
+	a.handleComponent(router, &passwordHTMX{
+		log:   ulog.New("htmx/password"),
+		store: a.store,
+	})
+
+	a.handleComponent(router, &passwordEntryHTMX{
+		log:   ulog.New("htmx/password/entry"),
+		store: a.store,
+	})
+
 	a.handleModerate(router, &moderationHTTP{
 		log:   ulog.New("http/mod/home"),
 		store: a.store,

@@ -16,8 +16,7 @@ import (
 	"github.com/shoenig/test/must"
 )
 
-func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity,
-	doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
+func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
 	t.Helper()
 
 	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(url))
@@ -34,8 +33,7 @@ func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity,
 	return id
 }
 
-func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity,
-	doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
+func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
 	t.Helper()
 
 	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(username))
@@ -49,6 +47,24 @@ func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity,
 		Encrypted: ciphertext,
 	})
 	must.NoError(t, err)
+
+	return id
+}
+
+func insertPassword(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, password string, crypt mocks.TestCrypt) records.PasswordsAuto {
+	t.Helper()
+
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(password))
+	must.NoError(t, cerr)
+
+	id, err := store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
+		User:      user,
+		Folder:    miscFolderOf(t, ctx, store, user),
+		Document:  doc,
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+
 	return id
 }
 
@@ -411,7 +427,7 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
 		})
 		must.NoError(t, err)
-		must.SliceLen(t, 0, doc.Usernames)
+		must.SliceEmpty(t, doc.Usernames)
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
@@ -446,6 +462,198 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 	})
 }
 
+func TestDocuments_CreatePassword(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
+		must.Positive(t, id)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Passwords)
+		must.Eq(t, "s3cret!", doc.Passwords[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("evilpass"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nope"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "nope",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_UpdatePassword(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "oldpass", crypt)
+
+		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("newpass1"))
+		must.NoError(t, cerr)
+
+		uerr := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
+			ID:        id,
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: newCiphertext,
+		})
+		must.NoError(t, uerr)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Passwords)
+		must.Eq(t, "newpass1", doc.Passwords[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", crypt)
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacked!"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
+			ID:        id,
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent password", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nothing"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
+			ID:        records.PasswordsAuto(9999),
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_DeletePassword(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Passwords)
+
+		derr := db.Documents().DeletePassword(ctx, &sitecontent.DeletePasswordRequest{
+			ID:       doc.Passwords[0].ID,
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.NoError(t, derr)
+
+		doc, err = db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 0, doc.Passwords)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", crypt)
+
+		err := db.Documents().DeletePassword(ctx, &sitecontent.DeletePasswordRequest{
+			ID:       id,
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent password", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		err := db.Documents().DeletePassword(ctx, &sitecontent.DeletePasswordRequest{
+			ID:       records.PasswordsAuto(9999),
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
 func TestDocuments_Count(t *testing.T) {
 	t.Parallel()
 
@@ -457,13 +665,14 @@ func TestDocuments_Count(t *testing.T) {
 	must.Zero(t, count)
 }
 
-// miscFolderOf returns the label of the user's default "miscellaneous" folder,
 func miscFolderOf(t *testing.T, ctx scope.C, store Store, user users.Identity) string {
 	t.Helper()
+
 	list, err := store.Folders().List(ctx, user)
 	must.NoError(t, err)
 	must.SliceLen(t, 1, list)
 	must.Eq(t, "miscellaneous", list[0].Label)
+
 	return list[0].Label
 }
 
