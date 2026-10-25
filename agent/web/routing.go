@@ -82,6 +82,16 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store: a.store,
 	})
 
+	a.handleComponent(router, &keyvalHTMX{
+		log:   ulog.New("htmx/keyval"),
+		store: a.store,
+	})
+
+	a.handleComponent(router, &keyvalEntryHTMX{
+		log:   ulog.New("htmx/keyval/entry"),
+		store: a.store,
+	})
+
 	a.handleComponent(router, &noteHTMX{
 		log:   ulog.New("htmx/note"),
 		store: a.store,

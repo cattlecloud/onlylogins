@@ -1,0 +1,20 @@
+{{define "keyval_row"}}
+<li class="keyval-row" data-value="{{.Value}}">
+  <span class="keyval-key" title="{{.Key}}">{{.Key}}</span>
+  <code class="keyval-value">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</code>
+  <span class="keyval-actions">
+    <button type="button" class="keyval-show-btn" title="Show">Show</button>
+    <button class="keyval-edit-btn"
+      hx-get="/internal/keyval/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-target="closest .keyval-row"
+      hx-swap="outerHTML"
+      title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+    <button class="keyval-delete-btn"
+      hx-delete="/internal/keyval/delete/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-confirm="Delete this key/value pair?"
+      hx-target="closest .keyval-row"
+      hx-swap="delete"
+      title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+  </span>
+</li>
+{{end}}

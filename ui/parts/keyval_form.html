@@ -1,0 +1,29 @@
+{{define "keyval_form"}}
+<form
+  class="add-keyval-form"
+  hx-post="/internal/keyval/create/{{.Folder}}/{{.Document}}"
+>
+  <div class="form-row">
+    <input
+      type="text" name="key"
+      class="keyval-key-input"
+      placeholder="key"
+      autocomplete="off"
+      required
+      autofocus
+      maxlength="256">
+    <input
+      type="text" name="value"
+      class="keyval-value-input"
+      placeholder="value"
+      autocomplete="off"
+      required
+      maxlength="1024">
+    <button type="submit" class="submit">Add</button>
+    <button type="button" class="cancel"
+      onclick="document.getElementById('keyvals-form-container').innerHTML=''"
+    >Cancel</button>
+  </div>
+  <span id="error"></span>
+</form>
+{{end}}

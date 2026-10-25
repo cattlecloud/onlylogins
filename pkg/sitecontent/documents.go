@@ -15,7 +15,10 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
-var ErrNoUnlock = "(decryption-failure)"
+var (
+	ErrKeyvalKeyExists = errors.New("key value with that key already exists in this document")
+	ErrNoUnlock        = "(decryption-failure)"
+)
 
 func unlock(b *conceal.Bytes, v encrypt.Vault) string {
 	s, err := v.Decrypt(b)
@@ -238,14 +241,10 @@ func (r *DeleteWeblinkRequest) Validate() error {
 	return nil
 }
 
-// maxUsernameLength bounds how long a username value may be. It guards the
-// usenames table column size and prevents pathological inputs from blowing
-// up the UI render.
+// maxUsernameLength bounds how long a username value may be
 const maxUsernameLength = 256
 
-// maxPasswordLength bounds how long a password value may be. It guards the
-// passwords table column size and prevents pathological inputs from blowing
-// up the UI render.
+// maxPasswordLength bounds how long a password value may be
 const maxPasswordLength = 256
 
 type CreateUsernameRequest struct {
@@ -368,14 +367,7 @@ func (r *CreatePasswordRequest) Validate() error {
 }
 
 // ValidatePassword checks the supplied plaintext against the password
-// length and non-empty rules. It deliberately does not trim whitespace —
-// leading/trailing whitespace can legitimately be part of a password.
-//
-// Use this in combination with (*CreatePasswordRequest).Validate or
-// (*UpdatePasswordRequest).Validate, both of which check the non-secret
-// scoping fields. Plaintext never has to sit on a long-lived struct — the
-// caller can hold it in a local variable and call ValidatePassword before
-// handing the encrypted form off to the database.
+// length and non-empty rules. It deliberately does not trim whitespace.
 func ValidatePassword(raw string) error {
 	if raw == "" {
 		return errors.New("password must be set")
@@ -442,9 +434,8 @@ func (r *DeletePasswordRequest) Validate() error {
 }
 
 // maxNoteLength bounds how long a note value may be. The notes table column
-// is capped at < 8192 bytes; encryption overhead (~50 bytes for an
-// authenticated block) gives us a comfortable plaintext ceiling around 6000
-// characters.
+// is capped at 8192 bytes; encryption overhead (50 bytes for an authenticated
+// block) gives us a comfortable plaintext ceiling around 6000 characters
 const maxNoteLength = 6000
 
 type CreateNoteRequest struct {
@@ -470,10 +461,6 @@ func (r *CreateNoteRequest) Validate() error {
 	return nil
 }
 
-// GetNoteRequest looks up the encrypted note blob for a single document so it
-// can be decrypted server-side into a plaintext value (for example for the
-// edit form). The note is loaded by (folder, document) within the user's
-// scope.
 type GetNoteRequest struct {
 	User     users.Identity
 	Folder   string
@@ -496,17 +483,15 @@ func (r *GetNoteRequest) Validate() error {
 	return nil
 }
 
-// ValidateNote checks the supplied plaintext against the note length and
-// non-empty rules. Like passwords, leading/trailing whitespace can legitimately
-// be part of a note and is therefore not trimmed; callers hold the plaintext
-// in a local variable and call ValidateNote before encrypting.
 func ValidateNote(raw string) error {
 	if raw == "" {
 		return errors.New("note must be set")
 	}
+
 	if len(raw) > maxNoteLength {
 		return fmt.Errorf("note must not exceed %d characters", maxNoteLength)
 	}
+
 	return nil
 }
 
@@ -548,6 +533,144 @@ type DeleteNoteRequest struct {
 func (r *DeleteNoteRequest) Validate() error {
 	if r.ID <= 0 {
 		return errors.New("note must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// maxKeyLength bounds how long the plaintext "k" of a keyval pair may be.
+// Mirrors the username/password length, which is large enough for any
+// realistic label and well within the database column < 1024 cap.
+const maxKeyLength = 256
+
+// maxKeyvalValueLength bounds how long the encrypted "v" of a keyval pair
+// may be (plaintext, before encryption). Matches the password value cap.
+const maxKeyvalValueLength = 1024
+
+type CreateKeyvalRequest struct {
+	User      users.Identity
+	Folder    string
+	Document  string
+	Key       string
+	Encrypted *conceal.Bytes
+}
+
+func (r *CreateKeyvalRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	r.Key = strings.TrimSpace(r.Key)
+	if r.Key == "" {
+		return errors.New("key must be set")
+	}
+	if len(r.Key) > maxKeyLength {
+		return fmt.Errorf("key must not exceed %d characters", maxKeyLength)
+	}
+
+	return nil
+}
+
+type GetKeyvalRequest struct {
+	ID       records.KeyvalsAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *GetKeyvalRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("key value must be set")
+	}
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+	return nil
+}
+
+func ValidateKeyvalValue(value string) error {
+	if value == "" {
+		return errors.New("value must be set")
+	}
+	if len(value) > maxKeyvalValueLength {
+		return fmt.Errorf("value must not exceed %d characters", maxKeyvalValueLength)
+	}
+	return nil
+}
+
+type UpdateKeyvalRequest struct {
+	ID        records.KeyvalsAuto
+	User      users.Identity
+	Folder    string
+	Document  string
+	Key       string
+	Encrypted *conceal.Bytes
+}
+
+func (r *UpdateKeyvalRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("key value must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	r.Key = strings.TrimSpace(r.Key)
+	if r.Key == "" {
+		return errors.New("key must be set")
+	}
+	if len(r.Key) > maxKeyLength {
+		return fmt.Errorf("key must not exceed %d characters", maxKeyLength)
+	}
+
+	return nil
+}
+
+type DeleteKeyvalRequest struct {
+	ID       records.KeyvalsAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *DeleteKeyvalRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("key value must be set")
 	}
 
 	if r.User <= 0 {

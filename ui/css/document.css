@@ -1081,6 +1081,12 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
+.middle.document .note-panel.editing .note-edit-form .note-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
 .middle.document .note-panel.editing .note-edit-form .submit,
 .middle.document .note-panel.editing .note-edit-form .cancel {
   padding: 0.4rem 0.9rem;
@@ -1128,6 +1134,267 @@
   color: var(--text-muted);
 }
 
+/* ---------- Key Values section ---------- */
+
+/* Add form: padded card with two side-by-side inputs (key + value) and
+   Submit/Cancel buttons, matching the visual style of the other field
+   forms. */
+.middle.document #keyvals-form-container {
+  margin-bottom: 0.75rem;
+}
+
+.middle.document .add-keyval-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.document .add-keyval-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.middle.document .add-keyval-form .keyval-key-input,
+.middle.document .add-keyval-form .keyval-value-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .add-keyval-form .keyval-key-input:focus,
+.middle.document .add-keyval-form .keyval-value-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .add-keyval-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .add-keyval-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .add-keyval-form .cancel {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.document .add-keyval-form .cancel:hover,
+.middle.document .add-keyval-form .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.middle.document .add-keyval-form #error:empty {
+  display: none;
+}
+
+.middle.document .add-keyval-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+/* Display row: a key on the left (always plaintext), a masked value in the
+   middle that the user toggles to reveal, and an action toolbar on the
+   right (Show/Hide, Edit, Delete). Long keys are truncated with ellipsis;
+   hovering shows the full key via the title attribute. */
+.middle.document .fields.keyvals .keyval-key {
+  display: inline-block;
+  flex: 0 1 16rem;
+  min-width: 8rem;
+  max-width: 16rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+.middle.document .fields.keyvals .keyval-value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  word-break: break-all;
+}
+
+.middle.document .fields .keyval-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.middle.document .fields .keyval-actions {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.middle.document .fields .keyval-show-btn,
+.middle.document .fields .keyval-hide-btn,
+.middle.document .fields .keyval-edit-btn,
+.middle.document .fields .keyval-delete-btn {
+  font-size: 0.85rem;
+  line-height: 1;
+  padding: 0.3rem 0.55rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .fields .keyval-show-btn:hover,
+.middle.document .fields .keyval-show-btn:focus-visible,
+.middle.document .fields .keyval-hide-btn:hover,
+.middle.document .fields .keyval-hide-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .keyval-edit-btn img,
+.middle.document .fields .keyval-delete-btn img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  filter: invert(1) opacity(0.7);
+  transition: filter 0.15s ease;
+}
+
+.middle.document .fields .keyval-edit-btn:hover img,
+.middle.document .fields .keyval-edit-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .fields .keyval-delete-btn:hover img,
+.middle.document .fields .keyval-delete-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
+}
+
+.middle.document .fields .keyval-edit-btn:hover,
+.middle.document .fields .keyval-edit-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .keyval-delete-btn:hover,
+.middle.document .fields .keyval-delete-btn:focus-visible {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+/* Inline edit form: same shape as the add form, swapped into a
+   .keyval-row slot when the user clicks Edit. */
+.middle.document .fields .keyval-row.editing {
+  display: block;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.4rem;
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form .keyval-key-input,
+.middle.document .fields .keyval-row.editing .keyval-edit-form .keyval-value-input {
+  flex: 1 1 12rem;
+  min-width: 0;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form .keyval-key-input:focus,
+.middle.document .fields .keyval-row.editing .keyval-edit-form .keyval-value-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form #error:empty {
+  display: none;
+}
+
+.middle.document .fields .keyval-row.editing .keyval-edit-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
 @media (max-width: 640px) {
   .middle.document > section {
     padding: 1.25rem;
@@ -1146,5 +1413,10 @@
 
   .middle.document .fields .key {
     min-width: 5.5rem;
+  }
+
+  .middle.document .fields.keyvals .keyval-key {
+    min-width: 6rem;
+    max-width: 12rem;
   }
 }

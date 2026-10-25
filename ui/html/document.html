@@ -6,6 +6,7 @@
   </section>
 
   <script src="/ui/scripts/password.js" defer></script>
+  <script src="/ui/scripts/keyval.js" defer></script>
   <script src="/ui/scripts/note.js" defer></script>
 
   <section class="doc-section">
@@ -125,17 +126,43 @@
   </section>
 
   <section class="doc-section">
-    <h3>Key Values</h3>
-    {{if .Section.Document.Keyvals}}
-    <ul class="fields keyvals">
-      {{range .Section.Document.Keyvals}}
-      {{$u := .Unlock $.Section.Vault}}
-      <li><span class="key">{{.K.Unveil}}</span><span class="value">{{$u}}</span></li>
+    <div class="section-header">
+      <h3>Key Values</h3>
+      <button
+        class="add-btn"
+        hx-get="/internal/keyval/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-target="#keyvals-form-container"
+        hx-swap="innerHTML"
+      >+ Key Value</button>
+    </div>
+    <div id="keyvals-form-container"></div>
+    <ul id="keyvals-list" class="fields keyvals">
+      {{if .Section.Document.Keyvals}}
+        {{range .Section.Document.Keyvals}}
+        {{$u := .Unlock $.Section.Vault}}
+        <li class="keyval-row" data-value="{{$u}}">
+          <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
+          <code class="keyval-value">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</code>
+          <span class="keyval-actions">
+            <button type="button" class="keyval-show-btn" title="Show">Show</button>
+            <button class="keyval-edit-btn"
+              hx-get="/internal/keyval/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-target="closest .keyval-row"
+              hx-swap="outerHTML"
+              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+            <button class="keyval-delete-btn"
+              hx-delete="/internal/keyval/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-confirm="Delete this key/value pair?"
+              hx-target="closest .keyval-row"
+              hx-swap="delete"
+              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+          </span>
+        </li>
+        {{end}}
+      {{else}}
+        <li class="empty-li"><p class="empty">No key/value pairs yet</p></li>
       {{end}}
     </ul>
-    {{else}}
-    <p class="empty">No key/value pairs yet</p>
-    {{end}}
   </section>
 
   <section class="doc-section">
