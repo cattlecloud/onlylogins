@@ -27,9 +27,6 @@ import (
 	"github.com/shoenig/test/must"
 )
 
-// newUsernameRouter mounts both username HTMX handlers in a mux router with
-// the sessions middleware so requests can carry user identity. Returns the
-// router and the session store so callers can mint cookies.
 func newUsernameRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.Sessions) {
 	t.Helper()
 
@@ -47,8 +44,6 @@ func newUsernameRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.
 	return router, scache
 }
 
-// insertUsername stands up a document under the default folder and creates
-// a username through the store using the supplied crypt.
 func insertUsernameHandlerHelper(t *testing.T, store database.Store, user users.Identity,
 	doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
 	t.Helper()
@@ -80,8 +75,6 @@ func insertUsernameHandlerHelper(t *testing.T, store database.Store, user users.
 	return id
 }
 
-// ensureBob provisions a second user (id=2) on the given store so wrong-user
-// tests have a real distinct identity.
 func ensureBobUsername(t *testing.T, store database.Store) users.Identity {
 	t.Helper()
 	ctx, cancel := scope.TTL(5 * time.Second)
@@ -103,14 +96,10 @@ func ensureBobUsername(t *testing.T, store database.Store) users.Identity {
 	return id
 }
 
-// usernameURL joins the path segments after /internal/username/... for the
-// given action keyword and folder/document/username-id triple.
 func usernameURL(action, folder, document string, usernameID records.UsernamesAuto) string {
 	return path.Join("/internal/username", action, folder, document, strconv.Itoa(int(usernameID)))
 }
 
-// postForm builds a POST/PUT request with an x-www-form-urlencoded body
-// suitable for forms.MustParse on the handler side.
 func postUsernameForm(t *testing.T, method, urlPath string, values url.Values) *http.Request {
 	t.Helper()
 	r, err := http.NewRequestWithContext(t.Context(), method, urlPath, strings.NewReader(values.Encode()))
@@ -119,7 +108,6 @@ func postUsernameForm(t *testing.T, method, urlPath string, values url.Values) *
 	return r
 }
 
-// fetchDoc reads back a single document for assertion.
 func fetchDocUsername(t *testing.T, store database.Store, user users.Identity,
 	folder, document string) *sitecontent.Document {
 	t.Helper()
@@ -131,8 +119,6 @@ func fetchDocUsername(t *testing.T, store database.Store, user users.Identity,
 	must.NoError(t, err)
 	return doc
 }
-
-// --- usernameHTMX (add flow) ---
 
 func TestUsernameHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
@@ -158,11 +144,6 @@ func TestUsernameHTMX_Get_NoSession_Aborts(t *testing.T) {
 	router, scache := newUsernameRouter(t, mockdb.Open(t))
 	ss := sessions(router, scache)
 
-	// No cookie => session middleware sets an inactive session on the
-	// request context; the handler then aborts (500) rather than redirect.
-	// The rendered "+ Username" button is only meaningful on the document
-	// page (which already requires a session), so we don't try to redirect
-	// unauthenticated htmx requests to /login.
 	r := requestGet(t, "/internal/username/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -392,8 +373,6 @@ func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	must.Eq(t, http.StatusInternalServerError, w.Code)
 	must.Eq(t, "unable to process request", w.Body.String())
 }
-
-// --- usernameEntryHTMX (edit/delete flow) ---
 
 func TestUsernameEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()

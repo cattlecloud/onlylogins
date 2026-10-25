@@ -21,9 +21,6 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
-// usernameEntryHTMX handles the per-row edit / update / delete actions for
-// an individual username. It mirrors weblinkEntryHTMX with the same path
-// layout and dispatch-by-action-segment approach.
 type usernameEntryHTMX struct {
 	log   *ulog.Log
 	store database.Store
@@ -54,9 +51,6 @@ func (h *usernameEntryHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// get renders the inline edit form for a single username. The page already
-// has the decrypted plaintext in scope (via the Vault cookie), so we pass
-// it through a query parameter; the server does not re-decrypt.
 func (h *usernameEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
@@ -92,8 +86,6 @@ func (h *usernameEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Reques
 	})
 }
 
-// put updates a single username and returns the rendered display row markup,
-// which htmx outerHTML-swaps into the .username-row slot.
 func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
@@ -157,8 +149,6 @@ func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	})
 }
 
-// delete removes a single username row. Returns an empty body so htmx's
-// hx-swap="delete" can drop the wrapping .username-row from the DOM.
 func (h *usernameEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
@@ -194,9 +184,6 @@ func (h *usernameEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.R
 	return nil
 }
 
-// from extracts the four trailing path segments. The action segment
-// distinguishes edit / update / delete and is dispatched manually rather
-// than by HTTP method alone, so the URL is human-readable.
 func (h *usernameEntryHTMX) from(r *http.Request) (folder, document string, username records.UsernamesAuto, action string) {
 	urlpath.MustParse(r, urlpath.Schema{
 		"action":   urlpath.String(&action),
@@ -207,7 +194,6 @@ func (h *usernameEntryHTMX) from(r *http.Request) (folder, document string, user
 	return folder, document, username, action
 }
 
-// usernameFrom reads the "username" form value from a PUT body.
 func (h *usernameEntryHTMX) usernameFrom(r *http.Request) string {
 	var raw string
 	forms.MustParse(r, forms.Schema{
@@ -216,7 +202,6 @@ func (h *usernameEntryHTMX) usernameFrom(r *http.Request) string {
 	return raw
 }
 
-// usernameFromQuery reads a "username" query parameter from a GET.
 func (h *usernameEntryHTMX) usernameFromQuery(r *http.Request) string {
 	return r.URL.Query().Get("username")
 }
