@@ -3,7 +3,7 @@
   <a class="weblink-value" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.URL}}</a>
   <span class="weblink-actions">
     <button class="weblink-edit-btn"
-      hx-get="/internal/weblink/edit/{{.Folder}}/{{.Document}}/{{.ID}}?url={{.URL}}"
+      hx-get="/internal/weblink/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
       hx-target="closest .weblink-row"
       hx-swap="outerHTML"
       title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>

@@ -3,7 +3,7 @@
   <code class="username-value">{{.Username}}</code>
   <span class="username-actions">
     <button class="username-edit-btn"
-      hx-get="/internal/username/edit/{{.Folder}}/{{.Document}}/{{.ID}}?username={{.Username}}"
+      hx-get="/internal/username/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
       hx-target="closest .username-row"
       hx-swap="outerHTML"
       title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>

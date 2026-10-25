@@ -51,7 +51,7 @@ func (h *usernameEntryHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func (h *usernameEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
+func (h *usernameEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
@@ -65,7 +65,26 @@ func (h *usernameEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Reques
 		return abort(h.log, w, errors.New("no such username action"))
 	}
 
-	current := h.usernameFromQuery(r)
+	vault, verr := getVault(r)
+	if verr != nil {
+		return abort(h.log, w, verr)
+	}
+
+	dbUsername, gerr := h.store.Documents().GetUsername(ctx, &sitecontent.GetUsernameRequest{
+		ID:       usernameID,
+		User:     session.Identity(),
+		Folder:   folder,
+		Document: document,
+	})
+	if gerr != nil {
+		if errors.Is(gerr, database.ErrDocumentNotFound) {
+			return abort(h.log, w, gerr)
+		}
+		return abort(h.log, w, gerr)
+	}
+	if dbUsername == nil || dbUsername.ID != usernameID {
+		return abort(h.log, w, database.ErrDocumentNotFound)
+	}
 
 	fields := struct {
 		ID       records.UsernamesAuto
@@ -74,7 +93,7 @@ func (h *usernameEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Reques
 		Document string
 	}{
 		ID:       usernameID,
-		Username: current,
+		Username: dbUsername.Unlock(vault),
 		Folder:   folder,
 		Document: document,
 	}
@@ -200,8 +219,4 @@ func (h *usernameEntryHTMX) usernameFrom(r *http.Request) string {
 		"username": forms.String(&raw),
 	})
 	return raw
-}
-
-func (h *usernameEntryHTMX) usernameFromQuery(r *http.Request) string {
-	return r.URL.Query().Get("username")
 }
