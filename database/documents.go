@@ -41,6 +41,11 @@ type Documents interface {
 	CreateUsername(scope.C, *sitecontent.CreateUsernameRequest) (records.UsernamesAuto, error)
 	UpdateUsername(scope.C, *sitecontent.UpdateUsernameRequest) error
 	DeleteUsername(scope.C, *sitecontent.DeleteUsernameRequest) error
+
+	// document > passwords
+	CreatePassword(scope.C, *sitecontent.CreatePasswordRequest) (records.PasswordsAuto, error)
+	UpdatePassword(scope.C, *sitecontent.UpdatePasswordRequest) error
+	DeletePassword(scope.C, *sitecontent.DeletePasswordRequest) error
 }
 
 type documentsql struct {
@@ -488,6 +493,114 @@ func (s *documentsql) DeleteUsername(ctx scope.C, request *sitecontent.DeleteUse
 		}
 		s.log.E.Fmt("unable to delete username: %v", rerr)
 		return fmt.Errorf("unable to delete username: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) CreatePassword(ctx scope.C, request *sitecontent.CreatePasswordRequest) (records.PasswordsAuto, error) {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return litesql.TxFailure, xerr
+	}
+	defer done()
+
+	const statement = `
+	insert into passwords (did, v)
+	select d.id, ?
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?`
+
+	id, rerr := s.ldb.ExecID(ctx, tx, statement,
+		request.Encrypted.Unveil(),
+		request.User,
+		request.Folder,
+		request.Document,
+	)
+	switch {
+	case isFolderMissing(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create password: %w", ErrDocumentNotFound)
+	case rerr != nil:
+		s.log.E.Fmt("unable to insert password: %v", rerr)
+		return litesql.ExecFailure, fmt.Errorf("unable to create password: %w", rerr)
+	}
+
+	return records.PasswordsAuto(id), tx.Commit()
+}
+
+func (s *documentsql) UpdatePassword(ctx scope.C, request *sitecontent.UpdatePasswordRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to update password: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	update passwords
+	set v = ?
+	where
+		id = ? and did in (
+	select d.id
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.Encrypted.Unveil(),
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to update password: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to update password: %v", rerr)
+		return fmt.Errorf("unable to update password: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) DeletePassword(ctx scope.C, request *sitecontent.DeletePasswordRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to delete password: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	delete from passwords
+	where
+		id = ? and did in (
+	select d.id
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to delete password: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to delete password: %v", rerr)
+		return fmt.Errorf("unable to delete password: %w", rerr)
 	}
 
 	return tx.Commit()

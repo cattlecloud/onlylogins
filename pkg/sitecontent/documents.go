@@ -243,6 +243,11 @@ func (r *DeleteWeblinkRequest) Validate() error {
 // up the UI render.
 const maxUsernameLength = 256
 
+// maxPasswordLength bounds how long a password value may be. It guards the
+// passwords table column size and prevents pathological inputs from blowing
+// up the UI render.
+const maxPasswordLength = 256
+
 type CreateUsernameRequest struct {
 	User      users.Identity
 	Folder    string
@@ -322,6 +327,103 @@ type DeleteUsernameRequest struct {
 func (r *DeleteUsernameRequest) Validate() error {
 	if r.ID <= 0 {
 		return errors.New("username must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+type CreatePasswordRequest struct {
+	User      users.Identity
+	Folder    string
+	Document  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *CreatePasswordRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// ValidatePassword checks the supplied plaintext against the password
+// length and non-empty rules. It deliberately does not trim whitespace —
+// leading/trailing whitespace can legitimately be part of a password.
+//
+// Use this in combination with (*CreatePasswordRequest).Validate or
+// (*UpdatePasswordRequest).Validate, both of which check the non-secret
+// scoping fields. Plaintext never has to sit on a long-lived struct — the
+// caller can hold it in a local variable and call ValidatePassword before
+// handing the encrypted form off to the database.
+func ValidatePassword(raw string) error {
+	if raw == "" {
+		return errors.New("password must be set")
+	}
+	if len(raw) > maxPasswordLength {
+		return fmt.Errorf("password must not exceed %d characters", maxPasswordLength)
+	}
+	return nil
+}
+
+type UpdatePasswordRequest struct {
+	ID        records.PasswordsAuto
+	User      users.Identity
+	Folder    string
+	Document  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *UpdatePasswordRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("password must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+type DeletePasswordRequest struct {
+	ID       records.PasswordsAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *DeletePasswordRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("password must be set")
 	}
 
 	if r.User <= 0 {
