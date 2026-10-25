@@ -1,0 +1,22 @@
+{{define "username_form"}}
+<form
+  class="add-username-form"
+  hx-post="/internal/username/create/{{.Folder}}/{{.Document}}"
+>
+  <div class="form-row">
+    <input
+      type="text" name="username"
+      class="username-input"
+      placeholder="username"
+      autocomplete="off"
+      required
+      autofocus
+      maxlength="256">
+    <button type="submit" class="submit">Add</button>
+    <button type="button" class="cancel"
+      onclick="document.getElementById('usernames-form-container').innerHTML=''"
+    >Cancel</button>
+  </div>
+  <span id="error"></span>
+</form>
+{{end}}

@@ -1,0 +1,18 @@
+{{define "username_row"}}
+<li class="username-row">
+  <code class="username-value">{{.Username}}</code>
+  <span class="username-actions">
+    <button class="username-edit-btn"
+      hx-get="/internal/username/edit/{{.Folder}}/{{.Document}}/{{.ID}}?username={{.Username}}"
+      hx-target="closest .username-row"
+      hx-swap="outerHTML"
+      title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+    <button class="username-delete-btn"
+      hx-delete="/internal/username/delete/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-confirm="Delete this username?"
+      hx-target="closest .username-row"
+      hx-swap="delete"
+      title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+  </span>
+</li>
+{{end}}

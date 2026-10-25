@@ -5,6 +5,7 @@ package sitecontent
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -220,6 +221,107 @@ type DeleteWeblinkRequest struct {
 func (r *DeleteWeblinkRequest) Validate() error {
 	if r.ID <= 0 {
 		return errors.New("weblink must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// maxUsernameLength bounds how long a username value may be. It guards the
+// usenames table column size and prevents pathological inputs from blowing
+// up the UI render.
+const maxUsernameLength = 256
+
+type CreateUsernameRequest struct {
+	User      users.Identity
+	Folder    string
+	Document  string
+	Username  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *CreateUsernameRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	r.Username = strings.TrimSpace(r.Username)
+	if r.Username == "" {
+		return errors.New("username must be set")
+	}
+	if len(r.Username) > maxUsernameLength {
+		return fmt.Errorf("username must not exceed %d characters", maxUsernameLength)
+	}
+
+	return nil
+}
+
+type UpdateUsernameRequest struct {
+	ID        records.UsernamesAuto
+	User      users.Identity
+	Folder    string
+	Document  string
+	Username  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *UpdateUsernameRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("username must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	r.Username = strings.TrimSpace(r.Username)
+	if r.Username == "" {
+		return errors.New("username must be set")
+	}
+	if len(r.Username) > maxUsernameLength {
+		return fmt.Errorf("username must not exceed %d characters", maxUsernameLength)
+	}
+
+	return nil
+}
+
+type DeleteUsernameRequest struct {
+	ID       records.UsernamesAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *DeleteUsernameRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("username must be set")
 	}
 
 	if r.User <= 0 {

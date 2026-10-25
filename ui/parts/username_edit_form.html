@@ -1,0 +1,23 @@
+{{define "username_edit_form"}}
+<li class="username-row editing">
+  <form
+    class="username-edit-form"
+    hx-put="/internal/username/update/{{.Folder}}/{{.Document}}/{{.ID}}"
+    hx-target="closest .username-row"
+    hx-swap="outerHTML"
+  >
+    <div class="form-row">
+      <input
+        type="text" name="username"
+        class="username-input"
+        value="{{.Username}}"
+        autocomplete="off"
+        required
+        autofocus
+        maxlength="256">
+      <button type="submit" class="submit">Update</button>
+    </div>
+    <span id="error"></span>
+  </form>
+</li>
+{{end}}

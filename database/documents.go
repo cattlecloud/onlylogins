@@ -36,6 +36,10 @@ type Documents interface {
 	CreateWeblink(scope.C, *sitecontent.CreateWeblinkRequest) (records.WeblinksAuto, error)
 	UpdateWeblink(scope.C, *sitecontent.UpdateWeblinkRequest) error
 	DeleteWeblink(scope.C, *sitecontent.DeleteWeblinkRequest) error
+
+	CreateUsername(scope.C, *sitecontent.CreateUsernameRequest) (records.UsernamesAuto, error)
+	UpdateUsername(scope.C, *sitecontent.UpdateUsernameRequest) error
+	DeleteUsername(scope.C, *sitecontent.DeleteUsernameRequest) error
 }
 
 type documentsql struct {
@@ -373,6 +377,112 @@ func (s *documentsql) DeleteWeblink(ctx scope.C, request *sitecontent.DeleteWebl
 		}
 		s.log.E.Fmt("unable to delete weblink: %v", rerr)
 		return fmt.Errorf("unable to delete weblink: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) CreateUsername(ctx scope.C, request *sitecontent.CreateUsernameRequest) (records.UsernamesAuto, error) {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return litesql.TxFailure, xerr
+	}
+	defer done()
+
+	const statement = `
+	insert into usernames (did, v)
+	select d.id, ?
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?`
+
+	id, rerr := s.ldb.ExecID(ctx, tx, statement,
+		request.Encrypted.Unveil(),
+		request.User,
+		request.Folder,
+		request.Document,
+	)
+	switch {
+	case isFolderMissing(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create username: %w", ErrDocumentNotFound)
+	case rerr != nil:
+		s.log.E.Fmt("unable to insert username: %v", rerr)
+		return litesql.ExecFailure, fmt.Errorf("unable to create username: %w", rerr)
+	}
+
+	return records.UsernamesAuto(id), tx.Commit()
+}
+
+func (s *documentsql) UpdateUsername(ctx scope.C, request *sitecontent.UpdateUsernameRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to update username: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	update usernames
+	set v = ?
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.Encrypted.Unveil(),
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to update username: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to update username: %v", rerr)
+		return fmt.Errorf("unable to update username: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) DeleteUsername(ctx scope.C, request *sitecontent.DeleteUsernameRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to delete username: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	delete from usernames
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to delete username: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to delete username: %v", rerr)
+		return fmt.Errorf("unable to delete username: %w", rerr)
 	}
 
 	return tx.Commit()
