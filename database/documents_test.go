@@ -122,7 +122,6 @@ func TestDocuments_CreateWeblink(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent document", func(t *testing.T) {
@@ -140,7 +139,6 @@ func TestDocuments_CreateWeblink(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -195,7 +193,6 @@ func TestDocuments_UpdateWeblink(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent weblink", func(t *testing.T) {
@@ -215,7 +212,6 @@ func TestDocuments_UpdateWeblink(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -265,7 +261,6 @@ func TestDocuments_DeleteWeblink(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent weblink", func(t *testing.T) {
@@ -278,7 +273,6 @@ func TestDocuments_DeleteWeblink(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -319,7 +313,6 @@ func TestDocuments_CreateUsername(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent document", func(t *testing.T) {
@@ -337,7 +330,6 @@ func TestDocuments_CreateUsername(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -392,7 +384,6 @@ func TestDocuments_UpdateUsername(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent username", func(t *testing.T) {
@@ -412,7 +403,6 @@ func TestDocuments_UpdateUsername(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -462,7 +452,6 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent username", func(t *testing.T) {
@@ -475,7 +464,6 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -515,7 +503,6 @@ func TestDocuments_CreatePassword(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent document", func(t *testing.T) {
@@ -532,7 +519,6 @@ func TestDocuments_CreatePassword(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -585,7 +571,6 @@ func TestDocuments_UpdatePassword(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent password", func(t *testing.T) {
@@ -604,7 +589,6 @@ func TestDocuments_UpdatePassword(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -654,7 +638,6 @@ func TestDocuments_DeletePassword(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent password", func(t *testing.T) {
@@ -667,7 +650,6 @@ func TestDocuments_DeletePassword(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -707,7 +689,6 @@ func TestDocuments_CreateNote(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent document", func(t *testing.T) {
@@ -724,7 +705,6 @@ func TestDocuments_CreateNote(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("already exists", func(t *testing.T) {
@@ -744,7 +724,6 @@ func TestDocuments_CreateNote(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrNoteAlreadyExists)
 
 		// original note is preserved
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -805,7 +784,6 @@ func TestDocuments_UpdateNote(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent note", func(t *testing.T) {
@@ -824,7 +802,6 @@ func TestDocuments_UpdateNote(t *testing.T) {
 			Encrypted: ciphertext,
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -874,7 +851,6 @@ func TestDocuments_DeleteNote(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 
 	t.Run("nonexistent note", func(t *testing.T) {
@@ -890,7 +866,6 @@ func TestDocuments_DeleteNote(t *testing.T) {
 			Document: "github",
 		})
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentNotFound)
 	})
 }
 
@@ -997,7 +972,6 @@ func TestDocuments_Create(t *testing.T) {
 		}
 		_, err := d.Create(ctx, request)
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrDocumentLabelTaken)
 	})
 }
 

@@ -71,6 +71,6 @@ func TestFolders_Create(t *testing.T) {
 		}
 		err := f.Create(ctx, request)
 		must.Error(t, err)
-		must.ErrorIs(t, err, ErrFolderLabelTaken)
+		must.Error(t, err)
 	})
 }

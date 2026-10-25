@@ -17,6 +17,11 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
+// Sentinels related to user account management, surfaced to the login
+// handler so it can audit username-probing attempts (bogus table) vs.
+// password-guessing attempts (logins table) and so it can present a
+// uniform "incorrect credentials" message regardless of which kind of
+// failure occurred (to prevent username enumeration).
 var (
 	ErrIncorrectCredentials = errors.New("incorrect credentials")
 	ErrUsernameTaken        = errors.New("username is already taken")
@@ -148,6 +153,22 @@ func (s *usersql) Delete(ctx scope.C, user users.Identity) error {
 	return tx.Commit()
 }
 
+// Check verifies credentials.
+//
+// To prevent username enumeration via response timing, when the username
+// does not match a row the method still derives a key against a fixed
+// dummy verifier, so the overall operation takes the same amount of time
+// regardless of whether the username exists.
+//
+// On failure the returned error is one of:
+//   - ErrUserNotFound            ("user not found")             - username did not match
+//   - ErrIncorrectCredentials    ("incorrect credentials")      - wrong passphrase on a matched user
+//   - other database error (wrapped)                            - infrastructure problem
+//
+// Callers can route ErrUserNotFound to a separate audit table (bogus)
+// to track username-probing attempts distinct from password-guessing
+// attempts, while still presenting a uniform "incorrect credentials"
+// message to the user.
 func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identity, *conceal.Bytes, error) {
 	tx, done, xerr := s.ldb.StartRead(ctx)
 	if xerr != nil {

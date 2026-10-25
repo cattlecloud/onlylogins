@@ -77,13 +77,10 @@ func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		Document: document,
 	})
 	if gerr != nil {
-		if errors.Is(gerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, gerr)
-		}
 		return abort(h.log, w, gerr)
 	}
 	if dbPassword == nil || dbPassword.ID != passwordID {
-		return abort(h.log, w, database.ErrDocumentNotFound)
+		return abort(h.log, w, errors.New("record not found"))
 	}
 
 	fields := struct {
@@ -148,10 +145,7 @@ func (h *passwordEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	}
 
 	if uerr := h.store.Documents().UpdatePassword(ctx, request); uerr != nil {
-		if errors.Is(uerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, uerr)
-		}
-		return problem(w, uerr)
+		return abort(h.log, w, uerr)
 	}
 
 	fields := struct {
@@ -199,10 +193,7 @@ func (h *passwordEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.R
 	}
 
 	if derr := h.store.Documents().DeletePassword(ctx, request); derr != nil {
-		if errors.Is(derr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, derr)
-		}
-		return problem(w, derr)
+		return abort(h.log, w, derr)
 	}
 
 	return nil

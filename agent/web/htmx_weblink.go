@@ -4,7 +4,6 @@
 package web
 
 import (
-	"errors"
 	"net/http"
 	"path"
 	"strings"
@@ -118,10 +117,7 @@ func (h *weblinkHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	request.Encrypted = ciphertext
 
 	if _, ierr := h.store.Documents().CreateWeblink(ctx, request); ierr != nil {
-		if errors.Is(ierr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, ierr)
-		}
-		return problem(w, ierr)
+		return abort(h.log, w, ierr)
 	}
 
 	// send user back to the document page (just reload)

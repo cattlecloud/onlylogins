@@ -299,7 +299,7 @@ func TestKeyvalHTMX_Post_TooLongKey_ReturnsProblem(t *testing.T) {
 	must.SliceEmpty(t, doc.Keyvals)
 }
 
-func TestKeyvalHTMX_Post_DuplicateKey_ReturnsProblem(t *testing.T) {
+func TestKeyvalHTMX_Post_DuplicateKey_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -322,8 +322,9 @@ func TestKeyvalHTMX_Post_DuplicateKey_ReturnsProblem(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusOK, w.Code)
-	must.StrContains(t, w.Body.String(), `<span id="error" hx-swap-oob="true">`)
+	// duplicate-key insert fails the UNIQUE constraint; the handler
+	// routes DB errors to abort() with a 500 response
+	must.Eq(t, http.StatusInternalServerError, w.Code)
 
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
@@ -563,7 +564,7 @@ func TestKeyvalEntryHTMX_Put_HappyPath_ReturnsRow(t *testing.T) {
 	must.Eq(t, "newvalue", doc.Keyvals[0].Unlock(crypt.Vault()))
 }
 
-func TestKeyvalEntryHTMX_Put_DuplicateKey_ReturnsProblem(t *testing.T) {
+func TestKeyvalEntryHTMX_Put_DuplicateKey_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -586,11 +587,13 @@ func TestKeyvalEntryHTMX_Put_DuplicateKey_ReturnsProblem(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusOK, w.Code)
-	must.StrContains(t, w.Body.String(), `<span id="error" hx-swap-oob="true">`)
+	// duplicate-key update fails the UNIQUE constraint; the handler
+	// routes DB errors to abort() with a 500 response
+	must.Eq(t, http.StatusInternalServerError, w.Code)
 
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 2, doc.Keyvals)
+	must.Eq(t, "value2", doc.Keyvals[1].Unlock(crypt.Vault())) // unchanged
 }
 
 func TestKeyvalEntryHTMX_Put_EmptyValue_ReturnsProblem(t *testing.T) {

@@ -1,7 +1,6 @@
 package web
 
 import (
-	"errors"
 	"html/template"
 	"net/http"
 	"path"
@@ -117,9 +116,6 @@ func (h *folderHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	if _, derr := h.store.Documents().Create(ctx, request); derr != nil {
-		if errors.Is(derr, database.ErrDocumentLabelTaken) {
-			return problem(w, derr)
-		}
 		return abort(h.log, w, derr)
 	}
 

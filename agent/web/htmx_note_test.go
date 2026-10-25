@@ -362,7 +362,7 @@ func TestNoteHTMX_Post_PreservesNewlines(t *testing.T) {
 	must.Eq(t, multi, doc.Note.Unlock(crypt.Vault()))
 }
 
-func TestNoteHTMX_Post_AlreadyExists_ReturnsProblem(t *testing.T) {
+func TestNoteHTMX_Post_AlreadyExists_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -384,8 +384,9 @@ func TestNoteHTMX_Post_AlreadyExists_ReturnsProblem(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusOK, w.Code)
-	must.StrContains(t, w.Body.String(), `<span id="error" hx-swap-oob="true">`)
+	// duplicate-note insert fails the UNIQUE constraint; the handler
+	// routes DB errors to abort() with a 500 response
+	must.Eq(t, http.StatusInternalServerError, w.Code)
 
 	// original is preserved
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")

@@ -4,9 +4,7 @@
 package database
 
 import (
-	"errors"
 	"fmt"
-	"strings"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -14,8 +12,6 @@ import (
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
-
-var ErrFolderLabelTaken = errors.New("folder name is already in use")
 
 type Folders interface {
 	// metrics
@@ -66,9 +62,7 @@ func (s *foldersql) Create(ctx scope.C, request *sitecontent.CreateFolderRequest
 		request.User,
 		request.Label,
 		int(request.Icon),
-	); isFolderLabelTaken(ferr) {
-		return fmt.Errorf("unable to create folder: %w", ErrFolderLabelTaken)
-	} else if ferr != nil {
+	); ferr != nil {
 		return fmt.Errorf("unable to create folder: %w", ferr)
 	}
 
@@ -99,10 +93,4 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 	}
 
 	return litesql.QueryRows(ctx, tx, f, statement, user)
-}
-
-// isFolderLabelTaken reports whether err indicates that the folders
-// (users_id, label) UNIQUE constraint failed during an insert.
-func isFolderLabelTaken(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: folders.users_id, folders.label")
 }
