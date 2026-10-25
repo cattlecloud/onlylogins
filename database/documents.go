@@ -32,11 +32,12 @@ type Documents interface {
 	List(scope.C, *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error)
 	Get(scope.C, *sitecontent.GetDocumentRequest) (*sitecontent.Document, error)
 
-	// document field operations
+	// document > weblinks
 	CreateWeblink(scope.C, *sitecontent.CreateWeblinkRequest) (records.WeblinksAuto, error)
 	UpdateWeblink(scope.C, *sitecontent.UpdateWeblinkRequest) error
 	DeleteWeblink(scope.C, *sitecontent.DeleteWeblinkRequest) error
 
+	// document > usernames
 	CreateUsername(scope.C, *sitecontent.CreateUsernameRequest) (records.UsernamesAuto, error)
 	UpdateUsername(scope.C, *sitecontent.UpdateUsernameRequest) error
 	DeleteUsername(scope.C, *sitecontent.DeleteUsernameRequest) error
@@ -391,7 +392,8 @@ func (s *documentsql) CreateUsername(ctx scope.C, request *sitecontent.CreateUse
 
 	const statement = `
 	insert into usernames (did, v)
-	select d.id, ?
+	select
+		d.id, ?
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
@@ -424,16 +426,18 @@ func (s *documentsql) UpdateUsername(ctx scope.C, request *sitecontent.UpdateUse
 	defer done()
 
 	const statement = `
-	update usernames
-	set v = ?
-	where id = ? and did in (
-		select d.id
-		from documents d
-		join folders f on f.id = d.folders_id
+	update usernames set
+		v = ?
+	where
+		id = ?
+	and did in (
+	select d.id
+	from documents d
+	join folders f on f.id = d.folders_id
 		where
-			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -462,14 +466,15 @@ func (s *documentsql) DeleteUsername(ctx scope.C, request *sitecontent.DeleteUse
 
 	const statement = `
 	delete from usernames
-	where id = ? and did in (
-		select d.id
-		from documents d
-		join folders f on f.id = d.folders_id
-		where
-			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+	where
+		id = ? and did in (
+	select d.id
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,

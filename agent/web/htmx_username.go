@@ -22,9 +22,6 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
-// usernameHTMX is responsible for rendering the inline "add username" form
-// (GET) and processing submissions (POST) for a single document. The path
-// mirrors weblinkHTMX but is scoped to the usernames endpoint.
 type usernameHTMX struct {
 	log   *ulog.Log
 	store database.Store

@@ -162,7 +162,7 @@ create table if not exists usernames (
     did integer not null,
     -- foreign key into documents
 
-    v blob check(length(v) > 0 and length(v) < 1024) not null,
+    v blob check(length(v) > 0 and length(v) < 256) not null,
     -- encrypted username value
 
     foreign key (did) references documents(id) on delete cascade
