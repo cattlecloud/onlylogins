@@ -1,0 +1,21 @@
+{{define "note_panel"}}
+<div class="note-area">
+  <div class="note-panel" data-note="{{.Note}}">
+    <button type="button" class="note-reveal-btn">Click to view note</button>
+    <div class="note-content" hidden></div>
+  </div>
+  <div class="note-actions" hidden>
+    <button class="note-edit-btn"
+      hx-get="/internal/note/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-target="closest .note-area"
+      hx-swap="outerHTML"
+      title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+    <button class="note-delete-btn"
+      hx-delete="/internal/note/delete/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-confirm="Delete this note?"
+      hx-target="closest .note-area"
+      hx-swap="delete"
+      title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+  </div>
+</div>
+{{end}}

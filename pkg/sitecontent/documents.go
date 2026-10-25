@@ -84,7 +84,7 @@ type Document struct {
 	Usernames []*Username
 	Passwords []*Password
 	Keyvals   []*Keyval
-	Notes     []*Note
+	Note      *Note
 }
 
 type CreateDocumentRequest struct {
@@ -424,6 +424,130 @@ type DeletePasswordRequest struct {
 func (r *DeletePasswordRequest) Validate() error {
 	if r.ID <= 0 {
 		return errors.New("password must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// maxNoteLength bounds how long a note value may be. The notes table column
+// is capped at < 8192 bytes; encryption overhead (~50 bytes for an
+// authenticated block) gives us a comfortable plaintext ceiling around 6000
+// characters.
+const maxNoteLength = 6000
+
+type CreateNoteRequest struct {
+	User      users.Identity
+	Folder    string
+	Document  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *CreateNoteRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// GetNoteRequest looks up the encrypted note blob for a single document so it
+// can be decrypted server-side into a plaintext value (for example for the
+// edit form). The note is loaded by (folder, document) within the user's
+// scope.
+type GetNoteRequest struct {
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *GetNoteRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+// ValidateNote checks the supplied plaintext against the note length and
+// non-empty rules. Like passwords, leading/trailing whitespace can legitimately
+// be part of a note and is therefore not trimmed; callers hold the plaintext
+// in a local variable and call ValidateNote before encrypting.
+func ValidateNote(raw string) error {
+	if raw == "" {
+		return errors.New("note must be set")
+	}
+	if len(raw) > maxNoteLength {
+		return fmt.Errorf("note must not exceed %d characters", maxNoteLength)
+	}
+	return nil
+}
+
+type UpdateNoteRequest struct {
+	ID        records.NotesAuto
+	User      users.Identity
+	Folder    string
+	Document  string
+	Encrypted *conceal.Bytes
+}
+
+func (r *UpdateNoteRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("note must be set")
+	}
+
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+type DeleteNoteRequest struct {
+	ID       records.NotesAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *DeleteNoteRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("note must be set")
 	}
 
 	if r.User <= 0 {

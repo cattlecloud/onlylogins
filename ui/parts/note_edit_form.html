@@ -1,0 +1,29 @@
+{{define "note_edit_form"}}
+<div class="note-area">
+  <div class="note-panel editing">
+    <form
+      class="note-edit-form"
+      hx-put="/internal/note/update/{{.Folder}}/{{.Document}}/{{.ID}}"
+      hx-target="closest .note-area"
+      hx-swap="outerHTML"
+    >
+      <div class="form-row">
+        <textarea
+          name="note"
+          class="note-input"
+          autocomplete="off"
+          required
+          autofocus
+          maxlength="6000">{{.Note}}</textarea>
+      </div>
+      <div class="form-row">
+        <button type="submit" class="submit">Update</button>
+        <button type="button" class="cancel"
+          onclick="this.closest('.note-area').remove()"
+        >Cancel</button>
+      </div>
+      <span id="error"></span>
+    </form>
+  </div>
+</div>
+{{end}}

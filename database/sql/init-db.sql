@@ -207,5 +207,8 @@ create table if not exists notes (
     v blob check(length(v) > 0 and length(v) < 8192) not null,
     -- encrypted content of the note
 
+    unique(did),
+    -- at most one note per document
+
     foreign key (did) references documents(id) on delete cascade
 ) strict;

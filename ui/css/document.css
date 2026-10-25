@@ -834,6 +834,294 @@
   color: var(--text);
 }
 
+/* Note area: a small stacked region containing the note panel (the
+   card-like container holding the reveal CTA + note text) and the
+   discretionary action toolbar (edit / delete). The two are visually
+   separated so the note text never shares chrome with the action icons. */
+.middle.document .note-area {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: stretch;
+  gap: 0.5rem;
+}
+
+/* Note panel: a card holding the click-to-view CTA, the revealed content,
+   or — when editing — the inline edit form. */
+.middle.document .note-panel {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.document .note-panel .note-content {
+  width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.middle.document .note-panel .note-reveal-btn {
+  width: auto;
+  padding: 0.3rem 0.55rem;
+  font-size: 0.85rem;
+  line-height: 1;
+  font-weight: 400;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .note-panel .note-reveal-btn:hover,
+.middle.document .note-panel .note-reveal-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+/* Action toolbar: lives in its own row beneath the panel so it is visually
+   distinct from the note text. Hidden initially; surfaced once the user has
+   revealed the note. */
+.middle.document .note-area .note-actions {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.middle.document .note-area .note-actions[hidden] {
+  display: none;
+}
+
+.middle.document .note-area .note-edit-btn,
+.middle.document .note-area .note-delete-btn {
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .note-area .note-edit-btn img,
+.middle.document .note-area .note-delete-btn img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  filter: invert(1) opacity(0.7);
+  transition: filter 0.15s ease;
+}
+
+.middle.document .note-area .note-edit-btn:hover img,
+.middle.document .note-area .note-edit-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .note-area .note-delete-btn:hover img,
+.middle.document .note-area .note-delete-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
+}
+
+.middle.document .note-area .note-edit-btn:hover,
+.middle.document .note-area .note-edit-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .note-area .note-delete-btn:hover,
+.middle.document .note-area .note-delete-btn:focus-visible {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+/* Add-note form mirrors the password/username form styling */
+.middle.document #note-form-container {
+  margin-bottom: 0.75rem;
+}
+
+.middle.document .add-note-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.document .add-note-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .add-note-form .note-input {
+  flex: 1;
+  width: 100%;
+  min-height: 6rem;
+  resize: vertical;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .add-note-form .note-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .add-note-form .submit {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .add-note-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .add-note-form .cancel {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.document .add-note-form .cancel:hover,
+.middle.document .add-note-form .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.middle.document .add-note-form #error:empty {
+  display: none;
+}
+
+.middle.document .add-note-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
+/* Inline edit-note form, swapped into a .note-area when the user clicks Edit. */
+.middle.document .note-panel.editing {
+  display: block;
+  align-items: stretch;
+  padding: 0.85rem;
+}
+
+.middle.document .note-panel.editing .note-edit-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+}
+
+.middle.document .note-panel.editing .note-edit-form .form-row {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.middle.document .note-panel.editing .note-edit-form .note-input {
+  width: 100%;
+  min-height: 6rem;
+  resize: vertical;
+  padding: 0.55rem 0.7rem;
+  font-size: 0.95rem;
+  font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .note-panel.editing .note-edit-form .note-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .note-panel.editing .note-edit-form .submit,
+.middle.document .note-panel.editing .note-edit-form .cancel {
+  padding: 0.4rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .note-panel.editing .note-edit-form .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .note-panel.editing .note-edit-form .cancel {
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  font-weight: 500;
+}
+
+.middle.document .note-panel.editing .note-edit-form .cancel:hover,
+.middle.document .note-panel.editing .note-edit-form .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+.middle.document .note-panel.editing .note-edit-form #error:empty {
+  display: none;
+}
+
+.middle.document .note-panel.editing .note-edit-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
 .middle.document .empty {
   margin: 0;
   font-size: 0.9rem;

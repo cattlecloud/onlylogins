@@ -1,0 +1,24 @@
+{{define "note_form"}}
+<form
+  class="add-note-form"
+  hx-post="/internal/note/create/{{.Folder}}/{{.Document}}"
+>
+  <div class="form-row">
+    <textarea
+      name="note"
+      class="note-input"
+      placeholder="write your note..."
+      autocomplete="off"
+      required
+      autofocus
+      maxlength="6000"></textarea>
+  </div>
+  <div class="form-row">
+    <button type="submit" class="submit">Save</button>
+    <button type="button" class="cancel"
+      onclick="document.getElementById('note-form-container').innerHTML=''"
+    >Cancel</button>
+  </div>
+  <span id="error"></span>
+</form>
+{{end}}
