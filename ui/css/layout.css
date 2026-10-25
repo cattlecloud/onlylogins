@@ -19,6 +19,26 @@ body > header > .left {
   justify-content: flex-start; align-items: center;
 }
 
+body > header > .right {
+  display: flex;
+  align-items: center;
+}
+
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.profile .username {
+  padding: 0.25rem 0.7rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
 .brand {
   display: flex;
   align-items: center;
