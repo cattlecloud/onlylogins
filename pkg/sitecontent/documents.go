@@ -16,8 +16,7 @@ import (
 )
 
 var (
-	ErrKeyvalKeyExists = errors.New("key value with that key already exists in this document")
-	ErrNoUnlock        = "(decryption-failure)"
+	ErrNoUnlock = "(decryption-failure)"
 )
 
 func unlock(b *conceal.Bytes, v encrypt.Vault) string {

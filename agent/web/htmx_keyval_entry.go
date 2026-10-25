@@ -80,13 +80,10 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 		Document: document,
 	})
 	if gerr != nil {
-		if errors.Is(gerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, gerr)
-		}
 		return abort(h.log, w, gerr)
 	}
 	if dbKeyval == nil || dbKeyval.ID != keyvalID {
-		return abort(h.log, w, database.ErrDocumentNotFound)
+		return abort(h.log, w, errors.New("record not found"))
 	}
 
 	fields := struct {
@@ -158,14 +155,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 	}
 
 	if uerr := h.store.Documents().UpdateKeyval(ctx, request); uerr != nil {
-		switch {
-		case errors.Is(uerr, database.ErrDocumentNotFound):
-			return abort(h.log, w, uerr)
-		case errors.Is(uerr, sitecontent.ErrKeyvalKeyExists):
-			return problem(w, uerr)
-		default:
-			return problem(w, uerr)
-		}
+		return abort(h.log, w, uerr)
 	}
 
 	fields := struct {
@@ -215,10 +205,7 @@ func (h *keyvalEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Req
 	}
 
 	if derr := h.store.Documents().DeleteKeyval(ctx, request); derr != nil {
-		if errors.Is(derr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, derr)
-		}
-		return problem(w, derr)
+		return abort(h.log, w, derr)
 	}
 
 	return nil

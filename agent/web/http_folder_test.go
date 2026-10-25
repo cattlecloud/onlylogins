@@ -13,7 +13,6 @@ import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/runtime"
-	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
@@ -127,17 +126,15 @@ func TestFolder_CreateDocument_DuplicateLabel(t *testing.T) {
 	must.Eq(t, http.StatusFound, w1.Code)
 	must.Eq(t, "/folders/miscellaneous/github", w1.Header().Get("HX-Redirect"))
 
-	// second create with the same label fails with ErrDocumentLabelTaken
+	// second create with the same label fails (duplicate UNIQUE constraint);
+	// the handler routes db errors to abort(), which produces a 500 page
 	r2 := requestPost(t, "/folders/miscellaneous", cookie, url.Values{
 		"label": {"github"},
 	})
 	w2 := httptest.NewRecorder()
 	routes.ServeHTTP(w2, r2)
 
-	must.Eq(t, http.StatusOK, w2.Code)
-	body := w2.Body.String()
-	must.StrContains(t, body, `<span id="error" hx-swap-oob="true">`)
-	must.StrContains(t, body, database.ErrDocumentLabelTaken.Error())
+	must.Eq(t, http.StatusInternalServerError, w2.Code)
 
 	count, err := store.Documents().Count(t.Context())
 	must.NoError(t, err)

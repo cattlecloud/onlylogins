@@ -80,13 +80,10 @@ func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Reque
 		Document: document,
 	})
 	if gerr != nil {
-		if errors.Is(gerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, gerr)
-		}
 		return abort(h.log, w, gerr)
 	}
 	if dbWeblink == nil || dbWeblink.ID != weblinkID {
-		return abort(h.log, w, database.ErrDocumentNotFound)
+		return abort(h.log, w, errors.New("record not found"))
 	}
 
 	fields := struct {
@@ -148,10 +145,7 @@ func (h *weblinkEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reque
 	request.Encrypted = ciphertext
 
 	if uerr := h.store.Documents().UpdateWeblink(ctx, request); uerr != nil {
-		if errors.Is(uerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, uerr)
-		}
-		return problem(w, uerr)
+		return abort(h.log, w, uerr)
 	}
 
 	fields := struct {
@@ -201,10 +195,7 @@ func (h *weblinkEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Re
 	}
 
 	if derr := h.store.Documents().DeleteWeblink(ctx, request); derr != nil {
-		if errors.Is(derr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, derr)
-		}
-		return problem(w, derr)
+		return abort(h.log, w, derr)
 	}
 
 	return nil

@@ -80,11 +80,11 @@ func (h *noteEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) e
 		return abort(h.log, w, gerr)
 	}
 	if dbNote == nil {
-		return abort(h.log, w, database.ErrDocumentNotFound)
+		return abort(h.log, w, errors.New("record not found"))
 	}
 
 	if dbNote.ID != noteID {
-		return abort(h.log, w, database.ErrDocumentNotFound)
+		return abort(h.log, w, errors.New("record not found"))
 	}
 
 	current := dbNote.Unlock(vault)
@@ -151,10 +151,7 @@ func (h *noteEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request)
 	}
 
 	if uerr := h.store.Documents().UpdateNote(ctx, request); uerr != nil {
-		if errors.Is(uerr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, uerr)
-		}
-		return problem(w, uerr)
+		return abort(h.log, w, uerr)
 	}
 
 	fields := struct {
@@ -202,10 +199,7 @@ func (h *noteEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Reque
 	}
 
 	if derr := h.store.Documents().DeleteNote(ctx, request); derr != nil {
-		if errors.Is(derr, database.ErrDocumentNotFound) {
-			return abort(h.log, w, derr)
-		}
-		return problem(w, derr)
+		return abort(h.log, w, derr)
 	}
 
 	fields := struct {

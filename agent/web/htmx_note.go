@@ -4,7 +4,6 @@
 package web
 
 import (
-	"errors"
 	"net/http"
 	"path"
 
@@ -119,14 +118,7 @@ func (h *noteHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	}
 
 	if _, ierr := h.store.Documents().CreateNote(ctx, request); ierr != nil {
-		switch {
-		case errors.Is(ierr, database.ErrDocumentNotFound):
-			return abort(h.log, w, ierr)
-		case errors.Is(ierr, database.ErrNoteAlreadyExists):
-			return problem(w, ierr)
-		default:
-			return problem(w, ierr)
-		}
+		return abort(h.log, w, ierr)
 	}
 
 	// send user back to the document page (just reload)

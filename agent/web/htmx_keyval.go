@@ -4,7 +4,6 @@
 package web
 
 import (
-	"errors"
 	"net/http"
 	"path"
 
@@ -124,14 +123,7 @@ func (h *keyvalHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	if _, ierr := h.store.Documents().CreateKeyval(ctx, request); ierr != nil {
-		switch {
-		case errors.Is(ierr, database.ErrDocumentNotFound):
-			return abort(h.log, w, ierr)
-		case errors.Is(ierr, sitecontent.ErrKeyvalKeyExists):
-			return problem(w, ierr)
-		default:
-			return problem(w, ierr)
-		}
+		return abort(h.log, w, ierr)
 	}
 
 	// send user back to the document page (full reload)

@@ -4,10 +4,7 @@
 package database
 
 import (
-	"database/sql"
-	"errors"
 	"fmt"
-	"strings"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -15,13 +12,6 @@ import (
 	"cattlecloud.net/onlylogins/database/records"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"github.com/shoenig/go-conceal"
-)
-
-var (
-	ErrDocumentLabelTaken = errors.New("document name already in use")
-	ErrDocumentNotFound   = errors.New("document not found")
-	ErrFolderNotFound     = errors.New("folder not found")
-	ErrNoteAlreadyExists  = errors.New("note already exists")
 )
 
 type Documents interface {
@@ -110,42 +100,12 @@ func (s *documentsql) Create(ctx scope.C, request *sitecontent.CreateDocumentReq
 		request.User,
 		request.Folder,
 	)
-	switch {
-	case isDocumentLabelTaken(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create document: %w", ErrDocumentLabelTaken)
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create document: %w", ErrFolderNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert document: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create document: %w", rerr)
 	}
 
 	return records.DocumentsAuto(id), tx.Commit()
-}
-
-func isDocumentLabelTaken(err error) bool {
-	return err != nil && strings.Contains(
-		err.Error(),
-		"UNIQUE constraint failed: documents.folders_id, documents.label",
-	)
-}
-
-func isFolderMissing(err error) bool {
-	return err != nil && strings.Contains(err.Error(), "expected to affect 1 row")
-}
-
-func isNoteAlreadyExists(err error) bool {
-	return err != nil && strings.Contains(
-		err.Error(),
-		"UNIQUE constraint failed: notes.did",
-	)
-}
-
-func isKeyvalKeyExists(err error) bool {
-	return err != nil && strings.Contains(
-		err.Error(),
-		"UNIQUE constraint failed: keyvals.did, keyvals.k",
-	)
 }
 
 func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error) {
@@ -206,10 +166,7 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	doc, derr := litesql.QueryRow(ctx, tx, scanDoc, docStatement,
 		request.User, request.Folder, request.Document,
 	)
-	switch {
-	case errors.Is(derr, sql.ErrNoRows):
-		return nil, fmt.Errorf("unable to get document: %w", ErrDocumentNotFound)
-	case derr != nil:
+	if derr != nil {
 		return nil, fmt.Errorf("unable to get document: %w", derr)
 	}
 
@@ -341,10 +298,7 @@ func (s *documentsql) CreateWeblink(ctx scope.C, request *sitecontent.CreateWebl
 		request.Folder,
 		request.Document,
 	)
-	switch {
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create weblink: %w", ErrDocumentNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert weblink: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create weblink: %w", rerr)
 	}
@@ -384,10 +338,7 @@ func (s *documentsql) GetWeblink(ctx scope.C, request *sitecontent.GetWeblinkReq
 	if werr != nil {
 		return nil, fmt.Errorf("unable to get weblink: %w", werr)
 	}
-	switch {
-	case errors.Is(werr, sql.ErrNoRows):
-		return nil, fmt.Errorf("unable to get weblink: %w", ErrDocumentNotFound)
-	case len(rows) == 0:
+	if len(rows) == 0 {
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
@@ -420,9 +371,6 @@ func (s *documentsql) UpdateWeblink(ctx scope.C, request *sitecontent.UpdateWebl
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to update weblink: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to update weblink: %v", rerr)
 		return fmt.Errorf("unable to update weblink: %w", rerr)
 	}
@@ -455,9 +403,6 @@ func (s *documentsql) DeleteWeblink(ctx scope.C, request *sitecontent.DeleteWebl
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to delete weblink: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to delete weblink: %v", rerr)
 		return fmt.Errorf("unable to delete weblink: %w", rerr)
 	}
@@ -489,10 +434,7 @@ func (s *documentsql) CreateUsername(ctx scope.C, request *sitecontent.CreateUse
 		request.Folder,
 		request.Document,
 	)
-	switch {
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create username: %w", ErrDocumentNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert username: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create username: %w", rerr)
 	}
@@ -532,10 +474,7 @@ func (s *documentsql) GetUsername(ctx scope.C, request *sitecontent.GetUsernameR
 	if uerr != nil {
 		return nil, fmt.Errorf("unable to get username: %w", uerr)
 	}
-	switch {
-	case errors.Is(uerr, sql.ErrNoRows):
-		return nil, fmt.Errorf("unable to get username: %w", ErrDocumentNotFound)
-	case len(rows) == 0:
+	if len(rows) == 0 {
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
@@ -570,9 +509,6 @@ func (s *documentsql) UpdateUsername(ctx scope.C, request *sitecontent.UpdateUse
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to update username: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to update username: %v", rerr)
 		return fmt.Errorf("unable to update username: %w", rerr)
 	}
@@ -606,9 +542,6 @@ func (s *documentsql) DeleteUsername(ctx scope.C, request *sitecontent.DeleteUse
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to delete username: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to delete username: %v", rerr)
 		return fmt.Errorf("unable to delete username: %w", rerr)
 	}
@@ -639,10 +572,7 @@ func (s *documentsql) CreatePassword(ctx scope.C, request *sitecontent.CreatePas
 		request.Folder,
 		request.Document,
 	)
-	switch {
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create password: %w", ErrDocumentNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert password: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create password: %w", rerr)
 	}
@@ -682,10 +612,7 @@ func (s *documentsql) GetPassword(ctx scope.C, request *sitecontent.GetPasswordR
 	if perr != nil {
 		return nil, fmt.Errorf("unable to get password: %w", perr)
 	}
-	switch {
-	case errors.Is(perr, sql.ErrNoRows):
-		return nil, fmt.Errorf("unable to get password: %w", ErrDocumentNotFound)
-	case len(rows) == 0:
+	if len(rows) == 0 {
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
@@ -719,9 +646,6 @@ func (s *documentsql) UpdatePassword(ctx scope.C, request *sitecontent.UpdatePas
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to update password: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to update password: %v", rerr)
 		return fmt.Errorf("unable to update password: %w", rerr)
 	}
@@ -755,9 +679,6 @@ func (s *documentsql) DeletePassword(ctx scope.C, request *sitecontent.DeletePas
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to delete password: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to delete password: %v", rerr)
 		return fmt.Errorf("unable to delete password: %w", rerr)
 	}
@@ -788,12 +709,7 @@ func (s *documentsql) CreateNote(ctx scope.C, request *sitecontent.CreateNoteReq
 		request.Folder,
 		request.Document,
 	)
-	switch {
-	case isNoteAlreadyExists(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", ErrNoteAlreadyExists)
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", ErrDocumentNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert note: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", rerr)
 	}
@@ -865,9 +781,6 @@ func (s *documentsql) UpdateNote(ctx scope.C, request *sitecontent.UpdateNoteReq
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to update note: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to update note: %v", rerr)
 		return fmt.Errorf("unable to update note: %w", rerr)
 	}
@@ -900,9 +813,6 @@ func (s *documentsql) DeleteNote(ctx scope.C, request *sitecontent.DeleteNoteReq
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to delete note: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to delete note: %v", rerr)
 		return fmt.Errorf("unable to delete note: %w", rerr)
 	}
@@ -934,12 +844,7 @@ func (s *documentsql) CreateKeyval(ctx scope.C, request *sitecontent.CreateKeyva
 		request.Folder,
 		request.Document,
 	)
-	switch {
-	case isKeyvalKeyExists(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", sitecontent.ErrKeyvalKeyExists)
-	case isFolderMissing(rerr):
-		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", ErrDocumentNotFound)
-	case rerr != nil:
+	if rerr != nil {
 		s.log.E.Fmt("unable to insert keyval: %v", rerr)
 		return litesql.ExecFailure, fmt.Errorf("unable to create keyval: %w", rerr)
 	}
@@ -981,10 +886,7 @@ func (s *documentsql) GetKeyval(ctx scope.C, request *sitecontent.GetKeyvalReque
 	if kerr != nil {
 		return nil, fmt.Errorf("unable to get keyval: %w", kerr)
 	}
-	switch {
-	case errors.Is(kerr, sql.ErrNoRows):
-		return nil, fmt.Errorf("unable to get keyval: %w", ErrDocumentNotFound)
-	case len(rows) == 0:
+	if len(rows) == 0 {
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
@@ -1018,12 +920,6 @@ func (s *documentsql) UpdateKeyval(ctx scope.C, request *sitecontent.UpdateKeyva
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		switch {
-		case isKeyvalKeyExists(rerr):
-			return fmt.Errorf("unable to update keyval: %w", sitecontent.ErrKeyvalKeyExists)
-		case isFolderMissing(rerr):
-			return fmt.Errorf("unable to update keyval: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to update keyval: %v", rerr)
 		return fmt.Errorf("unable to update keyval: %w", rerr)
 	}
@@ -1056,9 +952,6 @@ func (s *documentsql) DeleteKeyval(ctx scope.C, request *sitecontent.DeleteKeyva
 		request.Folder,
 		request.Document,
 	); rerr != nil {
-		if isFolderMissing(rerr) {
-			return fmt.Errorf("unable to delete keyval: %w", ErrDocumentNotFound)
-		}
 		s.log.E.Fmt("unable to delete keyval: %v", rerr)
 		return fmt.Errorf("unable to delete keyval: %w", rerr)
 	}
