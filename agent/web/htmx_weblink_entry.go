@@ -51,10 +51,10 @@ func (h *weblinkEntryHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-// get renders the inline edit form for a single weblink. The page already has
-// the decryptable URL in scope (via the Vault cookie), so we pass it through
-// a query parameter; the server doesn't need to re-decrypt.
-func (h *weblinkEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
+// get renders the inline edit form for a single weblink. The server decrypts
+// the URL using the vault cookie from the request, then renders the plaintext
+// directly into the form HTML so the secret never travels through the URL.
+func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
@@ -68,7 +68,26 @@ func (h *weblinkEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request
 		return abort(h.log, w, errors.New("no such weblink action"))
 	}
 
-	current := h.urlFromQuery(r)
+	vault, verr := getVault(r)
+	if verr != nil {
+		return abort(h.log, w, verr)
+	}
+
+	dbWeblink, gerr := h.store.Documents().GetWeblink(ctx, &sitecontent.GetWeblinkRequest{
+		ID:       weblinkID,
+		User:     session.Identity(),
+		Folder:   folder,
+		Document: document,
+	})
+	if gerr != nil {
+		if errors.Is(gerr, database.ErrDocumentNotFound) {
+			return abort(h.log, w, gerr)
+		}
+		return abort(h.log, w, gerr)
+	}
+	if dbWeblink == nil || dbWeblink.ID != weblinkID {
+		return abort(h.log, w, database.ErrDocumentNotFound)
+	}
 
 	fields := struct {
 		ID       records.WeblinksAuto
@@ -77,7 +96,7 @@ func (h *weblinkEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request
 		Document string
 	}{
 		ID:       weblinkID,
-		URL:      current,
+		URL:      dbWeblink.Unlock(vault),
 		Folder:   folder,
 		Document: document,
 	}
@@ -211,9 +230,4 @@ func (h *weblinkEntryHTMX) urlFrom(r *http.Request) string {
 		"url": forms.String(&raw),
 	})
 	return raw
-}
-
-// urlFromQuery reads a "url" query parameter from a GET.
-func (h *weblinkEntryHTMX) urlFromQuery(r *http.Request) string {
-	return r.URL.Query().Get("url")
 }

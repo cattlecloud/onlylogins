@@ -35,16 +35,19 @@ type Documents interface {
 
 	// document > weblinks
 	CreateWeblink(scope.C, *sitecontent.CreateWeblinkRequest) (records.WeblinksAuto, error)
+	GetWeblink(scope.C, *sitecontent.GetWeblinkRequest) (*sitecontent.Weblink, error)
 	UpdateWeblink(scope.C, *sitecontent.UpdateWeblinkRequest) error
 	DeleteWeblink(scope.C, *sitecontent.DeleteWeblinkRequest) error
 
 	// document > usernames
 	CreateUsername(scope.C, *sitecontent.CreateUsernameRequest) (records.UsernamesAuto, error)
+	GetUsername(scope.C, *sitecontent.GetUsernameRequest) (*sitecontent.Username, error)
 	UpdateUsername(scope.C, *sitecontent.UpdateUsernameRequest) error
 	DeleteUsername(scope.C, *sitecontent.DeleteUsernameRequest) error
 
 	// document > passwords
 	CreatePassword(scope.C, *sitecontent.CreatePasswordRequest) (records.PasswordsAuto, error)
+	GetPassword(scope.C, *sitecontent.GetPasswordRequest) (*sitecontent.Password, error)
 	UpdatePassword(scope.C, *sitecontent.UpdatePasswordRequest) error
 	DeletePassword(scope.C, *sitecontent.DeletePasswordRequest) error
 
@@ -349,6 +352,47 @@ func (s *documentsql) CreateWeblink(ctx scope.C, request *sitecontent.CreateWebl
 	return records.WeblinksAuto(id), tx.Commit()
 }
 
+func (s *documentsql) GetWeblink(ctx scope.C, request *sitecontent.GetWeblinkRequest) (*sitecontent.Weblink, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get weblink: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select w.id, w.v
+	from weblinks w
+	join documents d on d.id = w.did
+	join folders f on f.id = d.folders_id
+	where
+		w.id = ? and
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	limit 1`
+
+	scanWeblink := func(sf litesql.ScanFunc) (*sitecontent.Weblink, error) {
+		w := new(sitecontent.Weblink)
+		var v []byte
+		err := sf(&w.ID, &v)
+		w.V = conceal.NewBytes(v)
+		return w, err
+	}
+	rows, werr := litesql.QueryRows(ctx, tx, scanWeblink, statement,
+		request.ID, request.User, request.Folder, request.Document,
+	)
+	if werr != nil {
+		return nil, fmt.Errorf("unable to get weblink: %w", werr)
+	}
+	switch {
+	case errors.Is(werr, sql.ErrNoRows):
+		return nil, fmt.Errorf("unable to get weblink: %w", ErrDocumentNotFound)
+	case len(rows) == 0:
+		return nil, nil //nolint:nilnil
+	}
+	return rows[0], nil
+}
+
 func (s *documentsql) UpdateWeblink(ctx scope.C, request *sitecontent.UpdateWeblinkRequest) error {
 	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
@@ -454,6 +498,47 @@ func (s *documentsql) CreateUsername(ctx scope.C, request *sitecontent.CreateUse
 	}
 
 	return records.UsernamesAuto(id), tx.Commit()
+}
+
+func (s *documentsql) GetUsername(ctx scope.C, request *sitecontent.GetUsernameRequest) (*sitecontent.Username, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get username: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select u.id, u.v
+	from usernames u
+	join documents d on d.id = u.did
+	join folders f on f.id = d.folders_id
+	where
+		u.id = ? and
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	limit 1`
+
+	scanUsername := func(sf litesql.ScanFunc) (*sitecontent.Username, error) {
+		u := new(sitecontent.Username)
+		var v []byte
+		err := sf(&u.ID, &v)
+		u.V = conceal.NewBytes(v)
+		return u, err
+	}
+	rows, uerr := litesql.QueryRows(ctx, tx, scanUsername, statement,
+		request.ID, request.User, request.Folder, request.Document,
+	)
+	if uerr != nil {
+		return nil, fmt.Errorf("unable to get username: %w", uerr)
+	}
+	switch {
+	case errors.Is(uerr, sql.ErrNoRows):
+		return nil, fmt.Errorf("unable to get username: %w", ErrDocumentNotFound)
+	case len(rows) == 0:
+		return nil, nil //nolint:nilnil
+	}
+	return rows[0], nil
 }
 
 func (s *documentsql) UpdateUsername(ctx scope.C, request *sitecontent.UpdateUsernameRequest) error {
@@ -563,6 +648,47 @@ func (s *documentsql) CreatePassword(ctx scope.C, request *sitecontent.CreatePas
 	}
 
 	return records.PasswordsAuto(id), tx.Commit()
+}
+
+func (s *documentsql) GetPassword(ctx scope.C, request *sitecontent.GetPasswordRequest) (*sitecontent.Password, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get password: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select p.id, p.v
+	from passwords p
+	join documents d on d.id = p.did
+	join folders f on f.id = d.folders_id
+	where
+		p.id = ? and
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	limit 1`
+
+	scanPassword := func(sf litesql.ScanFunc) (*sitecontent.Password, error) {
+		p := new(sitecontent.Password)
+		var v []byte
+		err := sf(&p.ID, &v)
+		p.V = conceal.NewBytes(v)
+		return p, err
+	}
+	rows, perr := litesql.QueryRows(ctx, tx, scanPassword, statement,
+		request.ID, request.User, request.Folder, request.Document,
+	)
+	if perr != nil {
+		return nil, fmt.Errorf("unable to get password: %w", perr)
+	}
+	switch {
+	case errors.Is(perr, sql.ErrNoRows):
+		return nil, fmt.Errorf("unable to get password: %w", ErrDocumentNotFound)
+	case len(rows) == 0:
+		return nil, nil //nolint:nilnil
+	}
+	return rows[0], nil
 }
 
 func (s *documentsql) UpdatePassword(ctx scope.C, request *sitecontent.UpdatePasswordRequest) error {

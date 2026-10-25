@@ -385,8 +385,9 @@ func TestUsernameEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	ss := sessions(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
-	u := usernameURL("edit", "miscellaneous", "github", id) + "?username=" + url.QueryEscape("alice")
+	u := usernameURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
+	r.AddCookie(crypt.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 

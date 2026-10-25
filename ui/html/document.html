@@ -28,7 +28,7 @@
           <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
           <span class="weblink-actions">
             <button class="weblink-edit-btn"
-              hx-get="/internal/weblink/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}?url={{$u}}"
+              hx-get="/internal/weblink/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
               hx-target="closest .weblink-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
@@ -66,7 +66,7 @@
           <code class="username-value">{{$u}}</code>
           <span class="username-actions">
             <button class="username-edit-btn"
-              hx-get="/internal/username/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}?username={{$u}}"
+              hx-get="/internal/username/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
               hx-target="closest .username-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
@@ -106,7 +106,7 @@
             <button type="button" class="password-copy-btn" title="Copy">Copy</button>
             <button type="button" class="password-show-btn" title="Show">Show</button>
             <button class="password-edit-btn"
-              hx-get="/internal/password/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}?password={{$p}}"
+              hx-get="/internal/password/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
               hx-target="closest .password-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>

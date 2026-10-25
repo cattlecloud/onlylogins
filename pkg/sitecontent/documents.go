@@ -241,6 +241,29 @@ func (r *DeleteWeblinkRequest) Validate() error {
 	return nil
 }
 
+type GetWeblinkRequest struct {
+	ID       records.WeblinksAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *GetWeblinkRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("weblink must be set")
+	}
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+	return nil
+}
+
 // maxUsernameLength bounds how long a username value may be
 const maxUsernameLength = 256
 
@@ -343,6 +366,29 @@ func (r *DeleteUsernameRequest) Validate() error {
 	return nil
 }
 
+type GetUsernameRequest struct {
+	ID       records.UsernamesAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *GetUsernameRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("username must be set")
+	}
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
+	return nil
+}
+
 type CreatePasswordRequest struct {
 	User      users.Identity
 	Folder    string
@@ -430,6 +476,29 @@ func (r *DeletePasswordRequest) Validate() error {
 		return errors.New("document must be set")
 	}
 
+	return nil
+}
+
+type GetPasswordRequest struct {
+	ID       records.PasswordsAuto
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *GetPasswordRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("password must be set")
+	}
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+	if r.Document == "" {
+		return errors.New("document must be set")
+	}
 	return nil
 }
 

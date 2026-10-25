@@ -51,7 +51,7 @@ func (h *passwordEntryHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func (h *passwordEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
+func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
@@ -65,7 +65,26 @@ func (h *passwordEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Reques
 		return abort(h.log, w, errors.New("no such password action"))
 	}
 
-	current := h.passwordFromQuery(r)
+	vault, verr := getVault(r)
+	if verr != nil {
+		return abort(h.log, w, verr)
+	}
+
+	dbPassword, gerr := h.store.Documents().GetPassword(ctx, &sitecontent.GetPasswordRequest{
+		ID:       passwordID,
+		User:     session.Identity(),
+		Folder:   folder,
+		Document: document,
+	})
+	if gerr != nil {
+		if errors.Is(gerr, database.ErrDocumentNotFound) {
+			return abort(h.log, w, gerr)
+		}
+		return abort(h.log, w, gerr)
+	}
+	if dbPassword == nil || dbPassword.ID != passwordID {
+		return abort(h.log, w, database.ErrDocumentNotFound)
+	}
 
 	fields := struct {
 		ID       records.PasswordsAuto
@@ -74,7 +93,7 @@ func (h *passwordEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Reques
 		Document string
 	}{
 		ID:       passwordID,
-		Password: current,
+		Password: dbPassword.Unlock(vault),
 		Folder:   folder,
 		Document: document,
 	}
@@ -205,8 +224,4 @@ func (h *passwordEntryHTMX) passwordFromForm(r *http.Request) string {
 		"password": forms.String(&raw),
 	})
 	return raw
-}
-
-func (h *passwordEntryHTMX) passwordFromQuery(r *http.Request) string {
-	return r.URL.Query().Get("password")
 }

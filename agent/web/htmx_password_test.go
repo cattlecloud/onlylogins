@@ -391,8 +391,9 @@ func TestPasswordEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	ss := sessions(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
-	u := passwordURL("edit", "miscellaneous", "github", id) + "?password=" + url.QueryEscape("s3cret!")
+	u := passwordURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
+	r.AddCookie(crypt.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
