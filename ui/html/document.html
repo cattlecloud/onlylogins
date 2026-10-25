@@ -6,6 +6,7 @@
   </section>
 
   <script src="/ui/scripts/password.js" defer></script>
+  <script src="/ui/scripts/note.js" defer></script>
 
   <section class="doc-section">
     <div class="section-header">
@@ -138,16 +139,40 @@
   </section>
 
   <section class="doc-section">
-    <h3>Notes</h3>
-    {{if .Section.Document.Notes}}
-    <ul class="fields notes">
-      {{range .Section.Document.Notes}}
-      {{$u := .Unlock $.Section.Vault}}
-      <li><div class="note">{{$u}}</div></li>
-      {{end}}
-    </ul>
+    <div class="section-header">
+      <h3>Note</h3>
+      <button
+        id="note-add-btn"
+        class="add-btn"
+        hx-get="/internal/note/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-target="#note-form-container"
+        hx-swap="innerHTML"
+        {{if .Section.Document.Note}}hidden{{end}}
+      >+ Note</button>
+    </div>
+    <div id="note-form-container"></div>
+    {{if .Section.Document.Note}}
+      <div class="note-area">
+        <div class="note-panel" data-note="{{.Section.Document.Note.Unlock $.Section.Vault}}">
+          <button type="button" class="note-reveal-btn">Click to view note</button>
+          <div class="note-content" hidden></div>
+        </div>
+        <div class="note-actions" hidden>
+          <button class="note-edit-btn"
+            hx-get="/internal/note/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{$.Section.Document.Note.ID}}"
+            hx-target="closest .note-area"
+            hx-swap="outerHTML"
+            title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+          <button class="note-delete-btn"
+            hx-delete="/internal/note/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{$.Section.Document.Note.ID}}"
+            hx-confirm="Delete this note?"
+            hx-target="closest .note-area"
+            hx-swap="delete"
+            title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+        </div>
+      </div>
     {{else}}
-    <p class="empty">No notes yet</p>
+      <p class="empty">No note yet</p>
     {{end}}
   </section>
 </div>

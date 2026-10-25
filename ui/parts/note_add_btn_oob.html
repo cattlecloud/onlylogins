@@ -1,0 +1,6 @@
+{{define "note_add_btn_oob"}}
+<button id="note-add-btn" hx-swap-oob="true" class="add-btn"
+  hx-get="/internal/note/add/{{.Folder}}/{{.Document}}"
+  hx-target="#note-form-container"
+  hx-swap="innerHTML">+ Note</button>
+{{end}}

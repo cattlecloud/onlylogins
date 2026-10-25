@@ -68,6 +68,23 @@ func insertPassword(t *testing.T, ctx scope.C, store Store, user users.Identity,
 	return id
 }
 
+func insertNote(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, note string, crypt mocks.TestCrypt) records.NotesAuto {
+	t.Helper()
+
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(note))
+	must.NoError(t, cerr)
+
+	id, err := store.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
+		User:      user,
+		Folder:    miscFolderOf(t, ctx, store, user),
+		Document:  doc,
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+
+	return id
+}
+
 func TestDocuments_CreateWeblink(t *testing.T) {
 	t.Parallel()
 
@@ -651,6 +668,274 @@ func TestDocuments_DeletePassword(t *testing.T) {
 		})
 		must.Error(t, err)
 		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_CreateNote(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "secret sauce", crypt)
+		must.Positive(t, id)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.NotNil(t, doc.Note)
+		must.Eq(t, "secret sauce", doc.Note.Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob-note")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacker note"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("anything"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "nope",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("already exists", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertNote(t, ctx, db, mocks.Nobody, "github", "first", crypt)
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("second"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrNoteAlreadyExists)
+
+		// original note is preserved
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.NotNil(t, doc.Note)
+		must.Eq(t, "first", doc.Note.Unlock(crypt.Vault()))
+	})
+}
+
+func TestDocuments_UpdateNote(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "oldtext", crypt)
+
+		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("newtext"))
+		must.NoError(t, cerr)
+
+		uerr := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
+			ID:        id,
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: newCiphertext,
+		})
+		must.NoError(t, uerr)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.NotNil(t, doc.Note)
+		must.Eq(t, "newtext", doc.Note.Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob-note")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", crypt)
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacked"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
+			ID:        id,
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent note", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("anything"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
+			ID:        records.NotesAuto(9999),
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_DeleteNote(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.NotNil(t, doc.Note)
+
+		derr := db.Documents().DeleteNote(ctx, &sitecontent.DeleteNoteRequest{
+			ID:       doc.Note.ID,
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.NoError(t, derr)
+
+		doc, err = db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.Nil(t, doc.Note)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob-note")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", crypt)
+
+		err := db.Documents().DeleteNote(ctx, &sitecontent.DeleteNoteRequest{
+			ID:       id,
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent note", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		// document exists but no note row matches the bogus id
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		err := db.Documents().DeleteNote(ctx, &sitecontent.DeleteNoteRequest{
+			ID:       records.NotesAuto(9999),
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_GetNote(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertNote(t, ctx, db, mocks.Nobody, "github", "hello\nworld", crypt)
+
+		note, err := db.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.NotNil(t, note)
+		must.Eq(t, "hello\nworld", note.Unlock(crypt.Vault()))
+	})
+
+	t.Run("no note", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		note, err := db.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.Nil(t, note)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob-note")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+
+		note, err := db.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
+			User: bob, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.Nil(t, note)
 	})
 }
 

@@ -21,6 +21,7 @@ var (
 	ErrDocumentLabelTaken = errors.New("document name already in use")
 	ErrDocumentNotFound   = errors.New("document not found")
 	ErrFolderNotFound     = errors.New("folder not found")
+	ErrNoteAlreadyExists  = errors.New("note already exists")
 )
 
 type Documents interface {
@@ -46,6 +47,12 @@ type Documents interface {
 	CreatePassword(scope.C, *sitecontent.CreatePasswordRequest) (records.PasswordsAuto, error)
 	UpdatePassword(scope.C, *sitecontent.UpdatePasswordRequest) error
 	DeletePassword(scope.C, *sitecontent.DeletePasswordRequest) error
+
+	// document > note (at most one per document)
+	CreateNote(scope.C, *sitecontent.CreateNoteRequest) (records.NotesAuto, error)
+	GetNote(scope.C, *sitecontent.GetNoteRequest) (*sitecontent.Note, error)
+	UpdateNote(scope.C, *sitecontent.UpdateNoteRequest) error
+	DeleteNote(scope.C, *sitecontent.DeleteNoteRequest) error
 }
 
 type documentsql struct {
@@ -116,6 +123,13 @@ func isDocumentLabelTaken(err error) bool {
 
 func isFolderMissing(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "expected to affect 1 row")
+}
+
+func isNoteAlreadyExists(err error) bool {
+	return err != nil && strings.Contains(
+		err.Error(),
+		"UNIQUE constraint failed: notes.did",
+	)
 }
 
 func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error) {
@@ -257,7 +271,8 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	select id, v
 	from notes
 	where did = ?
-	order by id asc`
+	order by id asc
+	limit 1`
 	scanNote := func(sf litesql.ScanFunc) (*sitecontent.Note, error) {
 		n := new(sitecontent.Note)
 		var v []byte
@@ -270,6 +285,11 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 		return nil, fmt.Errorf("unable to get notes: %w", nerr)
 	}
 
+	var note *sitecontent.Note
+	if len(notes) > 0 {
+		note = notes[0]
+	}
+
 	return &sitecontent.Document{
 		ID:        doc.ID,
 		Label:     doc.Label,
@@ -278,7 +298,7 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 		Usernames: usernames,
 		Passwords: passwords,
 		Keyvals:   keyvals,
-		Notes:     notes,
+		Note:      note,
 	}, nil
 }
 
@@ -601,6 +621,151 @@ func (s *documentsql) DeletePassword(ctx scope.C, request *sitecontent.DeletePas
 		}
 		s.log.E.Fmt("unable to delete password: %v", rerr)
 		return fmt.Errorf("unable to delete password: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) CreateNote(ctx scope.C, request *sitecontent.CreateNoteRequest) (records.NotesAuto, error) {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return litesql.TxFailure, xerr
+	}
+	defer done()
+
+	const statement = `
+	insert into notes (did, v)
+	select d.id, ?
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?`
+
+	id, rerr := s.ldb.ExecID(ctx, tx, statement,
+		request.Encrypted.Unveil(),
+		request.User,
+		request.Folder,
+		request.Document,
+	)
+	switch {
+	case isNoteAlreadyExists(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", ErrNoteAlreadyExists)
+	case isFolderMissing(rerr):
+		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", ErrDocumentNotFound)
+	case rerr != nil:
+		s.log.E.Fmt("unable to insert note: %v", rerr)
+		return litesql.ExecFailure, fmt.Errorf("unable to create note: %w", rerr)
+	}
+
+	return records.NotesAuto(id), tx.Commit()
+}
+
+func (s *documentsql) GetNote(ctx scope.C, request *sitecontent.GetNoteRequest) (*sitecontent.Note, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get note: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select n.id, n.v
+	from notes n
+	join documents d on d.id = n.did
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?
+	limit 1`
+
+	scanNote := func(sf litesql.ScanFunc) (*sitecontent.Note, error) {
+		n := new(sitecontent.Note)
+		var v []byte
+		err := sf(&n.ID, &v)
+		n.V = conceal.NewBytes(v)
+		return n, err
+	}
+	rows, nerr := litesql.QueryRows(ctx, tx, scanNote, statement,
+		request.User, request.Folder, request.Document,
+	)
+	if nerr != nil {
+		return nil, fmt.Errorf("unable to get note: %w", nerr)
+	}
+	if len(rows) == 0 {
+		return nil, nil //nolint:nilnil // note is optional
+	}
+	return rows[0], nil
+}
+
+func (s *documentsql) UpdateNote(ctx scope.C, request *sitecontent.UpdateNoteRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to update note: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	update notes
+	set v = ?
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.Encrypted.Unveil(),
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to update note: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to update note: %v", rerr)
+		return fmt.Errorf("unable to update note: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) DeleteNote(ctx scope.C, request *sitecontent.DeleteNoteRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to delete note: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	delete from notes
+	where id = ? and did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.label = ? and
+			d.label = ?
+	)`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.ID,
+		request.User,
+		request.Folder,
+		request.Document,
+	); rerr != nil {
+		if isFolderMissing(rerr) {
+			return fmt.Errorf("unable to delete note: %w", ErrDocumentNotFound)
+		}
+		s.log.E.Fmt("unable to delete note: %v", rerr)
+		return fmt.Errorf("unable to delete note: %w", rerr)
 	}
 
 	return tx.Commit()
