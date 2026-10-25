@@ -44,17 +44,41 @@
   </section>
 
   <section class="doc-section">
-    <h3>Usernames</h3>
-    {{if .Section.Document.Usernames}}
-    <ul class="fields usernames">
-      {{range .Section.Document.Usernames}}
-      {{$u := .Unlock $.Section.Vault}}
-      <li><span class="value">{{$u}}</span></li>
+    <div class="section-header">
+      <h3>Usernames</h3>
+      <button
+        class="add-btn"
+        hx-get="/internal/username/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-target="#usernames-form-container"
+        hx-swap="innerHTML"
+      >+ Username</button>
+    </div>
+    <div id="usernames-form-container"></div>
+    <ul id="usernames-list" class="fields usernames">
+      {{if .Section.Document.Usernames}}
+        {{range .Section.Document.Usernames}}
+        {{$u := .Unlock $.Section.Vault}}
+        <li class="username-row">
+          <code class="username-value">{{$u}}</code>
+          <span class="username-actions">
+            <button class="username-edit-btn"
+              hx-get="/internal/username/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}?username={{$u}}"
+              hx-target="closest .username-row"
+              hx-swap="outerHTML"
+              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
+            <button class="username-delete-btn"
+              hx-delete="/internal/username/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-confirm="Delete this username?"
+              hx-target="closest .username-row"
+              hx-swap="delete"
+              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+          </span>
+        </li>
+        {{end}}
+      {{else}}
+        <li class="empty-li"><p class="empty">No usernames yet</p></li>
       {{end}}
     </ul>
-    {{else}}
-    <p class="empty">No usernames yet</p>
-    {{end}}
   </section>
 
   <section class="doc-section">

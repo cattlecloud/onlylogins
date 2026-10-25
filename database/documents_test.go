@@ -34,6 +34,24 @@ func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity,
 	return id
 }
 
+func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity,
+	doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
+	t.Helper()
+
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(username))
+	must.NoError(t, cerr)
+
+	id, err := store.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
+		User:      user,
+		Folder:    miscFolderOf(t, ctx, store, user),
+		Document:  doc,
+		Username:  username,
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+	return id
+}
+
 func TestDocuments_CreateWeblink(t *testing.T) {
 	t.Parallel()
 
@@ -222,6 +240,203 @@ func TestDocuments_DeleteWeblink(t *testing.T) {
 
 		err := db.Documents().DeleteWeblink(ctx, &sitecontent.DeleteWeblinkRequest{
 			ID:       records.WeblinksAuto(9999),
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_CreateUsername(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		must.Positive(t, id)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Usernames)
+		must.Eq(t, "alice", doc.Usernames[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("mallory"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Username:  "mallory",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("stranger"))
+		must.NoError(t, cerr)
+
+		_, err := db.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "nope",
+			Username:  "stranger",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_UpdateUsername(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("alice2"))
+		must.NoError(t, cerr)
+
+		uerr := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
+			ID:        id,
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Username:  "alice2",
+			Encrypted: newCiphertext,
+		})
+		must.NoError(t, uerr)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Usernames)
+		must.Eq(t, "alice2", doc.Usernames[0].Unlock(crypt.Vault()))
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("mallory"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
+			ID:        id,
+			User:      bob,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Username:  "mallory",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent username", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nobody"))
+		must.NoError(t, cerr)
+
+		err := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
+			ID:        records.UsernamesAuto(9999),
+			User:      mocks.Nobody,
+			Folder:    "miscellaneous",
+			Document:  "github",
+			Username:  "nobody",
+			Encrypted: ciphertext,
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+}
+
+func TestDocuments_DeleteUsername(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 1, doc.Usernames)
+
+		derr := db.Documents().DeleteUsername(ctx, &sitecontent.DeleteUsernameRequest{
+			ID:       doc.Usernames[0].ID,
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.NoError(t, derr)
+
+		doc, err = db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 0, doc.Usernames)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		bob := insertUser(t, ctx, db, "bob")
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		err := db.Documents().DeleteUsername(ctx, &sitecontent.DeleteUsernameRequest{
+			ID:       id,
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.Error(t, err)
+		must.ErrorIs(t, err, ErrDocumentNotFound)
+	})
+
+	t.Run("nonexistent username", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		err := db.Documents().DeleteUsername(ctx, &sitecontent.DeleteUsernameRequest{
+			ID:       records.UsernamesAuto(9999),
 			User:     mocks.Nobody,
 			Folder:   "miscellaneous",
 			Document: "github",
