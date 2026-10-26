@@ -166,7 +166,7 @@ func TestKeyvalHTMX_Get_RendersForm(t *testing.T) {
 	must.StrContains(t, body, `name="value"`)
 }
 
-func TestKeyvalHTMX_Get_NoSession_Aborts(t *testing.T) {
+func TestKeyvalHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeKeyvalMux(t, mockdb.Open(t))
@@ -176,8 +176,8 @@ func TestKeyvalHTMX_Get_NoSession_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestKeyvalHTMX_Post_HappyPath_Redirects(t *testing.T) {
@@ -390,7 +390,7 @@ func TestKeyvalHTMX_Post_PreservesValueWhitespace(t *testing.T) {
 	must.Eq(t, "  spaced  ", doc.Keyvals[0].Unlock(crypt.Vault()))
 }
 
-func TestKeyvalHTMX_Post_MissingVault_Aborts(t *testing.T) {
+func TestKeyvalHTMX_Post_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -410,8 +410,8 @@ func TestKeyvalHTMX_Post_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestKeyvalHTMX_Post_WrongUser_Aborts(t *testing.T) {
@@ -468,7 +468,7 @@ func TestKeyvalEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	must.StrContains(t, body, `value="redis://localhost:6379"`)
 }
 
-func TestKeyvalEntryHTMX_Get_MissingVault_Aborts(t *testing.T) {
+func TestKeyvalEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -487,8 +487,8 @@ func TestKeyvalEntryHTMX_Get_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestKeyvalEntryHTMX_Get_WrongKeyvalID_Aborts(t *testing.T) {
@@ -652,7 +652,7 @@ func TestKeyvalEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	must.Eq(t, "unable to process request", w.Body.String())
 }
 
-func TestKeyvalEntryHTMX_Put_MissingVault_Aborts(t *testing.T) {
+func TestKeyvalEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -674,8 +674,8 @@ func TestKeyvalEntryHTMX_Put_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestKeyvalEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {

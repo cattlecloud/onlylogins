@@ -54,7 +54,7 @@ func (h *usernameHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) er
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
@@ -86,14 +86,14 @@ func (h *usernameHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request)
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	rawUsername := h.usernameFrom(r)

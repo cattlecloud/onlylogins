@@ -55,7 +55,7 @@ func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, passwordID, action := h.from(r)
@@ -67,7 +67,7 @@ func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	dbPassword, gerr := h.store.Documents().GetPassword(ctx, &sitecontent.GetPasswordRequest{
@@ -106,7 +106,7 @@ func (h *passwordEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, passwordID, action := h.from(r)
@@ -118,7 +118,7 @@ func (h *passwordEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	password := h.passwordFromForm(r)
@@ -171,7 +171,7 @@ func (h *passwordEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.R
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, passwordID, action := h.from(r)

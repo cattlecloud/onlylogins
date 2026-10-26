@@ -55,7 +55,7 @@ func (h *noteEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) e
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, noteID, action := h.from(r)
@@ -70,7 +70,7 @@ func (h *noteEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) e
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	dbNote, gerr := h.store.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
@@ -112,7 +112,7 @@ func (h *noteEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request)
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, noteID, action := h.from(r)
@@ -124,7 +124,7 @@ func (h *noteEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request)
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	raw := h.noteFromForm(r)
@@ -177,7 +177,7 @@ func (h *noteEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Reque
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, noteID, action := h.from(r)

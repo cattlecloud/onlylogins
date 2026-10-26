@@ -138,7 +138,7 @@ func TestUsernameHTMX_Get_RendersForm(t *testing.T) {
 	must.StrContains(t, body, `placeholder="username"`)
 }
 
-func TestUsernameHTMX_Get_NoSession_Aborts(t *testing.T) {
+func TestUsernameHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newUsernameRouter(t, mockdb.Open(t))
@@ -148,8 +148,8 @@ func TestUsernameHTMX_Get_NoSession_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
@@ -314,7 +314,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 	must.SliceLen(t, 0, doc.Usernames)
 }
 
-func TestUsernameHTMX_Post_MissingVault_Aborts(t *testing.T) {
+func TestUsernameHTMX_Post_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -332,8 +332,8 @@ func TestUsernameHTMX_Post_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
