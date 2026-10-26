@@ -215,3 +215,61 @@ create table if not exists notes (
 
     foreign key (did) references documents(id) on delete cascade
 ) strict;
+
+create table if not exists cron_states (
+    id integer primary key,
+    -- enum
+
+    label text check(length(label) < 10) not null unique
+    -- the string label of the cron state
+) strict;
+
+insert or ignore into cron_states (id, label) values
+    (1, 'disable'),
+    (2, 'running'),
+    (3, 'stopped'),
+    (4, 'pending');
+
+create table if not exists crons (
+    id integer primary key autoincrement,
+    -- auto
+
+    label text check(length(label) > 1) not null unique,
+    -- the distinct name of the cronjob
+
+    states_id integer not null default 4,
+    -- enum of the current state of the cron
+
+    modification integer default (unixepoch('now')) not null,
+    -- latest update timestamp
+
+    foreign key(states_id) references cron_states(id) on delete cascade
+) strict;
+
+create table if not exists cron_runs (
+    id integer primary key autoincrement,
+    -- auto
+
+    crons_id integer not null,
+    -- foreign key into crons; the cron that ran and stopped
+
+    code integer check(code >=0 and code <= 255) not null default 0,
+    -- the exit code of the latest attempt
+
+    started integer not null default 0,
+    -- the time at which the cron last started running
+
+    stopped integer not null default 0,
+    -- the time at which the latest run stopped (success or failure)
+
+    foreign key(crons_id) references crons(id) on delete cascade
+) strict;
+
+create index if not exists idx_cron_runs_started on cron_runs(started);
+create index if not exists idx_cron_runs_crons_id on cron_runs(crons_id);
+
+-- trigger for initializing an empty cron_runs row when a cron is created
+create trigger if not exists init_cron_runs_zero after insert on crons
+for each row begin
+    insert into cron_runs (crons_id) values (NEW.id);
+end;

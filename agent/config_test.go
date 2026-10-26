@@ -3,4 +3,16 @@
 
 package agent
 
-// TODO
+import (
+	"testing"
+
+	"github.com/shoenig/test/must"
+)
+
+func TestConfigFrom(t *testing.T) {
+	t.Parallel()
+
+	result, err := ConfigFrom("../hack/dev.toml")
+	must.NoError(t, err)
+	must.NotNil(t, result)
+}

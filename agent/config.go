@@ -10,6 +10,7 @@ import (
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/agent/web"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/crons"
 	"cattlecloud.net/onlylogins/pkg/memcache"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/BurntSushi/toml"
@@ -35,6 +36,7 @@ type Config struct {
 	HTTP     *web.Config      `toml:"http"`
 	Database *database.Config `toml:"database"`
 	Cache    *memcache.Config `toml:"memcache"`
+	Crons    *crons.Configs   `toml:"crons"`
 }
 
 func (c *Config) Validate() error {
@@ -51,6 +53,9 @@ func (c *Config) Validate() error {
 		return err
 	}
 	if err := c.Cache.Validate(); err != nil {
+		return err
+	}
+	if err := c.Crons.Validate(); err != nil {
 		return err
 	}
 	return nil
