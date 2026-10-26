@@ -13,9 +13,12 @@ import (
 
 type Store interface {
 	Init(scope.C) error
+	Close() error
 	Users() Users
 	Audit() Audits
-	Close() error
+	Crons() Crons
+	Maint() Maint
+	Snaps() Snaps
 	Folders() Folders
 	Documents() Documents
 }
@@ -47,8 +50,8 @@ func (s *store) Close() error {
 }
 
 type Config struct {
-	Path string `toml:"path"`
-	// TODO: snapshots
+	Path      string `toml:"path"`
+	Snapshots string `toml:"snapshots"`
 }
 
 func (c *Config) Validate() error {
@@ -57,6 +60,8 @@ func (c *Config) Validate() error {
 		return errors.New("database config not set")
 	case c.Path == "":
 		return errors.New("database path config not set")
+	case c.Snapshots == "":
+		return errors.New("database snapshots config not set")
 	default:
 		return nil
 	}

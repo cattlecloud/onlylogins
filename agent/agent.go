@@ -13,8 +13,11 @@ import (
 	"cattlecloud.net/go/webtools/middles/oauth"
 	"cattlecloud.net/go/webtools/middles/oauth/nonces"
 	"cattlecloud.net/go/webtools/runtime"
+	"cattlecloud.net/onlylogins/agent/cronjobs"
 	"cattlecloud.net/onlylogins/agent/web"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/crons"
+	"cattlecloud.net/onlylogins/pkg/crons/dispatch"
 	"cattlecloud.net/onlylogins/pkg/memcache"
 	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
@@ -92,6 +95,9 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	})
 	go webapp.Start(parent)
 
+	// startup cron framework and registrations
+	l.crons(parent, db)
+
 	// wait for overall context to complete
 	<-parent.Done()
 	l.log.I.Fmt("exit; goodbye!")
@@ -115,4 +121,35 @@ func (l *OnlyLogins) connectDB(parent scope.C) (database.Store, error) {
 	}
 
 	return db, nil
+}
+
+func (l *OnlyLogins) crons(parent scope.C, store database.Store) {
+	dc := dispatch.New(parent, store.Crons())
+
+	register := func(job crons.Cronjob) {
+		if err := dc.Register(job); err != nil {
+			l.log.E.Fmt("unable to register cronjob %s: %v", job.Name(), err)
+		}
+	}
+
+	register(cronjobs.NewSnapshots(
+		l.config.Crons.Snapshots,
+		l.config.Database,
+		store,
+	))
+
+	register(cronjobs.NewDailyDBM(
+		l.config.Crons.DailyDBM,
+		store,
+	))
+
+	register(cronjobs.NewWeeklyDBM(
+		l.config.Crons.WeeklyDBM,
+		store,
+	))
+
+	register(cronjobs.NewMonthlyDBM(
+		l.config.Crons.MonthlyDBM,
+		store,
+	))
 }

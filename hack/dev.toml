@@ -13,11 +13,24 @@ port      = 3000
 advertise = "http://localhost:3000"
 
 [database]
-path = "/tmp/onlylogins.database"
+path      = "/tmp/onlylogins.database"
+snapshots = "/tmp/snapshots"
 
 [memcache]
 instances        = ["/tmp/mc.sock"]
 dial-timeout     = "250ms"
 default-ttl      = "15s"
 idle-connections = 1
+
+[crons.db-snapshots]
+schedule = "0 2 * * *"
+
+[crons.db-daily]
+schedule = "0 3 * * *"
+
+[crons.db-weekly]
+schedule = "0 4 * * 0"
+
+[crons.db-monthly]
+schedule = "0 5 1 * *"
 
