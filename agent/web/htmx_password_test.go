@@ -144,7 +144,7 @@ func TestPasswordHTMX_Get_RendersForm(t *testing.T) {
 	must.StrContains(t, body, `type="password"`)
 }
 
-func TestPasswordHTMX_Get_NoSession_Aborts(t *testing.T) {
+func TestPasswordHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newPasswordRouter(t, mockdb.Open(t))
@@ -154,8 +154,8 @@ func TestPasswordHTMX_Get_NoSession_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
@@ -320,7 +320,7 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 	must.Eq(t, "  spaces  ", doc.Passwords[0].Unlock(crypt.Vault()))
 }
 
-func TestPasswordHTMX_Post_MissingVault_Aborts(t *testing.T) {
+func TestPasswordHTMX_Post_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -338,8 +338,8 @@ func TestPasswordHTMX_Post_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestPasswordHTMX_Post_WrongUser_Aborts(t *testing.T) {

@@ -58,7 +58,7 @@ func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Reque
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, weblinkID, action := h.from(r)
@@ -70,7 +70,7 @@ func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Reque
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	dbWeblink, gerr := h.store.Documents().GetWeblink(ctx, &sitecontent.GetWeblinkRequest{
@@ -111,7 +111,7 @@ func (h *weblinkEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reque
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, weblinkID, action := h.from(r)
@@ -123,7 +123,7 @@ func (h *weblinkEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reque
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	request := &sitecontent.UpdateWeblinkRequest{
@@ -173,7 +173,7 @@ func (h *weblinkEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Re
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, weblinkID, action := h.from(r)

@@ -152,23 +152,20 @@ func TestWeblinkHTMX_Get_RendersForm(t *testing.T) {
 	must.StrContains(t, body, `placeholder="https://example.com"`)
 }
 
-func TestWeblinkHTMX_Get_NoSession_Aborts(t *testing.T) {
+func TestWeblinkHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newWeblinkRouter(t, mockdb.Open(t))
 	ss := sessions(router, scache)
 
-	// No cookie => session middleware sets an inactive session on the
-	// request context; the handler then aborts (500) rather than redirect.
-	// The rendered "+ Weblink" button is only meaningful on the document
-	// page (which already requires a session), so we don't try to redirect
-	// unauthenticated htmx requests to /login.
+	// No cookie => session middleware sets an inactive session; the handler
+	// emits an HX-Redirect to /login so the page can recover via a fresh login.
 	r := requestGet(t, "/internal/weblink/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
@@ -252,7 +249,7 @@ func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 	must.SliceLen(t, 0, doc.Weblinks)
 }
 
-func TestWeblinkHTMX_Post_MissingVault_Aborts(t *testing.T) {
+func TestWeblinkHTMX_Post_MissingVault_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -270,8 +267,8 @@ func TestWeblinkHTMX_Post_MissingVault_Aborts(t *testing.T) {
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
-	must.Eq(t, http.StatusInternalServerError, w.Code)
-	must.Eq(t, "unable to process request", w.Body.String())
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
 func TestWeblinkHTMX_Post_WrongUser_Aborts(t *testing.T) {

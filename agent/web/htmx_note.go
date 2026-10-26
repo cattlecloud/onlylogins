@@ -53,7 +53,7 @@ func (h *noteHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error 
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
@@ -85,14 +85,14 @@ func (h *noteHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	raw := h.noteFrom(r)

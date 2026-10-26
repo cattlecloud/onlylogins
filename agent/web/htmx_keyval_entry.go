@@ -55,7 +55,7 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, keyvalID, action := h.from(r)
@@ -70,7 +70,7 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	kv, kverr := h.store.Documents().GetKeyval(ctx, &sitecontent.GetKeyvalRequest{
@@ -111,7 +111,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, keyvalID, action := h.from(r)
@@ -123,7 +123,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	key, value := h.kvFromForm(r)
@@ -183,7 +183,7 @@ func (h *keyvalEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Req
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, keyvalID, action := h.from(r)

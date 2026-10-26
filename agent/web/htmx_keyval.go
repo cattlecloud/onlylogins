@@ -53,7 +53,7 @@ func (h *keyvalHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) erro
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
@@ -85,14 +85,14 @@ func (h *keyvalHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document := h.folderDocumentFrom(r)
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	key, value := h.kvFromForm(r)

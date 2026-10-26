@@ -55,7 +55,7 @@ func (h *usernameEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, usernameID, action := h.from(r)
@@ -67,7 +67,7 @@ func (h *usernameEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	dbUsername, gerr := h.store.Documents().GetUsername(ctx, &sitecontent.GetUsernameRequest{
@@ -106,7 +106,7 @@ func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, usernameID, action := h.from(r)
@@ -118,7 +118,7 @@ func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	request := &sitecontent.UpdateUsernameRequest{
@@ -166,7 +166,7 @@ func (h *usernameEntryHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.R
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
-		return abort(h.log, w, ErrMissingSession)
+		return htmx.SetRedirect(w, "/login")
 	}
 
 	folder, document, usernameID, action := h.from(r)

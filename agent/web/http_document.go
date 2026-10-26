@@ -83,7 +83,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 
 	vault, verr := getVault(r)
 	if verr != nil {
-		return abort(h.log, w, verr)
+		return login(h.log, w, r)
 	}
 
 	head := &pages.Head{
