@@ -43,6 +43,20 @@
   color: var(--text);
 }
 
+.middle.folder .field-hint {
+  font-weight: 400;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.1s ease;
+}
+
+.middle.folder .field-hint:hover,
+.middle.folder .field-hint:focus-visible {
+  color: var(--primary);
+  text-decoration: underline;
+  outline: none;
+}
+
 .middle.folder .field input {
   width: 100%;
   padding: 0.65rem 0.8rem;
@@ -93,7 +107,7 @@
 
 .middle.folder .documents-list a {
   display: block;
-  padding: 0.55rem 0.25rem;
+  padding: 0.55rem 0.25rem 0.55rem 0.75rem;
   font-size: 0.95rem;
   color: var(--text);
   text-decoration: none;
@@ -115,13 +129,92 @@
   color: var(--text-muted);
 }
 
+/* --- inline hint + example chips --- */
+
+.middle.folder .doc-hint {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.5rem;
+  padding: 0.85rem 1rem;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.middle.folder .doc-hint .hint-text {
+  margin: 0;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.middle.folder .doc-hint .hint-text strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.middle.folder .doc-hint .hint-examples {
+  margin: 0;
+  display: flex;
+  flex-flow: row wrap;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.middle.folder .doc-hint .hint-examples-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-right: 0.15rem;
+}
+
+.middle.folder .example-chip {
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.1s ease, color 0.1s ease, background 0.1s ease;
+}
+
+.middle.folder .example-chip:hover,
+.middle.folder .example-chip:focus-visible {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: var(--surface);
+  outline: none;
+}
+
+.middle.folder .example-chip:active {
+  background: var(--surface);
+  border-color: var(--primary-hover);
+  color: var(--primary-hover);
+}
+
+.middle.folder .doc-hint .hint-footnote {
+  margin: 0;
+  font-size: 0.75rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
 @media (max-width: 640px) {
   .middle.folder > section {
     padding: 1.25rem;
   }
 
   .middle.folder .documents-list a {
-    padding: 0.5rem 0.2rem;
+    padding: 0.5rem 0.2rem 0.5rem 0.6rem;
     font-size: 0.92rem;
+  }
+
+  .middle.folder .doc-hint {
+    padding: 0.75rem 0.85rem;
   }
 }

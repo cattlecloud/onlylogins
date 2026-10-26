@@ -4,16 +4,41 @@
     <h1>Add a document to <span>{{.Section.Name}}</span></h1>
     <form hx-post="/folders/{{.Section.Name}}">
       <div class="field">
-        <label for="document-label">Document name</label>
+        <label for="document-label">
+          New document name
+          <a
+            class="field-hint"
+            href="/help#documents"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="What is a document? Opens help in a new tab."
+          >(what is this?)</a>
+        </label>
         <input
           type="text"
           id="document-label"
           name="label"
-          placeholder="name of document"
+          placeholder="gmail, reddit, github, ..."
           pattern="[a-zA-Z0-9]+"
           title="alphanumeric letters or numbers only"
           autocomplete="off"
           required>
+      </div>
+
+      <div class="doc-hint">
+        <p class="hint-text">
+          A secure document holds the usernames, passwords, and secrets for
+          <strong>one account or website</strong>.
+        </p>
+        <p class="hint-examples">
+          <span class="hint-examples-label">Examples:</span>
+          <button type="button" class="example-chip" data-example="github">github</button>
+          <button type="button" class="example-chip" data-example="gmail">gmail</button>
+          <button type="button" class="example-chip" data-example="bank">bank</button>
+          <button type="button" class="example-chip" data-example="aws-console">aws-console</button>
+          <button type="button" class="example-chip" data-example="reddit">reddit</button>
+        </p>
+        <p class="hint-footnote">click an example to fill the name field</p>
       </div>
 
       <button type="submit">Create</button>
@@ -21,7 +46,7 @@
   </section>
 
   <section>
-    <h2>Documents</h2>
+    <h2>My Documents</h2>
     {{if .Section.Documents}}
     <ul class="documents-list">
       {{range .Section.Documents}}
@@ -35,4 +60,6 @@
     {{end}}
   </section>
 </div>
+
+<script src="/ui/scripts/folder.js" defer></script>
 {{end}}
