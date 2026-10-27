@@ -50,7 +50,7 @@ func insertPasswordHandlerHelper(t *testing.T, store database.Store, user users.
 	doc, password string, crypt mocks.TestCrypt) records.PasswordsAuto {
 	t.Helper()
 
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 
 	list, err := store.Folders().List(ctx, user)
@@ -78,7 +78,7 @@ func insertPasswordHandlerHelper(t *testing.T, store database.Store, user users.
 
 func ensureBobPassword(t *testing.T, store database.Store) users.Identity {
 	t.Helper()
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 
 	salt := encrypt.Salt()
@@ -114,7 +114,7 @@ func postPasswordForm(t *testing.T, method, urlPath string, values url.Values) *
 func fetchDocPassword(t *testing.T, store database.Store, user users.Identity, folder, document string) *sitecontent.Document {
 	t.Helper()
 
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 
 	doc, err := store.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -170,7 +170,7 @@ func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	// create a document under the default folder
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -211,7 +211,7 @@ func TestPasswordHTMX_Post_EmptyPassword_ReturnsProblem(t *testing.T) {
 
 	// create document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -251,7 +251,7 @@ func TestPasswordHTMX_Post_TooLongPassword_ReturnsProblem(t *testing.T) {
 
 	// create document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -292,7 +292,7 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 
 	// create document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -351,7 +351,7 @@ func TestPasswordHTMX_Post_WrongUser_Aborts(t *testing.T) {
 
 	// nobody owns the document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label

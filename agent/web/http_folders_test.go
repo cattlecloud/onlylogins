@@ -65,7 +65,7 @@ func TestFolders_ServeHTTP_POST_success(t *testing.T) {
 		html:  ui.Load("folders.html"),
 	}
 
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	t.Cleanup(cancel)
 
 	scache := mocks.NewSessions()

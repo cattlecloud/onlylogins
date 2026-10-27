@@ -53,7 +53,7 @@ func insertWeblink(t *testing.T, store database.Store, user users.Identity,
 	doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
 	t.Helper()
 
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 
 	list, err := store.Folders().List(ctx, user)
@@ -84,7 +84,7 @@ func insertWeblink(t *testing.T, store database.Store, user users.Identity,
 // tests have a real distinct identity.
 func ensureBob(t *testing.T, store database.Store) users.Identity {
 	t.Helper()
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 
 	salt := encrypt.Salt()
@@ -123,7 +123,7 @@ func postForm(t *testing.T, method, urlPath string, values url.Values) *http.Req
 func fetchDoc(t *testing.T, store database.Store, user users.Identity,
 	folder, document string) *sitecontent.Document {
 	t.Helper()
-	ctx, cancel := scope.TTL(5 * time.Second)
+	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
 	doc, err := store.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
 		User: user, Folder: folder, Document: document,
@@ -180,7 +180,7 @@ func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	// create a document under the default folder
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -221,7 +221,7 @@ func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 
 	// create document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
@@ -280,7 +280,7 @@ func TestWeblinkHTMX_Post_WrongUser_Aborts(t *testing.T) {
 
 	// nobody owns the document
 	{
-		ctx, cancel := scope.TTL(5 * time.Second)
+		ctx, cancel := scope.TTL(testwait)
 		list, err := store.Folders().List(ctx, mocks.Nobody)
 		must.NoError(t, err)
 		folder := list[0].Label
