@@ -24,7 +24,7 @@ func TestPlans_Get(t *testing.T) {
 		must.Eq(t, records.PlansEnum(1), plan.ID)
 		must.Eq(t, "free", plan.Label)
 		must.Eq(t, 0, plan.MonthlyPrice)
-		must.Eq(t, 200, plan.DocumentsLimit)
+		must.Eq(t, 256, plan.DocumentsLimit)
 	})
 
 	t.Run("patreon", func(t *testing.T) {
@@ -34,7 +34,7 @@ func TestPlans_Get(t *testing.T) {
 		must.Eq(t, records.PlansEnum(2), plan.ID)
 		must.Eq(t, "patreon", plan.Label)
 		must.Eq(t, 199, plan.MonthlyPrice)
-		must.Eq(t, 999, plan.DocumentsLimit)
+		must.Eq(t, 8192, plan.DocumentsLimit)
 	})
 
 	t.Run("not found", func(t *testing.T) {
@@ -58,12 +58,12 @@ func TestPlans_List(t *testing.T) {
 	must.Eq(t, records.PlansEnum(1), list[0].ID)
 	must.Eq(t, "free", list[0].Label)
 	must.Eq(t, 0, list[0].MonthlyPrice)
-	must.Eq(t, 200, list[0].DocumentsLimit)
+	must.Eq(t, 256, list[0].DocumentsLimit)
 
 	must.Eq(t, records.PlansEnum(2), list[1].ID)
 	must.Eq(t, "patreon", list[1].Label)
 	must.Eq(t, 199, list[1].MonthlyPrice)
-	must.Eq(t, 999, list[1].DocumentsLimit)
+	must.Eq(t, 8192, list[1].DocumentsLimit)
 }
 
 func TestPlans_Usage(t *testing.T) {
@@ -80,7 +80,7 @@ func TestPlans_Usage(t *testing.T) {
 		must.Eq(t, records.PlansEnum(1), usage.Plan.ID)
 		must.Eq(t, "free", usage.Plan.Label)
 		must.Eq(t, 0, usage.Plan.MonthlyPrice)
-		must.Eq(t, 200, usage.Plan.DocumentsLimit)
+		must.Eq(t, 256, usage.Plan.DocumentsLimit)
 		must.Zero(t, usage.Documents)
 	})
 
