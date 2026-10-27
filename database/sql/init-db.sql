@@ -34,8 +34,8 @@ create table if not exists plans (
 ) strict;
 
 insert or ignore into plans (id, label, price, docs_limit) values
-    (1, 'free',      0, 200),
-    (2, 'patreon', 199, 999);
+    (1, 'free',      0,  256),
+    (2, 'patreon', 199, 8192);
 
 create table if not exists users (
     id integer primary key autoincrement,
