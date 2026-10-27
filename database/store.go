@@ -21,6 +21,7 @@ type Store interface {
 	Snaps() Snaps
 	Folders() Folders
 	Documents() Documents
+	Plans() Plans
 }
 
 // Open a database using the given configuration.

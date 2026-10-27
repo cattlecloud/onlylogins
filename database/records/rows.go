@@ -6,6 +6,11 @@ package records
 import "cattlecloud.net/go/litesql"
 
 type (
+	// table plans
+	PlansEnum litesql.ID
+)
+
+type (
 	// table folders
 	FoldersAuto litesql.ID
 
