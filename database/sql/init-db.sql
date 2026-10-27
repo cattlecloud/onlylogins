@@ -19,6 +19,24 @@ insert or ignore into standings (id, label) values
     (4, "Banned"),
     (5, "Sentinel");
 
+create table if not exists plans (
+    id integer primary key,
+    -- enum
+
+    label text check(length(label) < 16) not null unique,
+    -- the name of the plan
+
+    price integer not null,
+    -- the price of the plan in cents
+
+    docs_limit integer not null
+    -- the maximum number of documents in this plan
+) strict;
+
+insert or ignore into plans (id, label, price, docs_limit) values
+    (1, 'free',      0, 200),
+    (2, 'patreon', 199, 999);
+
 create table if not exists users (
     id integer primary key autoincrement,
     -- auto
@@ -29,8 +47,11 @@ create table if not exists users (
     email text check(length(email) >= 3 and length(email) < 128) not null,
     -- the email address (not unique)
 
+    plans_id integer not null default 1,
+    -- the plan the user is subscribed to; default free
+
     standings_id integer not null default 1,
-    -- foreign key into standings table
+    -- foreign key into standings table; default normal
 
     creation integer default (unixepoch('now')) not null,
     -- creation timestamp
