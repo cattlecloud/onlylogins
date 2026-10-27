@@ -5,6 +5,7 @@ package database
 
 import (
 	"testing"
+	"time"
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
@@ -70,7 +71,12 @@ func TestUsers_Create(t *testing.T) {
 func TestUsers_Lookup(t *testing.T) {
 	t.Parallel()
 
-	db, ctx := openTestDB(t)
+	db, _ := openTestDB(t)
+
+	// argon will burn a lot of time on these tests because we are minting
+	// and verifying several users; give the test a long time to accommodate
+	ctx, cancel := scope.WithTTL(t.Context(), 1*time.Minute)
+	t.Cleanup(cancel)
 
 	alice := insertUser(t, ctx, db, "alice")
 	bob := insertUser(t, ctx, db, "bob")
@@ -82,12 +88,14 @@ func TestUsers_Lookup(t *testing.T) {
 		must.Eq(t, "alice", u.Username)
 		must.Eq(t, "alice@example.com", u.Email)
 	})
+
 	t.Run("lookup bob", func(t *testing.T) {
 		u, err := db.Users().Lookup(ctx, bob)
 		must.NoError(t, err)
 		must.Eq(t, "bob", u.Username)
 		must.Eq(t, "bob@example.com", u.Email)
 	})
+
 	t.Run("lookup carol", func(t *testing.T) {
 		u, err := db.Users().Lookup(ctx, carol)
 		must.NoError(t, err)
