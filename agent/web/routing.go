@@ -162,6 +162,27 @@ func (a *Application) createRoutes(router *mux.Router) {
 		html:        ui.Load("help.html"),
 	})
 
+	a.handleNormal(router, &shareHTTP{
+		log:         ulog.New("http/share"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("share.html"),
+	})
+
+	a.handleNormal(router, &exportHTTP{
+		log:         ulog.New("http/export"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("export.html"),
+	})
+
+	a.handleNormal(router, &patreonHTTP{
+		log:         ulog.New("http/patreon"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("patreon.html"),
+	})
+
 	a.handleNormal(router, &documentHTTP{
 		log:         ulog.New("document"),
 		store:       a.store,
