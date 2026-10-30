@@ -50,7 +50,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
+		must.NoError(t, err)
 	})
 
 	t.Run("label with dash", func(t *testing.T) {
@@ -60,7 +60,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
+		must.NoError(t, err)
 	})
 
 	t.Run("label with space", func(t *testing.T) {

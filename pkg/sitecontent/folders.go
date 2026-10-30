@@ -40,9 +40,9 @@ var FolderIcons = map[Icon]string{
 	17: "mail.svg",
 }
 
-// labelRe restricts folder labels to alphanumeric characters so they may be
-// used directly as URL path elements without requiring percent-encoding.
-var labelRe = regexp.MustCompile(`^[a-z0-9]+$`)
+// labelRe restricts folder and document label names to alphanumeric characters and dashes.
+// this way they can be used in url paths without encoding
+var labelRe = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 
 type CreateFolderRequest struct {
 	User  users.Identity
