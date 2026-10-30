@@ -37,7 +37,7 @@ func (h *folderHTTP) Path() string {
 }
 
 func (h *folderHTTP) Methods() []string {
-	return []string{http.MethodGet, http.MethodPost}
+	return []string{http.MethodGet, http.MethodPost, http.MethodDelete}
 }
 
 func (h *folderHTTP) Metric() string {
@@ -54,8 +54,9 @@ func (h *folderHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	serve(
 		ctx, h.log, w, r, methods{
-			http.MethodGet:  h.get,
-			http.MethodPost: h.post,
+			http.MethodGet:    h.get,
+			http.MethodPost:   h.post,
+			http.MethodDelete: h.delete,
 		},
 	)
 }
@@ -122,6 +123,29 @@ func (h *folderHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	// send the user to the document page (handler does not exist yet)
 	target := path.Join("/folders", request.Folder, request.Label)
 	return htmx.SetRedirect(w, target)
+}
+
+func (h *folderHTTP) delete(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
+	session := middles.GetSession[users.Identity](r)
+
+	if !session.Active() {
+		return htmx.SetRedirect(w, "/login")
+	}
+
+	request := &sitecontent.DeleteFolderRequest{
+		User:  session.Identity(),
+		Label: h.folder(r),
+	}
+	if verr := request.Validate(); verr != nil {
+		return problem(w, verr)
+	}
+
+	if derr := h.store.Folders().Delete(ctx, request); derr != nil {
+		return abort(h.log, w, derr)
+	}
+
+	// the folder URL no longer exists; send the user to the home/folder list
+	return htmx.SetRedirect(w, "/")
 }
 
 func (h *folderHTTP) fields(r *http.Request, user users.Identity) *sitecontent.CreateDocumentRequest {

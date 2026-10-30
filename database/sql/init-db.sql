@@ -126,7 +126,7 @@ create table if not exists folders (
     icon integer not null check(icon >= 0 and icon <= 17) not null,
     -- enum; the associated icon
 
-    perma integer not null check(perma in (0, 1)) default 0,
+    protected integer not null check(protected in (0, 1)) default 0,
     -- enum; 1: permenant, 0: can be modified / deleted
 
     unique(users_id, label),
@@ -134,12 +134,12 @@ create table if not exists folders (
 ) strict;
 
 -- upon inserting into the users table, automatically create a default
--- "miscellaneous" folder for the new user (icon = 7, perma = 1)
+-- "miscellaneous" folder for the new user (icon = 7, protected = 1)
 create trigger if not exists default_folder_after_user_insert
 after insert on users
 for each row
 begin
-    insert into folders (users_id, label, icon, perma)
+    insert into folders (users_id, label, icon, protected)
     values (new.id, "miscellaneous", 7, 1);
 end;
 
