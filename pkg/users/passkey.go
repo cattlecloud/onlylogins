@@ -7,12 +7,19 @@ import (
 	"errors"
 	"strings"
 
+	"cattlecloud.net/onlylogins/pkg/entropy"
 	"github.com/shoenig/go-conceal"
 )
 
 const (
-	minimumPasskeyLength = 24
-	saltLength           = 16
+	// NIST SP 800-63 lays out guidelines for password authenticators, which we abide by and
+	// exceed by a wide margin.
+	//
+	// Some casual reading on the subject:
+	// https://pages.nist.gov/800-63-4/sp800-63b.html
+	minimumPasskeyLength  = 24 // NIST is 15
+	minimumPasskeyEntropy = 80 // NIST is 64
+	saltLength            = 16 // custom
 )
 
 func ValidateEmail(s string) error {
@@ -46,6 +53,14 @@ func ValidatePassphrase(text *conceal.Text) error {
 
 	if len(text.Unveil()) < minimumPasskeyLength {
 		return errors.New("passkey must be at least 24 characters long")
+	}
+
+	if entropy.Sequence(text.Unveil()) {
+		return errors.New("passkey contains 5 or more repeating or sequential characters")
+	}
+
+	if entropy.Bits(text.Unveil()) < minimumPasskeyEntropy {
+		return errors.New("passkey does not contain enough entropy")
 	}
 
 	return nil
