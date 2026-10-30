@@ -1395,6 +1395,72 @@
   color: var(--danger);
 }
 
+/* --- danger zone (document deletion) --- */
+
+.middle.document .danger-zone {
+  border-color: var(--danger);
+}
+
+.middle.document .danger-zone summary {
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--danger);
+  list-style: none;
+  outline: none;
+}
+
+.middle.document .danger-zone summary::-webkit-details-marker {
+  display: none;
+}
+
+.middle.document .danger-zone summary:hover,
+.middle.document .danger-zone summary:focus-visible {
+  text-decoration: underline;
+}
+
+.middle.document .danger-zone-body {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.75rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+.middle.document .danger-zone-body p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.middle.document .danger-zone-body p strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.middle.document .danger-zone-delete-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.middle.document .danger-zone-delete-btn:hover,
+.middle.document .danger-zone-delete-btn:focus-visible {
+  filter: brightness(1.1);
+  outline: none;
+}
+
 @media (max-width: 640px) {
   .middle.document > section {
     padding: 1.25rem;

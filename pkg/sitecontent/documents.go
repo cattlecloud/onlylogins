@@ -750,3 +750,15 @@ func (r *DeleteKeyvalRequest) Validate() error {
 
 	return nil
 }
+
+type DeleteDocumentRequest struct {
+	ID   records.DocumentsAuto
+	User users.Identity
+}
+
+func (r *DeleteDocumentRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	return nil
+}

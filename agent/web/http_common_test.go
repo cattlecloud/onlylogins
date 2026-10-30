@@ -36,3 +36,13 @@ func requestPost(t *testing.T, path string, cookie *http.Cookie, values url.Valu
 	r.PostForm = values
 	return r
 }
+
+func requestDelete(t *testing.T, path string, cookie *http.Cookie) *http.Request {
+	r, err := http.NewRequestWithContext(t.Context(), http.MethodDelete, path, nil)
+	must.NoError(t, err)
+
+	if cookie != nil {
+		r.AddCookie(cookie)
+	}
+	return r
+}

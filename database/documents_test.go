@@ -1016,3 +1016,64 @@ func TestDocuments_List(t *testing.T) {
 		must.Eq(t, "github", list[1].Label)
 	})
 }
+
+func TestDocuments_Delete(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path cascades children", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		id := insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "hi", crypt)
+
+		err := db.Documents().Delete(ctx, &sitecontent.DeleteDocumentRequest{
+			ID:   id,
+			User: mocks.Nobody,
+		})
+		must.NoError(t, err)
+
+		// the document itself is gone
+		count, cerr := db.Documents().Count(ctx)
+		must.NoError(t, cerr)
+		must.Zero(t, count)
+
+		// and so are its child rows (FK on delete cascade handles this)
+		doc, gerr := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.Error(t, gerr)
+		must.Nil(t, doc)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		id := insertDocument(t, ctx, db, mocks.Nobody, "github")
+		bob := insertUser(t, ctx, db, "bob")
+
+		err := db.Documents().Delete(ctx, &sitecontent.DeleteDocumentRequest{
+			ID:   id,
+			User: bob,
+		})
+		must.Error(t, err)
+
+		// the document is still present
+		count, cerr := db.Documents().Count(ctx)
+		must.NoError(t, cerr)
+		must.One(t, count)
+	})
+
+	t.Run("unknown document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		err := db.Documents().Delete(ctx, &sitecontent.DeleteDocumentRequest{
+			ID:   424242,
+			User: mocks.Nobody,
+		})
+		must.Error(t, err)
+	})
+}
