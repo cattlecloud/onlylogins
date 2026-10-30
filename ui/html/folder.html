@@ -1,7 +1,11 @@
 {{define "middle"}}
 <div class="middle folder">
-  <section>
+  <section class="header">
     <h1>Add a document to <span>{{.Section.Name}}</span></h1>
+    <a class="back-link" href="/">&larr; back to folders</a>
+  </section>
+
+  <section>
     <form hx-post="/folders/{{.Section.Name}}">
       <div class="field">
         <label for="document-label">
