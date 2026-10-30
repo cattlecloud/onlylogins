@@ -65,3 +65,20 @@ func (r *CreateFolderRequest) Validate() error {
 
 	return nil
 }
+
+type DeleteFolderRequest struct {
+	User  users.Identity
+	Label string
+}
+
+func (r *DeleteFolderRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if !labelRe.MatchString(r.Label) {
+		return errors.New("folder label must contain only alphanumeric characters")
+	}
+
+	return nil
+}

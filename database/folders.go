@@ -20,6 +20,7 @@ type Folders interface {
 	// folder operations
 	Create(scope.C, *sitecontent.CreateFolderRequest) error
 	List(scope.C, users.Identity) ([]*sitecontent.Folder, error)
+	Delete(scope.C, *sitecontent.DeleteFolderRequest) error
 }
 
 type foldersql struct {
@@ -93,4 +94,32 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 	}
 
 	return litesql.QueryRows(ctx, tx, f, statement, user)
+}
+
+func (s *foldersql) Delete(ctx scope.C, request *sitecontent.DeleteFolderRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to delete folder: %w", xerr)
+	}
+	defer done()
+
+	// refuse to delete system-protected rows (e.g. the default "miscellaneous"
+	// folder with protected=1); the where clause ensures we never touch them
+	// even if the caller tries
+	const statement = `
+	delete from folders
+	where
+		users_id = ? and
+		label = ? and
+		protected = 0`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.User,
+		request.Label,
+	); rerr != nil {
+		s.log.E.Fmt("unable to delete folder: %v", rerr)
+		return fmt.Errorf("unable to delete folder: %w", rerr)
+	}
+
+	return tx.Commit()
 }

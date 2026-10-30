@@ -63,6 +63,28 @@
     <p class="empty">No documents yet</p>
     {{end}}
   </section>
+
+  {{if ne .Section.Name "miscellaneous"}}
+  <section class="danger-zone">
+    <details>
+      <summary>Danger Zone</summary>
+      <div class="danger-zone-body">
+        <p>
+          Deleting <strong>{{.Section.Name}}</strong> will permanently remove
+          this folder and every document it contains, including all stored
+          usernames, passwords, key/values, web links, and notes. This action
+          cannot be undone.
+        </p>
+        <button
+          type="button"
+          class="danger-zone-delete-btn"
+          hx-delete="/folders/{{.Section.Name}}"
+          hx-confirm="Delete this folder {{.Section.Name}} and ALL of its documents and secrets?"
+        >Delete folder</button>
+      </div>
+    </details>
+  </section>
+  {{end}}
 </div>
 
 <script src="/ui/scripts/folder.js" defer></script>
