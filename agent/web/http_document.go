@@ -1,12 +1,15 @@
 package web
 
 import (
+	"errors"
 	"html/template"
 	"net/http"
+	"path"
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/urlpath"
+	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/go/webtools/middles/identity"
 	"cattlecloud.net/go/webtools/runtime"
@@ -35,7 +38,7 @@ func (h *documentHTTP) Path() string {
 }
 
 func (h *documentHTTP) Methods() []string {
-	return []string{http.MethodGet}
+	return []string{http.MethodGet, http.MethodDelete}
 }
 
 func (h *documentHTTP) Metric() string {
@@ -52,7 +55,8 @@ func (h *documentHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	serve(
 		ctx, h.log, w, r, methods{
-			http.MethodGet: h.get,
+			http.MethodGet:    h.get,
+			http.MethodDelete: h.delete,
 		},
 	)
 }
@@ -101,17 +105,57 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
 }
 
-func (h *documentHTTP) document(r *http.Request, user users.Identity) *sitecontent.GetDocumentRequest {
-	var folder, document string
-	urlpath.MustParse(r, urlpath.Schema{
-		"folder":   urlpath.String(&folder),
-		"document": urlpath.String(&document),
+func (h *documentHTTP) delete(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
+	session := middles.GetSession[users.Identity](r)
+
+	if !session.Active() {
+		return htmx.SetRedirect(w, "/login")
+	}
+
+	user := session.Identity()
+	folder, document := h.fromPath(r)
+
+	// turn the folder and document labels into a document id
+	get, gerr := h.store.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+		User:     user,
+		Folder:   folder,
+		Document: document,
 	})
+	if gerr != nil {
+		return abort(h.log, w, errors.New("document not found"))
+	}
+
+	request := &sitecontent.DeleteDocumentRequest{
+		ID:   get.ID,
+		User: user,
+	}
+	if verr := request.Validate(); verr != nil {
+		return problem(w, verr)
+	}
+
+	if derr := h.store.Documents().Delete(ctx, request); derr != nil {
+		return abort(h.log, w, derr)
+	}
+
+	target := path.Join("/folders", folder)
+	return htmx.SetRedirect(w, target)
+}
+
+func (h *documentHTTP) document(r *http.Request, user users.Identity) *sitecontent.GetDocumentRequest {
+	folder, document := h.fromPath(r)
 	return &sitecontent.GetDocumentRequest{
 		User:     user,
 		Folder:   folder,
 		Document: document,
 	}
+}
+
+func (h *documentHTTP) fromPath(r *http.Request) (folder, document string) {
+	urlpath.MustParse(r, urlpath.Schema{
+		"folder":   urlpath.String(&folder),
+		"document": urlpath.String(&document),
+	})
+	return folder, document
 }
 
 func (h *documentHTTP) description() string {

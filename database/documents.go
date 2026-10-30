@@ -22,6 +22,7 @@ type Documents interface {
 	Create(scope.C, *sitecontent.CreateDocumentRequest) (records.DocumentsAuto, error)
 	List(scope.C, *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error)
 	Get(scope.C, *sitecontent.GetDocumentRequest) (*sitecontent.Document, error)
+	Delete(scope.C, *sitecontent.DeleteDocumentRequest) error
 
 	// document > weblinks
 	CreateWeblink(scope.C, *sitecontent.CreateWeblinkRequest) (records.WeblinksAuto, error)
@@ -106,6 +107,33 @@ func (s *documentsql) Create(ctx scope.C, request *sitecontent.CreateDocumentReq
 	}
 
 	return records.DocumentsAuto(id), tx.Commit()
+}
+
+func (s *documentsql) Delete(ctx scope.C, request *sitecontent.DeleteDocumentRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return xerr
+	}
+	defer done()
+
+	const statement = `
+	delete from documents
+	where id = ? and id in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where f.users_id = ?
+	)`
+
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.ID,
+		request.User,
+	); err != nil {
+		s.log.E.Fmt("unable to delete document: %v", err)
+		return fmt.Errorf("unable to delete document: %w", err)
+	}
+
+	return tx.Commit()
 }
 
 func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error) {

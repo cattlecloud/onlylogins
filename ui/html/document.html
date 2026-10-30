@@ -202,5 +202,24 @@
       <p class="empty">No note yet</p>
     {{end}}
   </section>
+
+  <section class="danger-zone">
+    <details>
+      <summary>Danger Zone</summary>
+      <div class="danger-zone-body">
+        <p>
+          Deleting <strong>{{.Section.Document.Label}}</strong> will permanently
+          remove this document and every username, password, key/value, web
+          link, and note inside it. This action cannot be undone.
+        </p>
+        <button
+          type="button"
+          class="danger-zone-delete-btn"
+          hx-delete="/folders/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+          hx-confirm="Delete this document {{.Section.Document.Label}} and all its secrets?"
+        >Delete document</button>
+      </div>
+    </details>
+  </section>
 </div>
 {{end}}
