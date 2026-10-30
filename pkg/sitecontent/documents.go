@@ -6,7 +6,6 @@ package sitecontent
 import (
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"cattlecloud.net/onlylogins/database/records"
@@ -106,10 +105,6 @@ type GetDocumentRequest struct {
 	Document string
 }
 
-// docRe restricts document labels to alphanumeric characters so as to be
-// URL-safe (but with uppercase enabled)
-var docRe = regexp.MustCompile(`^[a-zA-Z0-9]+$`)
-
 func (r *CreateDocumentRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
@@ -119,7 +114,7 @@ func (r *CreateDocumentRequest) Validate() error {
 		return errors.New("folder must be set")
 	}
 
-	if !docRe.MatchString(r.Label) {
+	if !labelRe.MatchString(r.Label) {
 		return errors.New("document label must contain alphanumeric characters")
 	}
 
