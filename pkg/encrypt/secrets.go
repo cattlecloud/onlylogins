@@ -18,8 +18,7 @@ const (
 	// Argon2id parameters, following the OWASP / RFC 9106 "moderate" tier.
 	//
 	// NOTE: these make each key derivation cost roughly a second and 64 MiB of
-	// RAM. The login endpoint must be rate-limited (see issue #4) or it becomes
-	// a memory-exhaustion DoS vector.
+	// RAM.
 	argonTime    uint32 = 3
 	argonMemory  uint32 = 64 * 1024 // 64 MiB
 	argonThreads uint8  = 4
