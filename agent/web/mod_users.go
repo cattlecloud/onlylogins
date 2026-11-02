@@ -47,10 +47,13 @@ func (h *modUsersHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *modUsersHTTP) get(ctx scope.C, w http.ResponseWriter, _ *http.Request) error {
-	_ = ctx
+	users, lerr := h.store.Users().List(ctx)
+	if lerr != nil {
+		return abort(h.log, w, lerr)
+	}
 
 	content := &modUsersContent{
-		// TODO
+		Profiles: users,
 	}
 
 	return h.html.ExecuteTemplate(w, "layout", content)

@@ -103,3 +103,52 @@ func TestUsers_Lookup(t *testing.T) {
 		must.Eq(t, "carol@example.com", u.Email)
 	})
 }
+
+func TestUsers_List(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	u := db.Users()
+
+	t.Run("initial", func(t *testing.T) {
+		list, err := u.List(ctx)
+		must.NoError(t, err)
+		must.Len(t, testUsersCount, list)
+
+		// the nobody user comes with the schema
+		first := list[0]
+		must.Eq(t, users.Identity(testUsersCount), first.ID)
+		must.Eq(t, "_nobody", first.Username)
+		must.Eq(t, "nobody@onlylogins.invalid", first.Email)
+		must.Eq(t, users.Sentinel, first.Standing)
+	})
+
+	t.Run("after inserts", func(t *testing.T) {
+		alice := insertUser(t, ctx, db, "alice")
+		bob := insertUser(t, ctx, db, "bob")
+		carol := insertUser(t, ctx, db, "carol")
+
+		list, err := u.List(ctx)
+		must.NoError(t, err)
+		must.Len(t, testUsersCount+3, list)
+
+		// sentinel user remains first by id
+		must.Eq(t, "_nobody", list[0].Username)
+		must.Eq(t, users.Sentinel, list[0].Standing)
+
+		// inserted users follow in insertion order (auto-increment ids)
+		must.Eq(t, alice, list[1].ID)
+		must.Eq(t, "alice", list[1].Username)
+		must.Eq(t, "alice@example.com", list[1].Email)
+		must.Eq(t, users.Normal, list[1].Standing)
+
+		must.Eq(t, bob, list[2].ID)
+		must.Eq(t, "bob", list[2].Username)
+		must.Eq(t, users.Normal, list[2].Standing)
+
+		must.Eq(t, carol, list[3].ID)
+		must.Eq(t, "carol", list[3].Username)
+		must.Eq(t, "carol@example.com", list[3].Email)
+		must.Eq(t, users.Normal, list[3].Standing)
+	})
+}

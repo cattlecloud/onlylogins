@@ -13,18 +13,18 @@
       <tr>
         <th>username</th>
         <th>id</th>
-        <th>oauth</th>
         <th>email</th>
+        <th>standing</th>
         <th>manage</th>
       </tr>
     </thead>
     <tbody>
-    {{range .Users}}
+    {{range .Profiles}}
       <tr>
         <td>{{.Username}}</td>
         <td>{{.ID}}</td>
-        <td>{{.IDP}}</td>
         <td>{{.Email}}</td>
+        <td>{{.Standing}}</td>
         <td><a href="/moderate/users/{{.ID}}">open</a></td>
       </tr>
     {{end}}
