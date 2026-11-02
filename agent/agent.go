@@ -18,6 +18,7 @@ import (
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/crons"
 	"cattlecloud.net/onlylogins/pkg/crons/dispatch"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
 	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
@@ -82,6 +83,9 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	// administration council
 	council := users.NewCouncil(l.config.Users.Administrators)
 
+	// shared shares vault
+	vault := encrypt.NewFromConfig(l.config.Vault)
+
 	// startup http web application
 	webapp := web.New(l.config.HTTP, &web.Objects{
 		Environment: env,
@@ -92,6 +96,7 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 		Metrics:     mets,
 		Mcache:      mcache,
 		Mint:        mint,
+		Vault:       vault,
 	})
 	go webapp.Start(parent)
 

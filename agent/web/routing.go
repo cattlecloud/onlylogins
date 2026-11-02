@@ -6,6 +6,7 @@ package web
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
@@ -14,6 +15,7 @@ import (
 	"cattlecloud.net/go/webtools/middles/oauth/nonces"
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
@@ -32,6 +34,7 @@ type Application struct {
 	metrics     *metrics.Set
 	mcache      memcache.Client
 	mint        nonces.Mint
+	vault       encrypt.Vault
 }
 
 func (a *Application) createRoutes(router *mux.Router) {
@@ -165,8 +168,17 @@ func (a *Application) createRoutes(router *mux.Router) {
 	a.handleNormal(router, &shareHTTP{
 		log:         ulog.New("http/share"),
 		store:       a.store,
+		vault:       a.vault,
 		environment: a.environment,
 		html:        ui.Load("share.html"),
+	})
+
+	a.handleNormal(router, &shareOpenHTTP{
+		log:   ulog.New("http/share/open"),
+		store: a.store,
+		vault: a.vault,
+		now:   time.Now,
+		html:  ui.Load("share_open.html"),
 	})
 
 	a.handleNormal(router, &exportHTTP{
@@ -221,6 +233,7 @@ type Objects struct {
 	Metrics     *metrics.Set
 	Mcache      memcache.Client
 	Mint        nonces.Mint
+	Vault       encrypt.Vault
 }
 
 func New(config *Config, objects *Objects) *Application {
@@ -235,6 +248,7 @@ func New(config *Config, objects *Objects) *Application {
 		metrics:     objects.Metrics,
 		mcache:      objects.Mcache,
 		mint:        objects.Mint,
+		vault:       objects.Vault,
 	}
 }
 

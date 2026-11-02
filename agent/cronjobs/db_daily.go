@@ -41,6 +41,20 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	ctx, cancel := scope.TTL(1 * time.Minute)
 	defer cancel()
 
+	// guarnteed to be expired by this time
+	const expiration = 31 * 24 * time.Hour
+
+	shares, serr := c.store.Shares(nil).Prune(ctx, expiration)
+	if serr != nil {
+		c.log.E.Fmt("failed to prune shares: %v", serr)
+		return &crons.RunMetric{
+			Code:  crons.ExitFailure,
+			Start: start,
+			Stop:  time.Now(),
+		}
+	}
+	c.log.I.Fmt("pruned %d old shares", shares)
+
 	if err := c.store.Maint().Optimize(ctx); err != nil {
 		c.log.E.Fmt("failed to optimize: %v", err)
 		return &crons.RunMetric{
@@ -49,6 +63,7 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 			Stop:  time.Now(),
 		}
 	}
+	c.log.I.Fmt("database has been optimized")
 
 	return &crons.RunMetric{
 		Code:  crons.ExitSuccess,

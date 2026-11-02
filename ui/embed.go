@@ -51,7 +51,8 @@ func Load(filename string, parts ...string) *template.Template {
 
 	// configure custom functions for formatting text
 	funcs := template.FuncMap{
-		"Icon": format.Icon,
+		"Icon":     format.Icon,
+		"DateTime": format.DateTime,
 	}
 
 	// parse template files

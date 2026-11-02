@@ -1,0 +1,28 @@
+{{define "middle"}}
+<div class="middle shareopen">
+  <h1>Open Share</h1>
+
+  {{if .Section.Paper}}
+  <div class="paper">
+    <span id="error"></span>
+    <label>Created</label><span>{{DateTime .Section.Paper.Creation}}</span>
+    <label>Opened</label><span>{{DateTime .Section.Opened}}</span>
+    <label>Accessed From</label><span>{{.Section.IP}}</span>
+    <label>Message</label>
+    <textarea readonly>{{.Section.Paper.Secret.Unveil}}</textarea>
+  </div>
+  {{else}}
+  <div class="missing">
+    <div class="uid-display">
+      <label>Share ID</label>
+      <code>{{.Section.UID}}</code>
+    </div>
+    <p>This share does not exist.</p>
+    <p>Once a share is viewed or expired, it is automatically and permanently deleted.</p>
+    <div class="back-link">
+      <a href="/share">&larr; Back to Share</a>
+    </div>
+  </div>
+  {{end}}
+</div>
+{{end}}
