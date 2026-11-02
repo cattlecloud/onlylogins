@@ -37,6 +37,7 @@ type Users interface {
 	Delete(scope.C, users.Identity) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
 	Check(scope.C, *users.LoginRequest) (users.Identity, *conceal.Bytes, error)
+	List(scope.C) ([]*users.Profile, error)
 }
 
 type usersql struct {
@@ -240,4 +241,34 @@ func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identit
 // UNIQUE constraint failed during an insert.
 func isUsernameTaken(err error) bool {
 	return err != nil && strings.Contains(err.Error(), "UNIQUE constraint failed: users.username")
+}
+
+func (s *usersql) List(ctx scope.C) ([]*users.Profile, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to list users: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select
+		id,
+		username,
+		email,
+		standings_id
+	from users
+	order by id asc`
+
+	f := func(scan litesql.ScanFunc) (*users.Profile, error) {
+		var profile users.Profile
+		err := scan(
+			&profile.ID,
+			&profile.Username,
+			&profile.Email,
+			&profile.Standing,
+		)
+		return &profile, err
+	}
+
+	return litesql.QueryRows(ctx, tx, f, statement)
 }
