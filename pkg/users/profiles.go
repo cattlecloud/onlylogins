@@ -70,6 +70,10 @@ func (r *CreateUserRequest) Validate() error {
 		return err
 	}
 
+	if !r.Passphrase.Equal(r.Confirm) {
+		return errors.New("passphrases do not match")
+	}
+
 	return nil
 }
 
