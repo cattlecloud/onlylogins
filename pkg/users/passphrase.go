@@ -48,19 +48,19 @@ func ValidateSalt(salt *conceal.Bytes) error {
 
 func ValidatePassphrase(text *conceal.Text) error {
 	if text == nil {
-		return errors.New("passkey must not be nil")
+		return errors.New("passphrase must not be nil")
 	}
 
 	if len(text.Unveil()) < minimumPasskeyLength {
-		return errors.New("passkey must be at least 24 characters long")
+		return errors.New("passphrase must be at least 24 characters long")
 	}
 
 	if entropy.Sequence(text.Unveil()) {
-		return errors.New("passkey contains 5 or more repeating or sequential characters")
+		return errors.New("passphrase contains 5 or more repeating or sequential characters")
 	}
 
 	if entropy.Bits(text.Unveil()) < minimumPasskeyEntropy {
-		return errors.New("passkey does not contain enough entropy")
+		return errors.New("passphrase does not contain enough entropy")
 	}
 
 	return nil
