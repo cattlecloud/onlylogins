@@ -166,7 +166,7 @@ func TestFolder_Get_Empty(t *testing.T) {
 
 	must.Eq(t, http.StatusOK, w.Code)
 	body := w.Body.String()
-	must.StrContains(t, body, `<h2>My Documents</h2>`)
+	must.StrContains(t, body, `<h2>Your documents in miscellaneous</h2>`)
 	must.StrContains(t, body, "No documents yet")
 	must.StrContains(t, body, `class="empty"`)
 	must.StrNotContains(t, body, `class="documents-list"`)
@@ -227,7 +227,7 @@ func TestFolder_Get_WithDocuments(t *testing.T) {
 	must.StrContains(t, body, `class="documents-list"`)
 
 	// the empty-state copy is absent when there are documents
-	must.StrContains(t, body, `<h2>My Documents</h2>`)
+	must.StrContains(t, body, `<h2>Your documents in miscellaneous</h2>`)
 	must.StrNotContains(t, body, "No documents yet")
 	must.StrNotContains(t, body, `class="empty"`)
 

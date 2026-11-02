@@ -1,7 +1,7 @@
 {{define "middle"}}
 <div class="middle folder">
   <section class="header">
-    <h1>Add a document to <span>{{.Section.Name}}</span></h1>
+    <h1><span>{{.Section.Name}}</span> folder</h1>
     <a class="back-link" href="/">&larr; back to folders</a>
   </section>
 
@@ -50,7 +50,7 @@
   </section>
 
   <section>
-    <h2>My Documents</h2>
+    <h2>Your documents in {{.Section.Name}}</h2>
     {{if .Section.Documents}}
     <ul class="documents-list">
       {{range .Section.Documents}}
