@@ -91,19 +91,22 @@ func (h *loginHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 
 func (*loginHTTP) signupFields(r *http.Request) *users.CreateUserRequest {
 	var email, username string
-	var passphrase *conceal.Text
+	var passphrase, confirm *conceal.Text
 	var notifications, spam bool
 	forms.MustParse(r, forms.Schema{
 		"signup-email":      forms.String(&email),
 		"signup-username":   forms.String(&username),
 		"signup-passphrase": forms.Secret(&passphrase),
+		"signup-confirm":    forms.Secret(&confirm),
 		"notifications":     forms.BoolOr(&notifications, false),
 		"marketing":         forms.BoolOr(&spam, false),
 	})
+
 	return &users.CreateUserRequest{
 		Email:         email,
 		Username:      username,
 		Passphrase:    passphrase,
+		Confirm:       confirm,
 		Notifications: notifications,
 		Spam:          spam,
 	}
@@ -168,6 +171,14 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	// ensure the request contains valid parameters
 	if err := request.Validate(); err != nil {
 		return problem(w, err)
+	}
+
+	// ensure the user actually typed their passphrase twice and got a match.
+	// the form posts both signup-passphrase and signup-confirm;
+	// we compare them here against the same validation-style error as any
+	// other invalid input.
+	if !request.Passphrase.Equal(request.Confirm) {
+		return problem(w, errors.New("passphrases do not match"))
 	}
 
 	// derive the encryption key for the user
