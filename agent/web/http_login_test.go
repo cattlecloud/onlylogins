@@ -63,6 +63,7 @@ func TestSignupFields(t *testing.T) {
 			"signup-email":      {"you@example.com"},
 			"signup-username":   {"alice"},
 			"signup-passphrase": {"correct horse battery staple"},
+			"signup-confirm":    {"correct horse battery staple"},
 			"notifications":     {"true"},
 			"marketing":         {"true"},
 		})
@@ -72,6 +73,7 @@ func TestSignupFields(t *testing.T) {
 		must.Eq(t, "you@example.com", got.Email)
 		must.Eq(t, "alice", got.Username)
 		must.Eq(t, "correct horse battery staple", got.Passphrase.Unveil())
+		must.Eq(t, "correct horse battery staple", got.Confirm.Unveil())
 		must.True(t, got.Notifications)
 		must.True(t, got.Spam)
 		must.Nil(t, got.Salt)
@@ -82,12 +84,14 @@ func TestSignupFields(t *testing.T) {
 			"signup-email":      {"you@example.com"},
 			"signup-username":   {"alice"},
 			"signup-passphrase": {"correct horse battery staple"},
+			"signup-confirm":    {"correct horse battery staple"},
 		})
 
 		got := (&loginHTTP{}).signupFields(request)
 
 		must.False(t, got.Notifications)
 		must.False(t, got.Spam)
+		must.Eq(t, "correct horse battery staple", got.Confirm.Unveil())
 	})
 
 	t.Run("missing required field", func(t *testing.T) {
@@ -106,6 +110,7 @@ func TestSignupFields(t *testing.T) {
 			"signup-email":      {"you@example.com"},
 			"signup-username":   {"alice"},
 			"signup-passphrase": {"correct horse battery staple"},
+			"signup-confirm":    {"correct horse battery staple"},
 			"notifications":     {"on"},
 			"marketing":         {"on"},
 		})
@@ -121,6 +126,7 @@ func TestSignupFields(t *testing.T) {
 			"signup-email":      {"you@example.com"},
 			"signup-username":   {"alice"},
 			"signup-passphrase": {"correct horse battery staple"},
+			"signup-confirm":    {"correct horse battery staple"},
 			"unique":            {"true"},
 			"no-recovery":       {"true"},
 		})
@@ -142,6 +148,7 @@ func TestSignup_NewUser_Redirects(t *testing.T) {
 		"signup-email":      {"alice@example.com"},
 		"signup-username":   {"alice"},
 		"signup-passphrase": {"correct horse battery staple"},
+		"signup-confirm":    {"correct horse battery staple"},
 	})
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, r)
@@ -161,6 +168,7 @@ func TestSignup_DuplicateUsername_RendersNiceError(t *testing.T) {
 		"signup-email":      {"alice@example.com"},
 		"signup-username":   {"alice"},
 		"signup-passphrase": {"correct horse battery staple"},
+		"signup-confirm":    {"correct horse battery staple"},
 	})
 	w1 := httptest.NewRecorder()
 	routes.ServeHTTP(w1, r1)
@@ -173,6 +181,7 @@ func TestSignup_DuplicateUsername_RendersNiceError(t *testing.T) {
 		"signup-email":      {"someone-else@example.com"},
 		"signup-username":   {"alice"},
 		"signup-passphrase": {"different passphrase but long enough"},
+		"signup-confirm":    {"different passphrase but long enough"},
 	})
 	w2 := httptest.NewRecorder()
 	routes.ServeHTTP(w2, r2)
@@ -194,6 +203,7 @@ func TestSignup_InvalidEmail_RendersValidationError(t *testing.T) {
 		"signup-email":      {"not-an-email"},
 		"signup-username":   {"alice"},
 		"signup-passphrase": {"correct horse battery staple"},
+		"signup-confirm":    {"correct horse battery staple"},
 	})
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, r)
@@ -202,4 +212,33 @@ func TestSignup_InvalidEmail_RendersValidationError(t *testing.T) {
 	body := w.Body.String()
 	must.StrContains(t, body, `<span id="error" hx-swap-oob="true">`)
 	must.StrNotContains(t, body, database.ErrUsernameTaken.Error())
+}
+
+func TestSignup_MismatchedPassphrases_ReturnsError(t *testing.T) {
+	t.Parallel()
+
+	routes, store := newSignupRouter(t)
+
+	r := makeLoginRequest(t, url.Values{
+		"signup-email":      {"alice@example.com"},
+		"signup-username":   {"alice"},
+		"signup-passphrase": {"correct horse battery staple"},
+		"signup-confirm":    {"completely different but still long enough"},
+	})
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `<span id="error" hx-swap-oob="true">`)
+	must.StrContains(t, body, "passphrases do not match")
+
+	// server-side defense: no user was created even though the request
+	// looked otherwise valid (both values met length constraints).
+	// mockdb seeds a baseline `_nobody` user on init, so the baseline
+	// count is 1; a new signup would push it to 2.
+	const baseline = 1
+	count, cerr := store.Users().Count(t.Context())
+	must.NoError(t, cerr)
+	must.Eq(t, baseline, count)
 }

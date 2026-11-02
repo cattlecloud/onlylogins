@@ -44,6 +44,7 @@ type CreateUserRequest struct {
 	Username      string
 	Salt          *conceal.Bytes
 	Passphrase    *conceal.Text
+	Confirm       *conceal.Text
 	Notifications bool
 	Spam          bool
 }
