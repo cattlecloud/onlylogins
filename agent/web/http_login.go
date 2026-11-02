@@ -173,14 +173,6 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 		return problem(w, err)
 	}
 
-	// ensure the user actually typed their passphrase twice and got a match.
-	// the form posts both signup-passphrase and signup-confirm;
-	// we compare them here against the same validation-style error as any
-	// other invalid input.
-	if !request.Passphrase.Equal(request.Confirm) {
-		return problem(w, errors.New("passphrases do not match"))
-	}
-
 	// derive the encryption key for the user
 	key := encrypt.DeriveKey(request.Passphrase, request.Salt)
 	verifier := encrypt.MakeVerifier(key)
