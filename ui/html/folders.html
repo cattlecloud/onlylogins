@@ -1,10 +1,10 @@
 {{define "middle"}}
 <div class="middle folders">
   <section>
-    <h1>Create a folder</h1>
+    <h1>Add a new folder</h1>
     <form hx-post="/folders">
       <div class="field">
-        <label for="folder-label">Label</label>
+        <label for="folder-label">Put a label on it</label>
         <input
           type="text"
           id="folder-label"
@@ -17,7 +17,7 @@
       </div>
 
       <fieldset class="icon-picker">
-        <legend>Icon</legend>
+        <legend>Choose an icon</legend>
         {{range $k, $v := .Section.Icons}}
         <label class="icon-option">
           <input
