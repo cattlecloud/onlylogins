@@ -11,9 +11,7 @@ import (
 type (
 	// table plans
 	PlansEnum litesql.ID
-)
 
-type (
 	// table folders
 	FoldersAuto litesql.ID
 
