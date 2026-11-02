@@ -9,6 +9,7 @@ import (
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 )
 
 type Store interface {
@@ -22,6 +23,7 @@ type Store interface {
 	Folders() Folders
 	Documents() Documents
 	Plans() Plans
+	Shares(encrypt.Vault) Shares
 }
 
 // Open a database using the given configuration.

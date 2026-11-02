@@ -4,38 +4,174 @@
 package web
 
 import (
+	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
+	"time"
 
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/runtime"
+	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/gorilla/mux"
 	"github.com/shoenig/test/must"
 )
 
-func TestShare_ServeHTTP(t *testing.T) {
-	t.Parallel()
+// makeShareMux wires both the /share and /share/open/{uid} endpoints into
+// a fresh mux router with a session cache ready for creating test cookies.
+func makeShareMux(t *testing.T, store database.Store, crypt mocks.TestCrypt) (*mux.Router, *mocks.Sessions) {
+	t.Helper()
 
 	env := runtime.Setup(&runtime.Config{
 		Domain:      "test.local",
 		Environment: "local",
 	})
 
-	store := mockdb.Open(t)
-	routes := mux.NewRouter()
-	routes.Handle("/share", &shareHTTP{
+	scache := mocks.NewSessions()
+	router := mux.NewRouter()
+
+	router.Handle((&shareHTTP{}).Path(), &shareHTTP{
 		log:         ulog.New("test"),
 		environment: env,
 		store:       store,
+		vault:       crypt.Vault(),
 		html:        ui.Load("share.html"),
 	})
 
-	request := requestGet(t, "/share", nil)
+	router.Handle((&shareOpenHTTP{}).Path(), &shareOpenHTTP{
+		log:   ulog.New("test"),
+		store: store,
+		vault: crypt.Vault(),
+		now:   time.Now,
+		html:  ui.Load("share_open.html"),
+	})
+
+	return router, scache
+}
+
+func TestShare_ServeHTTP_GET(t *testing.T) {
+	t.Parallel()
+
+	router, scache := makeShareMux(t, mockdb.Open(t), mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	r := requestGet(t, "/share", nil)
 	w := httptest.NewRecorder()
-	routes.ServeHTTP(w, request)
+	ss.ServeHTTP(w, r)
 
 	body := w.Body.String()
+	must.Eq(t, http.StatusOK, w.Code)
 	must.StrContains(t, body, `<div class="middle share">`)
+	// logged-out viewers should see the landing block, not the form
+	must.StrContains(t, body, "Log in to start sharing")
+}
+
+func TestShare_ServeHTTP_GET_logged_in(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+	r := requestGet(t, "/share", cookie)
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	body := w.Body.String()
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, body, `<div class="middle share">`)
+	must.StrContains(t, body, "Create link to a secret message")
+	must.StrContains(t, body, `hx-put="/share"`)
+}
+
+func TestShare_ServeHTTP_PUT_not_logged_in(t *testing.T) {
+	t.Parallel()
+
+	router, scache := makeShareMux(t, mockdb.Open(t), mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	r, rerr := http.NewRequestWithContext(t.Context(), http.MethodPut,
+		"/share?content=secretvalue&ttl=900", nil)
+	must.NoError(t, rerr)
+	_ = r.ParseForm()
+
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
+}
+
+func TestShare_ServeHTTP_PUT(t *testing.T) {
+	t.Parallel()
+
+	const userID = mocks.Nobody
+	store := mockdb.Open(t)
+	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	cookie := scache.Create(userID, 1*time.Minute)
+
+	r, rerr := http.NewRequestWithContext(t.Context(), http.MethodPut,
+		"/share?content=secretvalue&ttl=900", nil)
+	must.NoError(t, rerr)
+	r.AddCookie(cookie)
+	_ = r.ParseForm()
+
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, w.Body.String(), `share link`)
+	must.StrContains(t, w.Body.String(), `share/open/`)
+}
+
+func TestShare_ServeHTTP_PUT_empty_content(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r, rerr := http.NewRequestWithContext(t.Context(), http.MethodPut,
+		"/share?ttl=900&content=", nil)
+	must.NoError(t, rerr)
+	r.AddCookie(cookie)
+	_ = r.ParseForm()
+
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, w.Body.String(), `content must be set`)
+}
+
+func TestShare_ServeHTTP_PUT_content_too_long(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
+	ss := sessions(router, scache)
+
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	longContent := strings.Repeat("x", 8001)
+
+	r, rerr := http.NewRequestWithContext(t.Context(), http.MethodPut,
+		"/share?content="+string(longContent)+"&ttl=900", nil)
+	must.NoError(t, rerr)
+	r.AddCookie(cookie)
+	_ = r.ParseForm()
+
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, w.Body.String(), `content is too long`)
 }

@@ -294,3 +294,24 @@ create trigger if not exists init_cron_runs_zero after insert on crons
 for each row begin
     insert into cron_runs (crons_id) values (NEW.id);
 end;
+
+create table if not exists shares (
+    uid text check(length(uid) == 36) primary key,
+    -- unique uuidv4
+
+    users_id integer not null,
+    -- key into users; the creator
+
+    content blob check(length(content) < 8196) not null,
+    -- the content of the share; encrypted
+
+    ttl integer check(ttl > 60) not null,
+    -- time to live, in seconds
+
+    creation integer default (unixepoch('now')) not null,
+    -- timestamp of creation
+
+    foreign key(users_id) references users(id) on delete cascade
+) strict;
+
+create index if not exists idx_shares_creation on shares(creation);

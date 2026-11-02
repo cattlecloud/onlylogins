@@ -23,3 +23,53 @@ func TestVault_EncryptDecrypt(t *testing.T) {
 	must.NoError(t, err)
 	must.Eq(t, original.Unveil(), decrypted.Unveil())
 }
+
+func TestVault_NewFromConfig(t *testing.T) {
+	t.Parallel()
+
+	// two vaults built from the same passphrase must round-trip
+	a := NewFromConfig(&Config{Passphrase: "shared-passphrase"})
+	b := NewFromConfig(&Config{Passphrase: "shared-passphrase"})
+
+	original := conceal.New("a top secret hush-hush thing")
+	encrypted, err := a.Encrypt(original)
+	must.NoError(t, err)
+
+	decrypted, err := b.Decrypt(encrypted)
+	must.NoError(t, err)
+	must.Eq(t, original.Unveil(), decrypted.Unveil())
+}
+
+func TestVault_NewFromConfig_DifferentPassphrasesDoNotMatch(t *testing.T) {
+	t.Parallel()
+
+	a := NewFromConfig(&Config{Passphrase: "passphrase-one"})
+	b := NewFromConfig(&Config{Passphrase: "passphrase-two"})
+
+	original := conceal.New("a top secret hush-hush thing")
+	encrypted, err := a.Encrypt(original)
+	must.NoError(t, err)
+
+	_, derr := b.Decrypt(encrypted)
+	must.Error(t, derr)
+}
+
+func TestVault_ConfigValidate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("nil config", func(t *testing.T) {
+		var c *Config
+		err := c.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("empty passphrase", func(t *testing.T) {
+		err := (&Config{}).Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("valid", func(t *testing.T) {
+		err := (&Config{Passphrase: "anything"}).Validate()
+		must.NoError(t, err)
+	})
+}

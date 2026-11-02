@@ -34,3 +34,5 @@ schedule = "0 4 * * 0"
 [crons.db-monthly]
 schedule = "0 5 1 * *"
 
+[vault]
+passphrase = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"

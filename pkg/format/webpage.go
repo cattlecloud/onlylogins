@@ -43,3 +43,8 @@ func PageDescriptionTruncate(text string) string {
 	// shorten to the first 140 characters
 	return spacing[0:140] + "..."
 }
+
+// PageTitle appends the site suffix to the given page title.
+func PageTitle(s string) string {
+	return s + " | OnlyLogins"
+}
