@@ -57,12 +57,14 @@ type Documents interface {
 
 type documentsql struct {
 	log *ulog.Log
+	enf *enforcement
 	ldb *litesql.LiteDB
 }
 
 func (s *store) Documents() Documents {
 	return &documentsql{
 		log: ulog.New("database/documents"),
+		enf: enforcements(s.ldb),
 		ldb: s.ldb,
 	}
 }
@@ -85,6 +87,11 @@ func (s *documentsql) Create(ctx scope.C, request *sitecontent.CreateDocumentReq
 		return litesql.TxFailure, xerr
 	}
 	defer done()
+
+	// enforce quota on number of documents
+	if err := s.enf.quotas(ctx, tx, request.User); err != nil {
+		return litesql.ExecFailure, err
+	}
 
 	const statement = `
 	insert into documents (
