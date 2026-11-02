@@ -18,7 +18,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/cronexpr v1.1.3
 	github.com/hashicorp/go-set/v3 v3.0.1
-	github.com/shoenig/go-conceal v0.5.6
+	github.com/shoenig/go-conceal v0.5.7
 	github.com/shoenig/ignore v0.4.0
 	github.com/shoenig/lang v0.0.8
 	github.com/shoenig/test v1.13.2
