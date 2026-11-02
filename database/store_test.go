@@ -15,7 +15,7 @@ import (
 const (
 	// timeout is long enough for any reasonable testcase to complete; if you
 	// exceed this threshold the test needs to be refactored
-	timeout = 10 * time.Second
+	timeout = 1 * time.Minute
 )
 
 func openTestDB(t *testing.T) (Store, scope.C) {

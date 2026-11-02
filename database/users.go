@@ -13,6 +13,7 @@ import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/go-conceal"
 )
@@ -36,6 +37,7 @@ type Users interface {
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
 	Delete(scope.C, users.Identity) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
+	Moderate(scope.C, users.Identity) (*sitecontent.UserModeration, error)
 	Check(scope.C, *users.LoginRequest) (users.Identity, *conceal.Bytes, error)
 	List(scope.C) ([]*users.Profile, error)
 }
@@ -86,10 +88,65 @@ func (s *usersql) Lookup(ctx scope.C, id users.Identity) (*users.Profile, error)
 	from users
 	where id = ?`
 
-	f := func(sf litesql.ScanFunc) (*users.Profile, error) {
+	f := func(scan litesql.ScanFunc) (*users.Profile, error) {
 		var profile users.Profile
-		err := sf(&profile.ID, &profile.Username, &profile.Email, &profile.Standing)
+		err := scan(
+			&profile.ID,
+			&profile.Username,
+			&profile.Email,
+			&profile.Standing,
+		)
 		return &profile, err
+	}
+
+	return litesql.QueryRow(ctx, tx, f, statement, id)
+}
+
+func (s *usersql) Moderate(ctx scope.C, id users.Identity) (*sitecontent.UserModeration, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, xerr
+	}
+	defer done()
+
+	const statement = `
+	select
+		users.id,
+		users.username,
+		users.email,
+		users.standings_id,
+		plans.id,
+		plans.label,
+		plans.price,
+		plans.docs_limit,
+		(select count(d.id)
+		 from documents d
+		 join folders f on f.id = d.folders_id
+		 where f.users_id = users.id)
+	from users
+		join plans on users.plans_id = plans.id
+	where
+		users.id = ?`
+
+	f := func(scan litesql.ScanFunc) (*sitecontent.UserModeration, error) {
+		um := new(sitecontent.UserModeration)
+		um.Profile = new(users.Profile)
+		if err := scan(
+			&um.Profile.ID,
+			&um.Profile.Username,
+			&um.Profile.Email,
+			&um.Profile.Standing,
+			&um.Plan.ID,
+			&um.Plan.Label,
+			&um.Plan.MonthlyPrice,
+			&um.Plan.DocumentsLimit,
+			&um.Usage.Documents,
+		); err != nil {
+			return nil, err
+		}
+		um.Usage.User = um.Profile.ID
+		um.Usage.Plan = um.Plan
+		return um, nil
 	}
 
 	return litesql.QueryRow(ctx, tx, f, statement, id)

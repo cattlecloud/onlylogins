@@ -9,12 +9,14 @@ import (
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
+	"cattlecloud.net/go/urlpath"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type modUserContent struct {
-	User *users.Profile
+	User *sitecontent.UserModeration
 }
 
 type modUserHTTP struct {
@@ -47,10 +49,24 @@ func (h *modUserHTTP) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *modUserHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
-	_ = ctx
-	_ = r
+	id := h.idFrom(r)
 
-	content := &modUserContent{}
+	user, uerr := h.store.Users().Moderate(ctx, id)
+	if uerr != nil {
+		return abort(h.log, w, uerr)
+	}
+
+	content := &modUserContent{
+		User: user,
+	}
 
 	return h.html.ExecuteTemplate(w, "layout", content)
+}
+
+func (h *modUserHTTP) idFrom(r *http.Request) users.Identity {
+	var id users.Identity
+	urlpath.MustParse(r, urlpath.Schema{
+		"id": urlpath.Int(&id),
+	})
+	return id
 }

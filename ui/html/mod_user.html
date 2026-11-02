@@ -1,33 +1,14 @@
 {{define "contains"}}
 <div class="modpage user">
-<h4>user - {{.User.Username}}</h4>
+<h4>user - {{.User.Profile.Username}}</h4>
 
 <div class="help">
   <p class="instructions">manage this user</p>
 </div>
 
 <div class="content">
-  {{if .NameChanges}}
-  <h3>username changes</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>chosen</th>
-        <th>previous</th>
-        <th>when</th>
-      </tr>
-    </thead>
-    <tbody>
-    {{range .NameChanges}}
-      <tr>
-        <td>{{.Chosen}}</td>
-        <td>{{.Previous}}</td>
-        <td>{{Ago .Timestamp}}</td>
-      </tr>
-    {{end}}
-    </tbody>
-  </table>
-  {{end}}
+  <p>Plan is {{.User.Plan.Label}}</p>
+  <p>Usage is {{.User.Usage.Documents}} / {{.User.Plan.DocumentsLimit}}</p>
 </div>
 
 </div>
