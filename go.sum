@@ -36,8 +36,8 @@ github.com/mattn/go-sqlite3 v1.14.52 h1:wVbm2Qnf4OXkqhBTSPuCRZDRnxfbVrrmiCEroVdo
 github.com/mattn/go-sqlite3 v1.14.52/go.mod h1:6JTjA44L93a0QCyJef5YvlPoKXntQPjzWv5gtm9sB6w=
 github.com/mileusna/useragent v1.3.5 h1:SJM5NzBmh/hO+4LGeATKpaEX9+b4vcGg2qXGLiNGDws=
 github.com/mileusna/useragent v1.3.5/go.mod h1:3d8TOmwL/5I8pJjyVDteHtgDGcefrFUX4ccGOMKNYYc=
-github.com/shoenig/go-conceal v0.5.6 h1:K2j8Ql6U4YrBxCRaNF/AnuYaeG8dmf2HcApc7nEdmpk=
-github.com/shoenig/go-conceal v0.5.6/go.mod h1:rP6ts7GI3lTWQu0gZBWN/aLR1YrdqvrAZbT8cxzxd2A=
+github.com/shoenig/go-conceal v0.5.7 h1:kMgLaUcrqXZt16W2vEypcDRlV4RSiKikb2dv7TmXpTk=
+github.com/shoenig/go-conceal v0.5.7/go.mod h1:LaKT8gT+AhMJlTjCwlbO+pwhOU7zCjCITLkap3shZPg=
 github.com/shoenig/ignore v0.4.0 h1:qPOWs0slbPMtenC0H3cKvu5Kn3hQFTE3yK6YJvyNDlA=
 github.com/shoenig/ignore v0.4.0/go.mod h1:VF91FoiYAwXq4KinOq6zP5xfFw/Ib6MfftaGKYTpmwo=
 github.com/shoenig/lang v0.0.8 h1:A6WIzjO8T9rCSVueLIzLj+cHw2Lzm01NEI3x8Oyu9e0=

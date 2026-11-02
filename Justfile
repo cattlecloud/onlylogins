@@ -3,7 +3,7 @@ set shell := ["bash", "-u", "-c"]
 # export environment variables
 export GOBIN := `echo $PWD/.bin`
 export GOFLAGS := '--tags=fts5'
-export GOTOOLCHAIN := 'go1.27.2'
+export GOTOOLCHAIN := 'go1.27.3'
 export scripts := ".github/workflows/scripts"
 export memcached := env("MEMCACHED", "/tmp/mc.sock")
 
