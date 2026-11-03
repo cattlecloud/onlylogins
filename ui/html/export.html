@@ -1,6 +1,41 @@
 {{define "middle"}}
 <div class="middle export">
-  <h1>Export</h1>
-  <p>the export page</p>
+  <section>
+    <h1>Export a backup</h1>
+
+    {{if .Session.Active}}
+    <p>
+      Create a backup of your information. The downloadable export file includes
+      every secure document in your account, including each document's
+      weblinks, usernames, passwords, key/value pairs, and notes.
+    </p>
+    <p>
+      Your data is downloaded as a single
+      <a href="https://www.json.org/json-en.html">JSON</a> file named
+      <strong>onlylogins-(date).json</strong>. The file is <b>not encrypted</b>
+      with your passphrase, so store it somewhere secure and treat it like a
+      you would a social security card. You should consider printing this
+      document and storing it in a physical, fireproof, locked safe.
+    </p>
+
+    <h2>Get backup file</h2>
+    <form method="post" action="/export">
+      <button type="submit">Download</button>
+    </form>
+    {{else}}
+    <p>
+      Export lets you download a complete copy of your OnlyLogins vault,
+      including your folders, documents, usernames, passwords, key/value pairs,
+      and notes, in a single <a href="https://www.json.org/json-en.html">JSON</a>
+      file.
+    </p>
+    <p>
+      You must be logged in to export your data.
+    </p>
+    <form method="get" action="/login">
+      <button type="submit">Log in to export your data</button>
+    </form>
+    {{end}}
+  </section>
 </div>
 {{end}}
