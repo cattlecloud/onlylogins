@@ -1,0 +1,311 @@
+.middle.patreon {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 2rem;
+}
+
+.middle.patreon .eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.middle.patreon h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.middle.patreon h2 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
+.middle.patreon .usage h2,
+.middle.patreon .plan-card h2 {
+  text-transform: capitalize;
+}
+
+.middle.patreon > .hero {
+  background: linear-gradient(135deg, var(--surface-raised) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.middle.patreon .lede {
+  margin: 0;
+  max-width: 65ch;
+  color: var(--text-muted);
+  font-size: 1.05rem;
+}
+
+.middle.patreon .hero-actions {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.middle.patreon .button-link {
+  display: inline-block;
+  padding: 0.7rem 1.1rem;
+  font-weight: 600;
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: 1px solid transparent;
+  border-radius: 8px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+
+.middle.patreon .button-link:hover {
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.patreon .button-link.secondary {
+  color: var(--text);
+  background: transparent;
+  border-color: var(--border);
+  text-shadow: none;
+}
+
+.middle.patreon .button-link.secondary:hover {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: transparent;
+}
+
+.middle.patreon > .notice {
+  padding: 0.9rem 1.1rem;
+  color: var(--text);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 10px;
+}
+
+.middle.patreon > .notice.success {
+  background: rgba(52, 211, 153, 0.1);
+  border-color: rgba(52, 211, 153, 0.45);
+}
+
+.middle.patreon > .usage {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.middle.patreon .usage-head {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+}
+
+.middle.patreon .usage-count {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.middle.patreon .usage-count strong {
+  color: var(--text);
+}
+
+.middle.patreon .meter {
+  height: 0.55rem;
+  margin: 1.25rem 0 0.6rem;
+  overflow: hidden;
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.middle.patreon .meter .fill {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary-mid), var(--primary));
+}
+
+.middle.patreon .meter .fill.high {
+  background: linear-gradient(90deg, var(--primary-mid), var(--primary-hover));
+}
+
+.middle.patreon .meter .fill.veryhigh {
+  background: linear-gradient(90deg, #d97706, #fb923c);
+}
+
+.middle.patreon .meter .fill.redline,
+.middle.patreon .meter .fill.overage {
+  background: linear-gradient(90deg, #b91c1c, var(--danger));
+}
+
+.middle.patreon .usage-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.middle.patreon .manage {
+  display: flex;
+  flex-flow: row wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.middle.patreon .manage form {
+  margin: 0;
+}
+
+.middle.patreon .plan-detail {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.15rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.middle.patreon .plan-detail span:first-child {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.middle.patreon .muted {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.middle.patreon > .plans {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.middle.patreon .plan-card {
+  display: flex;
+  flex-flow: column nowrap;
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.middle.patreon .plan-card.current {
+  border-color: rgba(245, 158, 11, 0.45);
+}
+
+.middle.patreon .plan-card.featured {
+  border-color: var(--primary);
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.08);
+}
+
+.middle.patreon .plan-card .price {
+  margin: 0.75rem 0 1.25rem;
+  color: var(--primary);
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.middle.patreon .plan-card .price span {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.middle.patreon .plan-card ul,
+.middle.patreon .benefits ul {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.6rem;
+  margin: 0 0 1.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.middle.patreon .plan-card li,
+.middle.patreon .benefits li {
+  position: relative;
+  padding-left: 1.4rem;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.middle.patreon .plan-card li::before,
+.middle.patreon .benefits li::before {
+  position: absolute;
+  left: 0;
+  color: var(--primary);
+  font-weight: 700;
+  content: "\2713";
+}
+
+.middle.patreon .plan-card li strong,
+.middle.patreon .benefits li strong {
+  color: var(--text);
+}
+
+.middle.patreon .plan-card form {
+  margin-top: auto;
+}
+
+.middle.patreon .plan-card button[type="submit"] {
+  width: 100%;
+}
+
+.middle.patreon .plan-card button:disabled {
+  color: var(--text-muted);
+  background: var(--surface-raised);
+  text-shadow: none;
+  cursor: default;
+}
+
+.middle.patreon > .benefits {
+  padding: 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.middle.patreon > .benefits h2 {
+  margin-bottom: 1rem;
+}
+
+.middle.patreon > .benefits .price {
+  margin: 0;
+  color: var(--primary);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.middle.patreon > .fine-print {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+@media (max-width: 720px) {
+  .middle.patreon > .hero {
+    padding: 1.75rem;
+  }
+
+  .middle.patreon > .plans {
+    grid-template-columns: 1fr;
+  }
+
+  .middle.patreon .manage {
+    align-items: flex-start;
+    flex-flow: column nowrap;
+  }
+}
