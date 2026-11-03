@@ -54,3 +54,8 @@ const (
 	// None represents a zero value of UUID.
 	None UUID = "00000000-0000-0000-0000-000000000000"
 )
+
+const (
+	PlansFree    PlansEnum = 1
+	PlansPatreon PlansEnum = 2
+)

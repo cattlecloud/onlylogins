@@ -315,3 +315,48 @@ create table if not exists shares (
 ) strict;
 
 create index if not exists idx_shares_creation on shares(creation);
+
+create table if not exists stripe_customers (
+    users_id integer primary key,
+    -- foreign key into users; exactly one stripe customer per user
+
+    customer_id text check(length(customer_id) > 8) not null,
+    -- the stripe customer identifier
+
+    creation integer default (unixepoch('now')) not null,
+    -- creation timestamp
+
+    foreign key(users_id) references users(id) on delete cascade
+) strict;
+
+create index if not exists idx_stripe_customers_customer_id on stripe_customers(customer_id);
+
+create table if not exists stripe_subscriptions (
+    id integer primary key autoincrement,
+    -- auto
+
+    users_id integer not null,
+    -- foreign key into users; the subscriber
+
+    subscription_id text check(length(subscription_id) > 8) not null,
+    -- the stripe subscription identifier
+
+    price_id text check(length(price_id) > 8) not null,
+    -- the stripe price identifier
+
+    status text check(length(status) < 32) not null,
+    -- subscription status (active, past_due, canceled, etc.)
+
+    current_period_end integer not null,
+    -- timestamp of current period end
+
+    creation integer default (unixepoch('now')) not null,
+    -- creation timestamp
+
+    unique (users_id),
+    foreign key(users_id) references users(id) on delete cascade
+) strict;
+
+create index if not exists idx_stripe_subscriptions_users_id on stripe_subscriptions(users_id);
+create index if not exists idx_stripe_subscriptions_status   on stripe_subscriptions(status);
+create index if not exists idx_stripe_subscriptions_expiry   on stripe_subscriptions(status, current_period_end);

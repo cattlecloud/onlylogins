@@ -24,6 +24,7 @@ type Store interface {
 	Documents() Documents
 	Plans() Plans
 	Shares(encrypt.Vault) Shares
+	Stripe() Stripe
 }
 
 // Open a database using the given configuration.

@@ -8,10 +8,11 @@ import (
 )
 
 type Configs struct {
-	Snapshots  *Config `toml:"db-snapshots"`
-	DailyDBM   *Config `toml:"db-daily"`
-	WeeklyDBM  *Config `toml:"db-weekly"`
-	MonthlyDBM *Config `toml:"db-monthly"`
+	Snapshots        *Config `toml:"db-snapshots"`
+	DailyDBM         *Config `toml:"db-daily"`
+	WeeklyDBM        *Config `toml:"db-weekly"`
+	MonthlyDBM       *Config `toml:"db-monthly"`
+	SubscriptionSync *Config `toml:"sync-subscriptions"`
 }
 
 func (c *Configs) Validate() error {
@@ -32,6 +33,10 @@ func (c *Configs) Validate() error {
 	}
 
 	if err := c.MonthlyDBM.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.SubscriptionSync.Validate(); err != nil {
 		return err
 	}
 
