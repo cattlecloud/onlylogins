@@ -1,6 +1,128 @@
 {{define "middle"}}
 <div class="middle patreon">
-  <h1>Patreon</h1>
-  <p>the patreon page</p>
+  <section class="hero">
+    <p class="eyebrow">Patreon</p>
+    <h1>Support OnlyLogins.<br>Store more of what matters.</h1>
+    <p class="lede">
+      OnlyLogins is free and open source. The Patreon plan gives you a much
+      larger vault and helps keep the project independent.
+    </p>
+    {{if not .Session.Active}}
+    <div class="hero-actions">
+      <a class="button-link" href="/login">Log in</a>
+      <a class="button-link secondary" href="/login">Create account</a>
+    </div>
+    {{end}}
+  </section>
+
+  {{if .Section.Success}}
+  <div class="notice success">
+    {{if .Section.IsPatreon}}
+    Thanks for supporting OnlyLogins! Your Patreon plan is active.
+    {{else}}
+    Thanks for subscribing! Your Patreon plan will activate as soon as the
+    payment is confirmed.
+    {{end}}
+  </div>
+  {{end}}
+
+  {{if .Section.Canceled}}
+  <div class="notice">
+    Checkout was canceled. No changes were made to your plan.
+  </div>
+  {{end}}
+
+  {{if .Session.Active}}
+    {{with .Section.Usage}}
+    <section class="usage">
+      <div class="usage-head">
+        <div>
+          <p class="eyebrow">Current plan</p>
+          <h2>{{.Plan.Label}}</h2>
+        </div>
+        <p class="usage-count">
+          <strong>{{.Documents}}</strong> / {{.Plan.DocumentsLimit}} documents
+        </p>
+      </div>
+      <div class="meter" role="img" aria-label="{{.Documents}} of {{.Plan.DocumentsLimit}} documents used">
+        <span class="fill {{.Level}}" style="width: {{.Percent}}%"></span>
+      </div>
+      <p class="usage-hint">{{.Remaining}} documents remaining.</p>
+
+      {{if $.Section.IsPatreon}}
+      <div class="manage">
+        <div class="plan-detail">
+          {{if $.Section.PeriodDate}}
+          <span>{{$.Section.PeriodLabel}} {{$.Section.PeriodDate}}</span>
+          {{end}}
+          <span>Thank you for supporting OnlyLogins.</span>
+        </div>
+        {{if $.Section.Enabled}}
+        <form method="post" action="/internal/patreon/portal">
+          <button type="submit">Manage subscription</button>
+        </form>
+        {{else}}
+        <p class="muted">Billing management is not configured on this instance.</p>
+        {{end}}
+      </div>
+      {{end}}
+    </section>
+    {{end}}
+  {{end}}
+
+  {{if .Session.Active}}
+    {{if not .Section.IsPatreon}}
+    <section class="plans">
+      <article class="plan-card current">
+        <p class="eyebrow">Current plan</p>
+        <h2>{{.Section.Free.Label}}</h2>
+        <p class="price">$0 <span>/ month</span></p>
+        <ul>
+          <li><strong>{{.Section.Free.DocumentsLimit}} documents</strong></li>
+          <li>Folders, notes, usernames, passwords, and links</li>
+          <li>Encrypted with your own passphrase</li>
+        </ul>
+        <button type="button" disabled>Current plan</button>
+      </article>
+
+      <article class="plan-card featured">
+        <p class="eyebrow">Upgrade</p>
+        <h2>{{.Section.Patreon.Label}}</h2>
+        <p class="price">{{.Section.Patreon.PriceTag}}</p>
+        <ul>
+          <li><strong>{{.Section.Patreon.DocumentsLimit}} documents</strong></li>
+          <li>Everything in the free plan</li>
+          <li>Supports open-source development</li>
+          <li>Cancel anytime through Stripe</li>
+        </ul>
+        {{if .Section.Enabled}}
+        <form method="post" action="/internal/patreon/checkout">
+          <button type="submit">Subscribe</button>
+        </form>
+        {{else}}
+        <p class="muted">Subscriptions are not configured on this instance.</p>
+        {{end}}
+      </article>
+    </section>
+    <p class="fine-print">
+      Secure checkout is handled by Stripe. Your plan updates as soon as the
+      payment is confirmed.
+    </p>
+    {{end}}
+  {{else}}
+    <section class="benefits">
+      <h2>What the Patreon plan includes</h2>
+      <ul>
+        <li>
+          <strong>{{.Section.Patreon.DocumentsLimit}} documents</strong>
+          instead of {{.Section.Free.DocumentsLimit}}
+        </li>
+        <li>Everything in the free plan</li>
+        <li>Help keep OnlyLogins free, open source, and independent</li>
+        <li>Cancel anytime through Stripe</li>
+      </ul>
+      <p class="price">{{.Section.Patreon.PriceTag}}</p>
+    </section>
+  {{end}}
 </div>
 {{end}}

@@ -52,6 +52,26 @@ func (a *Application) createRoutes(router *mux.Router) {
 		environment: a.environment,
 	})
 
+	a.handleAPI(router, &stripeWebhookAPI{
+		log:    ulog.New("api/stripe/webhooks"),
+		store:  a.store,
+		client: a.payments,
+	})
+
+	a.handleComponent(router, &stripeCheckoutAPI{
+		log:         ulog.New("internal/patreon/checkout"),
+		store:       a.store,
+		client:      a.payments,
+		environment: a.environment,
+	})
+
+	a.handleComponent(router, &stripePortalAPI{
+		log:         ulog.New("internal/patreon/portal"),
+		store:       a.store,
+		client:      a.payments,
+		environment: a.environment,
+	})
+
 	a.handleComponent(router, &accountHTMX{
 		log:   ulog.New("internal/account"),
 		store: a.store,
@@ -194,6 +214,7 @@ func (a *Application) createRoutes(router *mux.Router) {
 		log:         ulog.New("http/patreon"),
 		store:       a.store,
 		environment: a.environment,
+		payments:    a.payments,
 		html:        ui.Load("patreon.html"),
 	})
 

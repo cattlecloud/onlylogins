@@ -49,6 +49,11 @@ func lost(log *ulog.Log, w http.ResponseWriter, r *http.Request) error {
 	return nil
 }
 
+func redirect(w http.ResponseWriter, r *http.Request, to string, status int) error {
+	http.Redirect(w, r, to, status)
+	return nil
+}
+
 // problem sets the <id:error> element with the content of err.
 //
 // it also explicitly sets no-swap, so that the htmx component originating
