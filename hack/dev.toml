@@ -34,5 +34,14 @@ schedule = "0 4 * * 0"
 [crons.db-monthly]
 schedule = "0 5 1 * *"
 
+[crons.sync-subscriptions]
+schedule = "0 3 * * *"
+
 [vault]
 passphrase = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+
+[stripe]
+secret_key         = ""
+publishable_key    = ""
+webhook_secret     = ""
+patreon_product_id = ""

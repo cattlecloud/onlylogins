@@ -13,6 +13,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/crons"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
+	"cattlecloud.net/onlylogins/pkg/payments"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/BurntSushi/toml"
 )
@@ -39,6 +40,7 @@ type Config struct {
 	Cache    *memcache.Config `toml:"memcache"`
 	Vault    *encrypt.Config  `toml:"vault"`
 	Crons    *crons.Configs   `toml:"crons"`
+	Stripe   *payments.Config `toml:"stripe"`
 }
 
 func (c *Config) Validate() error {
@@ -46,6 +48,9 @@ func (c *Config) Validate() error {
 		return errors.New("agent config is not set")
 	}
 	if err := c.Runtime.Validate(); err != nil {
+		return err
+	}
+	if err := c.Users.Validate(); err != nil {
 		return err
 	}
 	if err := c.Database.Validate(); err != nil {
@@ -61,6 +66,9 @@ func (c *Config) Validate() error {
 		return err
 	}
 	if err := c.Crons.Validate(); err != nil {
+		return err
+	}
+	if err := c.Stripe.Validate(); err != nil {
 		return err
 	}
 	return nil

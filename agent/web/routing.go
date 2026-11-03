@@ -17,6 +17,7 @@ import (
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
+	"cattlecloud.net/onlylogins/pkg/payments"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/VictoriaMetrics/metrics"
@@ -35,6 +36,7 @@ type Application struct {
 	mcache      memcache.Client
 	mint        nonces.Mint
 	vault       encrypt.Vault
+	payments    payments.Client
 }
 
 func (a *Application) createRoutes(router *mux.Router) {
@@ -234,6 +236,7 @@ type Objects struct {
 	Mcache      memcache.Client
 	Mint        nonces.Mint
 	Vault       encrypt.Vault
+	Payments    payments.Client
 }
 
 func New(config *Config, objects *Objects) *Application {
@@ -249,6 +252,7 @@ func New(config *Config, objects *Objects) *Application {
 		mcache:      objects.Mcache,
 		mint:        objects.Mint,
 		vault:       objects.Vault,
+		payments:    objects.Payments,
 	}
 }
 

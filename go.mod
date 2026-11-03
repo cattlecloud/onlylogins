@@ -22,6 +22,7 @@ require (
 	github.com/shoenig/ignore v0.4.0
 	github.com/shoenig/lang v0.0.8
 	github.com/shoenig/test v1.13.2
+	github.com/stripe/stripe-go/v85 v85.2.0
 	golang.org/x/crypto v0.58.0
 )
 

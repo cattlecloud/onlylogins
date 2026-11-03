@@ -20,6 +20,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/crons/dispatch"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
+	"cattlecloud.net/onlylogins/pkg/payments"
 	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/VictoriaMetrics/metrics"
@@ -86,6 +87,9 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	// shared shares vault
 	vault := encrypt.NewFromConfig(l.config.Vault)
 
+	// stripe payments client
+	stripec := payments.New(l.config.Stripe)
+
 	// startup http web application
 	webapp := web.New(l.config.HTTP, &web.Objects{
 		Environment: env,
@@ -97,6 +101,7 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 		Mcache:      mcache,
 		Mint:        mint,
 		Vault:       vault,
+		Payments:    stripec,
 	})
 	go webapp.Start(parent)
 
@@ -155,6 +160,11 @@ func (l *OnlyLogins) crons(parent scope.C, store database.Store) {
 
 	register(cronjobs.NewMonthlyDBM(
 		l.config.Crons.MonthlyDBM,
+		store,
+	))
+
+	register(cronjobs.NewSyncSubscriptions(
+		l.config.Crons.SubscriptionSync,
 		store,
 	))
 }
