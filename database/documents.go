@@ -22,6 +22,7 @@ type Documents interface {
 	Create(scope.C, *sitecontent.CreateDocumentRequest) (records.DocumentsAuto, error)
 	List(scope.C, *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error)
 	Get(scope.C, *sitecontent.GetDocumentRequest) (*sitecontent.Document, error)
+	Resolve(scope.C, *sitecontent.GetDocumentRequest) (records.DocumentsAuto, error)
 	Delete(scope.C, *sitecontent.DeleteDocumentRequest) error
 
 	// document > weblinks
@@ -116,6 +117,33 @@ func (s *documentsql) Create(ctx scope.C, request *sitecontent.CreateDocumentReq
 	return records.DocumentsAuto(id), tx.Commit()
 }
 
+func (s *documentsql) Resolve(ctx scope.C, request *sitecontent.GetDocumentRequest) (records.DocumentsAuto, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return 0, fmt.Errorf("unable to resolve document: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select d.id
+	from documents d
+	join folders f on f.id = d.folders_id
+	where
+		f.users_id = ? and
+		f.label = ? and
+		d.label = ?`
+
+	f := func(sf litesql.ScanFunc) (records.DocumentsAuto, error) {
+		var id records.DocumentsAuto
+		err := sf(&id)
+		return id, err
+	}
+
+	return litesql.QueryRow(ctx, tx, f, statement,
+		request.User, request.Folder, request.Document,
+	)
+}
+
 func (s *documentsql) Delete(ctx scope.C, request *sitecontent.DeleteDocumentRequest) error {
 	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
@@ -125,11 +153,12 @@ func (s *documentsql) Delete(ctx scope.C, request *sitecontent.DeleteDocumentReq
 
 	const statement = `
 	delete from documents
-	where id = ? and id in (
-		select d.id
-		from documents d
-		join folders f on f.id = d.folders_id
-		where f.users_id = ?
+	where id = ? and exists (
+		select 1
+		from folders f
+		where
+			f.id = documents.folders_id and
+			f.users_id = ?
 	)`
 
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
