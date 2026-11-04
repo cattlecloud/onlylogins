@@ -67,7 +67,7 @@ func (h *exportHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 
 	head := &pages.Head{
 		Title:       format.PageTitle("Export"),
-		Styles:      []string{"basics.css"},
+		Styles:      []string{"export.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),
 		Profile:     profile,

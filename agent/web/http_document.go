@@ -91,7 +91,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	}
 
 	head := &pages.Head{
-		Title:       "Document | OnlyLogins",
+		Title:       format.PageTitle(request.Folder + "/" + request.Document),
 		Styles:      []string{"document.css"},
 		Description: h.description(),
 		Profile:     profile,

@@ -78,3 +78,8 @@ a:hover {
   color: var(--primary-hover);
   text-decoration: underline;
 }
+
+/* Utilities */
+.white {
+  color: #ffffff;
+}

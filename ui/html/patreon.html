@@ -2,10 +2,21 @@
 <div class="middle patreon">
   <section class="hero">
     <p class="eyebrow">Patreon</p>
-    <h1>Support OnlyLogins.<br>Store more of what matters.</h1>
+    <h1>Support OnlyLogins.<span class="slogan">Store more of what matters.</span></h1>
     <p class="lede">
-      OnlyLogins is free and open source. The Patreon plan gives you a much
-      larger vault and helps keep the project independent.
+      OnlyLogins is free and open source. The <span class="white">Patreon</span>
+      plan enables you to store way more secure documents, while supporting
+      further development of the project.
+    </p>
+    <p class="lede">
+      If you get value from OnlyLogins, please consider subscribing.
+      <span class="white">It's just $2/month.</span>
+    </p>
+    <p class="lede">
+      You can't even get a cup of coffee for that! But your patronage
+      pays for hosting costs and other development fees. With your support we
+      can afford to keep OnlyLogins online and out of the hands of private
+      equity forever and ever.
     </p>
     {{if not .Session.Active}}
     <div class="hero-actions">
@@ -79,7 +90,7 @@
         <p class="price">$0 <span>/ month</span></p>
         <ul>
           <li><strong>{{.Section.Free.DocumentsLimit}} documents</strong></li>
-          <li>Folders, notes, usernames, passwords, and links</li>
+          <li>Store usernames, passwords, api keys, etc.</li>
           <li>Encrypted with your own passphrase</li>
         </ul>
         <button type="button" disabled>Current plan</button>
@@ -91,8 +102,8 @@
         <p class="price">{{.Section.Patreon.PriceTag}}</p>
         <ul>
           <li><strong>{{.Section.Patreon.DocumentsLimit}} documents</strong></li>
-          <li>Everything in the free plan</li>
-          <li>Supports open-source development</li>
+          <li>Supports open source development</li>
+          <li>Pays for hosting costs</li>
           <li>Cancel anytime through Stripe</li>
         </ul>
         {{if .Section.Enabled}}

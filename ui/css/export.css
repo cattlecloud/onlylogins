@@ -1,0 +1,140 @@
+.middle.export {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 0.5rem 1rem 2rem;
+}
+
+.middle.export .eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.middle.export h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.middle.export h2 {
+  margin: 0;
+  font-size: 1.3rem;
+}
+
+.middle.export > .hero {
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--surface-raised) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
+}
+
+.middle.export .lede {
+  margin: 0.75rem 0 0;
+  max-width: 65ch;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.middle.export .contents {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+  margin: 1.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.middle.export .contents li {
+  position: relative;
+  padding: 0.3rem 0.75rem 0.3rem 1.75rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+}
+
+.middle.export .contents li::before {
+  position: absolute;
+  left: 0.7rem;
+  color: var(--primary);
+  font-weight: 700;
+  content: "\2713";
+}
+
+.middle.export > .notice.warning {
+  padding: 1rem 1.25rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  border-radius: 12px;
+}
+
+.middle.export > .notice.warning strong {
+  color: var(--primary);
+}
+
+.middle.export > .notice.warning p {
+  margin: 0.4rem 0 0;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+.middle.export > .action {
+  display: flex;
+  flex-flow: column nowrap;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+
+.middle.export > .action p {
+  margin: 0;
+  max-width: 65ch;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.middle.export > .action > form {
+  margin: 0.25rem 0 0;
+}
+
+.middle.export > .action button {
+  min-width: 14rem;
+}
+
+@media (max-width: 720px) {
+  .middle.export {
+    padding: 0 0 1.5rem;
+  }
+
+  .middle.export > .hero {
+    padding: 1.5rem;
+    border-radius: 12px;
+  }
+
+  .middle.export > .notice.warning {
+    padding: 1rem;
+  }
+
+  .middle.export > .action {
+    padding: 1.25rem;
+    border-radius: 12px;
+  }
+
+  .middle.export > .action button {
+    width: 100%;
+  }
+}

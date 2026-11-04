@@ -20,6 +20,15 @@
   letter-spacing: -0.02em;
 }
 
+.middle.patreon h1 .slogan {
+  display: block;
+  margin-top: 0.3rem;
+  font-size: 1.6rem;
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: normal;
+}
+
 .middle.patreon h2 {
   margin: 0;
   font-size: 1.4rem;
@@ -43,6 +52,10 @@
   max-width: 65ch;
   color: var(--text-muted);
   font-size: 1.05rem;
+}
+
+.middle.patreon .lede + .lede {
+  margin-top: 0.75rem;
 }
 
 .middle.patreon .hero-actions {

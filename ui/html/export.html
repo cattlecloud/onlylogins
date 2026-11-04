@@ -1,41 +1,70 @@
 {{define "middle"}}
 <div class="middle export">
-  <section>
+  <section class="hero">
+    <p class="eyebrow">Backup</p>
     <h1>Export a backup</h1>
 
     {{if .Session.Active}}
-    <p>
-      Create a backup of your information. The downloadable export file includes
-      every secure document in your account, including each document's
-      weblinks, usernames, passwords, key/value pairs, and notes.
+    <p class="lede">
+      Create a complete copy of your OnlyLogins vault. The downloadable export
+      includes every folder and secure document in your account, along with
+      each document's weblinks, usernames, passwords, key/value pairs, and
+      notes.
     </p>
+    <ul class="contents" aria-label="What the backup includes">
+      <li>Folders</li>
+      <li>Documents</li>
+      <li>Weblinks</li>
+      <li>Usernames</li>
+      <li>Passwords</li>
+      <li>Key/value pairs</li>
+      <li>Notes</li>
+    </ul>
+    {{else}}
+    <p class="lede">
+      Export lets you download a complete copy of your OnlyLogins vault,
+      including your folders, documents, usernames, passwords, key/value
+      pairs, and notes, in a single
+      <a href="https://www.json.org/json-en.html">JSON</a> file.
+    </p>
+    <p class="lede">
+      You must be logged in to export your data.
+    </p>
+    {{end}}
+  </section>
+
+  {{if .Session.Active}}
+  <div class="notice warning">
+    <strong>This backup is not encrypted.</strong>
+    <p>
+      Your passphrase does not protect this file. It contains every secret in
+      your vault, so store it somewhere secure, such as an encrypted drive or
+      password manager, and delete it when you no longer need it.
+    </p>
+  </div>
+
+  <section class="action">
+    <h2>Get backup file</h2>
     <p>
       Your data is downloaded as a single
       <a href="https://www.json.org/json-en.html">JSON</a> file named
-      <strong>onlylogins-(date).json</strong>. The file is <b>not encrypted</b>
-      with your passphrase, so store it somewhere secure and treat it like a
-      you would a social security card. You should consider printing this
-      document and storing it in a physical, fireproof, locked safe.
+      <strong>onlylogins-(date).json</strong>.
     </p>
-
-    <h2>Get backup file</h2>
     <form method="post" action="/export">
-      <button type="submit">Download</button>
+      <button type="submit">Download backup</button>
     </form>
-    {{else}}
+  </section>
+  {{else}}
+  <section class="action">
+    <h2>Log in to continue</h2>
     <p>
-      Export lets you download a complete copy of your OnlyLogins vault,
-      including your folders, documents, usernames, passwords, key/value pairs,
-      and notes, in a single <a href="https://www.json.org/json-en.html">JSON</a>
+      Log in to download a complete copy of your OnlyLogins vault as one JSON
       file.
-    </p>
-    <p>
-      You must be logged in to export your data.
     </p>
     <form method="get" action="/login">
       <button type="submit">Log in to export your data</button>
     </form>
-    {{end}}
   </section>
+  {{end}}
 </div>
 {{end}}

@@ -5,18 +5,36 @@
   max-width: 100%;
 }
 
-.middle.share > h1 {
-  margin-bottom: 0.5rem;
+.middle.share > .hero {
+  padding: 2rem;
+  background: linear-gradient(135deg, var(--surface-raised) 0%, var(--surface) 100%);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
 }
 
-.middle.share > p {
-  padding: 1rem;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  font-size: 0.9rem;
+.middle.share .eyebrow {
+  margin: 0 0 0.5rem;
+  color: var(--primary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.middle.share .hero h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+
+.middle.share .hero .lede {
+  margin: 0.75rem 0 0;
+  max-width: 65ch;
   color: var(--text-muted);
-  line-height: 1.5;
+  font-size: 1rem;
+  line-height: 1.6;
 }
 
 .middle.share > .create > h3 {
@@ -227,6 +245,11 @@
 @media (max-width: 900px) {
   .middle.share {
     padding: 0.5rem;
+  }
+
+  .middle.share > .hero {
+    padding: 1.5rem;
+    border-radius: 12px;
   }
 
   .middle.share > .create > form > fieldset {

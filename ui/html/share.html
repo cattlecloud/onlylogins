@@ -1,14 +1,25 @@
 {{define "middle"}}
 <div class="middle share">
-  <h1>Share</h1>
+  <section class="hero">
+    <p class="eyebrow">One-time links</p>
+    <h1>Share</h1>
+    {{if .Session.Active}}
+    <p class="lede">
+      Use the share feature to securely share a secret message using a one-time
+      link. When the recipient opens the link, they can read the message exactly
+      once. After the message is opened or expired, it is permanently deleted.
+    </p>
+    {{else}}
+    <p class="lede">
+      Share lets you encrypt a secret message and send it to anyone with a
+      one-time link. When the recipient opens the link the secret is shown
+      exactly once, then immediately and permanently destroyed. You can also
+      set the link to expire automatically after a chosen period of time.
+    </p>
+    {{end}}
+  </section>
 
   {{if .Session.Active}}
-  <p>
-    Use the share feature to securely share a secret message using a one-time link.<br/>
-    When the recipient opens the link, they can read the message exactly once.<br/>
-    After the message is opened or expired, it is permenantly deleted.
-  </p>
-
   <section class="create">
     <h3>Create link to a secret message</h3>
     <span id="error"></span>
@@ -39,13 +50,6 @@
 
   {{else}}
   <section class="landing">
-    <p>
-      Share lets you encrypt a secret message and send it to anyone with
-      a one-time link. When the recipient opens the link the secret is
-      shown exactly once, then immediately and permanently destroyed.
-      You can also set the link to expire automatically after a chosen
-      period of time.
-    </p>
     <p>
       To create a share, please log in or sign up for an OnlyLogins account.
       Recipients do not need an account to view a shared secret.
