@@ -66,7 +66,7 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	}
 
 	head := &pages.Head{
-		Title:       "OnlyLogins | Come up with a Title",
+		Title:       format.PageTitle("Open Source Password Manager"),
 		Styles:      []string{"index.css"},
 		Description: h.description(),
 		Profile:     profile,
