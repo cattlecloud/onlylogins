@@ -63,9 +63,11 @@ func (s *stripesql) SetCustomer(ctx scope.C, uid users.Identity, customerID stri
 	defer done()
 
 	const statement = `
-	insert or replace into stripe_customers (
+	insert into stripe_customers (
 		users_id, customer_id
-	) values (?, ?)`
+	) values (?, ?)
+	on conflict(users_id) do update set
+		customer_id = excluded.customer_id`
 
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement, uid, customerID); err != nil {
 		return fmt.Errorf("stripe customers set: %w", err)
@@ -114,9 +116,14 @@ func (s *stripesql) UpsertSubscription(ctx scope.C, update *payments.UpdateStrip
 	defer done()
 
 	const subscriptionSQL = `
-	insert or replace into stripe_subscriptions
+	insert into stripe_subscriptions
 		(users_id, subscription_id, price_id, status, current_period_end)
-	values (?, ?, ?, ?, ?)`
+	values (?, ?, ?, ?, ?)
+	on conflict(users_id) do update set
+		subscription_id = excluded.subscription_id,
+		price_id = excluded.price_id,
+		status = excluded.status,
+		current_period_end = excluded.current_period_end`
 
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, subscriptionSQL,
 		update.User,

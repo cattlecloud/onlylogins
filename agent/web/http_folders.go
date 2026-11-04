@@ -89,8 +89,6 @@ func (h *foldersHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		Folders: folders,
 	}
 
-	middle.Folders, _ = h.store.Folders().List(ctx, session.Identity())
-
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
 }
 

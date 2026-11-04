@@ -925,6 +925,33 @@ func TestDocuments_Count(t *testing.T) {
 	must.Zero(t, count)
 }
 
+func TestDocuments_Resolve(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+	id := insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+	t.Run("found", func(t *testing.T) {
+		got, err := d.Resolve(ctx, &sitecontent.GetDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+		})
+		must.NoError(t, err)
+		must.Eq(t, id, got)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		_, err := d.Resolve(ctx, &sitecontent.GetDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "missing",
+		})
+		must.Error(t, err)
+	})
+}
+
 func miscFolderOf(t *testing.T, ctx scope.C, store Store, user users.Identity) string {
 	t.Helper()
 

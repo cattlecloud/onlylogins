@@ -99,6 +99,8 @@ create table if not exists logins (
     foreign key (users_id) references users(id) on delete cascade
 ) strict;
 
+create index if not exists idx_logins_users_id on logins(users_id);
+
 create table if not exists bogus (
     id integer primary key autoincrement,
     -- auto
@@ -163,6 +165,9 @@ create table if not exists documents (
     foreign key (folders_id) references folders(id) on delete cascade
 ) strict;
 
+create index if not exists idx_documents_folder_listing
+    on documents(folders_id, modification desc, label);
+
 create table if not exists weblinks (
     id integer primary key autoincrement,
     -- auto
@@ -175,6 +180,8 @@ create table if not exists weblinks (
 
     foreign key (did) references documents(id) on delete cascade
 ) strict;
+
+create index if not exists idx_weblinks_did on weblinks(did);
 
 create table if not exists usernames (
     id integer primary key autoincrement,
@@ -189,6 +196,8 @@ create table if not exists usernames (
     foreign key (did) references documents(id) on delete cascade
 ) strict;
 
+create index if not exists idx_usernames_did on usernames(did);
+
 create table if not exists passwords (
     id integer primary key autoincrement,
     -- auto
@@ -201,6 +210,8 @@ create table if not exists passwords (
 
     foreign key (did) references documents(id) on delete cascade
 ) strict;
+
+create index if not exists idx_passwords_did on passwords(did);
 
 create table if not exists keyvals (
     id integer primary key autoincrement,
@@ -220,6 +231,8 @@ create table if not exists keyvals (
 
     foreign key (did) references documents(id) on delete cascade
 ) strict;
+
+create index if not exists idx_keyvals_did on keyvals(did);
 
 create table if not exists notes (
     id integer primary key autoincrement,
@@ -315,6 +328,7 @@ create table if not exists shares (
 ) strict;
 
 create index if not exists idx_shares_creation on shares(creation);
+create index if not exists idx_shares_users_id on shares(users_id);
 
 create table if not exists stripe_customers (
     users_id integer primary key,
@@ -354,9 +368,8 @@ create table if not exists stripe_subscriptions (
     -- creation timestamp
 
     unique (users_id),
+    unique (subscription_id),
     foreign key(users_id) references users(id) on delete cascade
 ) strict;
 
-create index if not exists idx_stripe_subscriptions_users_id on stripe_subscriptions(users_id);
-create index if not exists idx_stripe_subscriptions_status   on stripe_subscriptions(status);
 create index if not exists idx_stripe_subscriptions_expiry   on stripe_subscriptions(status, current_period_end);

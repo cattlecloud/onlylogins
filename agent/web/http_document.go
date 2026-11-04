@@ -116,17 +116,18 @@ func (h *documentHTTP) delete(ctx scope.C, w http.ResponseWriter, r *http.Reques
 	folder, document := h.fromPath(r)
 
 	// turn the folder and document labels into a document id
-	get, gerr := h.store.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+	get := &sitecontent.GetDocumentRequest{
 		User:     user,
 		Folder:   folder,
 		Document: document,
-	})
+	}
+	id, gerr := h.store.Documents().Resolve(ctx, get)
 	if gerr != nil {
 		return abort(h.log, w, errors.New("document not found"))
 	}
 
 	request := &sitecontent.DeleteDocumentRequest{
-		ID:   get.ID,
+		ID:   id,
 		User: user,
 	}
 	if verr := request.Validate(); verr != nil {
