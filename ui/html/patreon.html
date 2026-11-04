@@ -2,7 +2,7 @@
 <div class="middle patreon">
   <section class="hero">
     <p class="eyebrow">Patreon</p>
-    <h1>Support OnlyLogins.<span class="slogan">Store more of what matters.</span></h1>
+    <h1>Support OnlyLogins<span class="slogan">Store more of what matters.</span></h1>
     <p class="lede">
       OnlyLogins is free and open source. The <span class="white">Patreon</span>
       plan enables you to store way more secure documents, while supporting
@@ -10,13 +10,15 @@
     </p>
     <p class="lede">
       If you get value from OnlyLogins, please consider subscribing.
-      <span class="white">It's just $2/month.</span>
     </p>
     <p class="lede">
-      You can't even get a cup of coffee for that! But your patronage
-      pays for hosting costs and other development fees. With your support we
+      <span class="white">Just $2/month.</span>
+    </p>
+    <p class="lede">
+      That's less than the price of a cup of coffee! But your patronage pays
+      for hosting costs and other development fees. With your support we
       can afford to keep OnlyLogins online and out of the hands of private
-      equity forever and ever.
+      equity ... forever!
     </p>
     {{if not .Session.Active}}
     <div class="hero-actions">
@@ -128,8 +130,9 @@
           <strong>{{.Section.Patreon.DocumentsLimit}} documents</strong>
           instead of {{.Section.Free.DocumentsLimit}}
         </li>
-        <li>Everything in the free plan</li>
-        <li>Help keep OnlyLogins free, open source, and independent</li>
+        <li>Supports open source development</li>
+        <li>Pays for hosting costs</li>
+        <li>Keeps OnlyLogins independent</li>
         <li>Cancel anytime through Stripe</li>
       </ul>
       <p class="price">{{.Section.Patreon.PriceTag}}</p>
