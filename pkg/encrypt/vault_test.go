@@ -28,8 +28,8 @@ func TestVault_NewFromConfig(t *testing.T) {
 	t.Parallel()
 
 	// two vaults built from the same passphrase must round-trip
-	a := NewFromConfig(&Config{Passphrase: "shared-passphrase"})
-	b := NewFromConfig(&Config{Passphrase: "shared-passphrase"})
+	a := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
+	b := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
 
 	original := conceal.New("a top secret hush-hush thing")
 	encrypted, err := a.Encrypt(original)
@@ -43,8 +43,8 @@ func TestVault_NewFromConfig(t *testing.T) {
 func TestVault_NewFromConfig_DifferentPassphrasesDoNotMatch(t *testing.T) {
 	t.Parallel()
 
-	a := NewFromConfig(&Config{Passphrase: "passphrase-one"})
-	b := NewFromConfig(&Config{Passphrase: "passphrase-two"})
+	a := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
+	b := NewFromConfig(&Config{Passphrase: "66666666-7777-8888-9999-aaaaaaaaaaaa"})
 
 	original := conceal.New("a top secret hush-hush thing")
 	encrypted, err := a.Encrypt(original)
@@ -68,8 +68,23 @@ func TestVault_ConfigValidate(t *testing.T) {
 		must.Error(t, err)
 	})
 
-	t.Run("valid", func(t *testing.T) {
+	t.Run("not quasi-uuid4", func(t *testing.T) {
 		err := (&Config{Passphrase: "anything"}).Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("wrong length", func(t *testing.T) {
+		err := (&Config{Passphrase: "11111111-2222-3333-4444-55555555555"}).Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("non-hex characters", func(t *testing.T) {
+		err := (&Config{Passphrase: "11111111-2222-3333-4444-55555555555g"}).Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("valid", func(t *testing.T) {
+		err := (&Config{Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"}).Validate()
 		must.NoError(t, err)
 	})
 }

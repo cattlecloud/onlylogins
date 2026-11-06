@@ -3,7 +3,13 @@
 
 package encrypt
 
-import "errors"
+import (
+	"errors"
+	"regexp"
+)
+
+// globalPassphraseRe matches a uuid4(ish) string, where we ignore version bits
+var globalPassphraseRe = regexp.MustCompile(`^[[:xdigit:]-]{36}$`)
 
 // Config is the configuration for the server-wide Vault used to encrypt
 // features whose ciphertext is meant to be readable by anyone (e.g. share
@@ -21,6 +27,8 @@ func (c *Config) Validate() error {
 		return errors.New("vault config must be set")
 	case c.Passphrase == "":
 		return errors.New("vault passphrase must be set")
+	case !globalPassphraseRe.MatchString(c.Passphrase):
+		return errors.New("vault passphrase must be in quasi-uuid4 format")
 	default:
 		return nil
 	}
