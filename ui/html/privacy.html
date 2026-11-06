@@ -5,76 +5,106 @@
   <p>
 CattleCloud LLC ("we," "our," or "us") is committed to protecting your privacy.
 This Privacy Policy explains how we collect, use, disclose, and safeguard your
-information when you access our website and services (the "Service") and use
-Google Sign-In, Sign in with Apple, or Microsoft Login for authentication.
-Please read this Privacy Policy carefully to understand our views and practices
-regarding your personal data.
+information when you access our website and services (the "Service"). OnlyLogins
+is a password manager: the secret values you store are encrypted with a key
+derived from your passphrase, and we cannot read them. Please read this Privacy
+Policy carefully to understand our views and practices regarding your personal
+data.
   </p>
   <section class="rules">
     <h2>1. Information We Collect</h2>
-    <p>
-When you use one of the previously described login providers to access our
-Service, we may collect the following information from your Google, Apple, or
-Microsoft account:
-    </p>
+    <p>We may collect the following information when you use the Service:</p>
     <ul>
-      <li>Basic Profile Information: email address</li>
-      <li>Other Permissions: If applicable and authorized by you, we may access
-          additional account information, as explicitly displayed during the
-          login process.</li>
+      <li><b>Account information:</b> email address, username, and your
+          notification and marketing preferences.</li>
+      <li><b>Authentication data:</b> a per-user salt and a verifier used to
+          check your passphrase during login. We do not store your passphrase
+          or the encryption key derived from it.</li>
+      <li><b>Encrypted vault data:</b> the usernames, passwords, links,
+          key/value pairs, and notes you store, in encrypted form. Folder and
+          document names are stored in plain text so the Service can organize
+          them.</li>
+      <li><b>Billing information:</b> if you subscribe to the Patreon plan,
+          payments are handled by Stripe. We receive limited information such
+          as your plan status, subscription identifiers, and customer
+          identifiers. We do not receive or store full payment card details.</li>
+      <li><b>Usage and security data:</b> IP address, browser user agent,
+          login attempts and timestamps, and access metadata for one-time
+          share links.</li>
+      <li><b>Communications:</b> messages you send to support and emails we
+          send to you about the Service.</li>
+      <li><b>Cookies:</b> session and encryption cookies required to keep you
+          logged in and to use your encryption key during your session. We do
+          not use advertising cookies.</li>
     </ul>
-    <p>
-We do not collect any information beyond what is necessary to provide you with
-the Service.
-    </p>
   </section>
   <section class="rules">
     <h2>2. How We Use Your Information</h2>
     <p>The information we collect is used to:</p>
     <ul>
-      <li>Provide, maintain, and improve the Service.</li>
-      <li>Authenticate and manage user accounts.</li>
-      <li>Offer personalized features and content.</li>
-      <li>Respond to inquiries and user support requests.</li>
+      <li>Provide, maintain, secure, and improve the Service.</li>
+      <li>Authenticate your account and decrypt your vault during your
+          session.</li>
+      <li>Enforce usage limits, prevent abuse, and troubleshoot problems.</li>
+      <li>Process Patreon subscriptions and manage billing.</li>
+      <li>Send service and security notifications, and send marketing
+          communications only if you have opted in.</li>
+      <li>Comply with applicable legal obligations.</li>
     </ul>
   </section>
   <section class="rules">
     <h2>3. Data Sharing and Disclosure</h2>
     <p>
-We do not sell, rent, or share your information with third parties, except in
+We do not sell or rent your personal information. We share information only in
 the following limited circumstances:
     </p>
     <ul>
-      <li>Legal Compliance: To comply with applicable laws, legal processes,
-          or enforceable governmental requests.</li>
-      <li>Service Providers: To trusted third-party service providers who
-          assist in delivering the Service, under strict confidentiality and
-          data protection agreements.</li>
+      <li><b>Service providers:</b> trusted third parties that help us operate
+          the Service, such as Stripe for payment processing, hosting and
+          infrastructure providers, and email delivery providers. These
+          providers are subject to confidentiality and data protection
+          obligations.</li>
+      <li><b>Legal compliance:</b> to comply with applicable laws, legal
+          processes, or enforceable governmental requests.</li>
+      <li><b>Business transfers:</b> if we are involved in a merger,
+          acquisition, or sale of assets, information may be transferred as
+          part of that transaction, subject to this Privacy Policy.</li>
     </ul>
+    <p>
+We cannot share the encrypted secrets in your vault because we cannot decrypt
+them.
+    </p>
   </section>
   <section class="rules">
     <h2>4. User Control and Data Deletion</h2>
     <p>
-You have the right to access, modify, or delete your data at any time. To
-request deletion of your data:
+You may export a complete copy of your data at any time using the
+<a href="/export">export</a> feature. The export file is not encrypted and
+contains every secret in your account, so store it securely.
     </p>
-    <ul>
-      <li>Contact <a href="mailto:seth@cattlecloud.net">us</a> for support.</li>
-      <li>Specify the data you wish to have removed.</li>
-      <li>We will process your request promptly, typically within 90 days of receipt.</li>
-    </ul>
     <p>
-Deleting your account may result in loss of access to certain features of the
-Service.
+You may request deletion of your account at any time by contacting
+<a href="mailto:seth@cattlecloud.net">us</a>. When your account is deleted, we
+will delete your account and associated data, subject to reasonable backup
+retention periods and legal obligations. Deleting your account is irreversible
+and may result in loss of access to the Service and its contents.
     </p>
   </section>
   <section class="rules">
-    <h2>5. Security of your Information</h2>
+    <h2>5. Security of Your Information</h2>
     <p>
 We take reasonable technical and organizational measures to safeguard your
-data, including encryption and secure storage. While we strive to protect your
-information, no method of transmission over the internet is completely secure.
-You share your information with us at your own risk.
+data. Secret values are encrypted using AES-256-GCM with a key derived from
+your passphrase. Your passphrase and the derived key are never stored by us.
+While we strive to protect your information, no method of transmission or
+storage over the internet is completely secure. You share your information with
+us at your own risk.
+    </p>
+    <p>
+There is no passphrase recovery mechanism. If you forget your passphrase, no
+one, including OnlyLogins support, can restore access to your encrypted data.
+Folder and document names are stored in plain text, so do not use them to store
+sensitive information.
     </p>
   </section>
   <section class="rules">
@@ -82,7 +112,9 @@ You share your information with us at your own risk.
     <p>
 We retain your data only as long as necessary to fulfill the purposes outlined
 in this Privacy Policy or as required by law. If you delete your account or
-request data deletion, we will securely delete your data from our systems.
+request data deletion, we will delete your data from our systems, subject to
+reasonable backup retention periods. Billing and subscription records may be
+retained as required by law or for accounting purposes.
     </p>
   </section>
   <section class="rules">
@@ -103,8 +135,9 @@ provided us with personal information, please contact us immediately.
       <li>The right to data portability.</li>
     </ul>
     <p>
-      To exercise these rights, contact
-      <a href="mailto:seth@cattlecloud.net">us</a> for support.
+To exercise these rights, contact
+<a href="mailto:seth@cattlecloud.net">us</a> for support. We may need to verify
+your identity before fulfilling a request.
     </p>
   </section>
   <section class="rules">
@@ -112,20 +145,18 @@ provided us with personal information, please contact us immediately.
     <p>
 We may update this Privacy Policy from time to time to reflect changes to our
 practices or for other operational, legal, or regulatory reasons. The "Effective
-Date" at the top of this page indicates when the Policy was last revised.
+Date" at the top of this page indicates when the Policy was last revised. We
+may provide notice of material changes by email or through the Service.
     </p>
   </section>
   <section class="rules">
     <h2>10. Contact Us</h2>
     <p>
 If you have questions or concerns about this Privacy Policy or how we handle
-your data, please contact <a href="mailto:seth@cattlecloud.net">us</a> for
-support.
-    </p>
-    <p>
-This Privacy Policy is intended to provide clear and transparent information on
-how your data is handled. We value your trust and are committed to ensuring your
-privacy is respected at all times.
+your data, please contact
+<a href="mailto:seth@cattlecloud.net">seth@cattlecloud.net</a> for support. To
+report a security issue, please contact us privately before disclosing the
+details publicly.
     </p>
   </section>
 </div>
