@@ -73,8 +73,9 @@ func (a *Application) createRoutes(router *mux.Router) {
 	})
 
 	a.handleComponent(router, &accountHTMX{
-		log:   ulog.New("internal/account"),
-		store: a.store,
+		log:     ulog.New("internal/account"),
+		store:   a.store,
+		session: a.scache,
 	})
 
 	a.handleComponent(router, &weblinkHTMX{

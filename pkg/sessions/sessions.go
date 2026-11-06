@@ -4,6 +4,7 @@
 package sessions
 
 import (
+	"fmt"
 	"time"
 
 	"cattlecloud.net/go/ulog"
@@ -74,4 +75,21 @@ func (s *Store) Put(token *conceal.Text, id users.Identity, ttl time.Duration) {
 	// update the internal process cache
 	key := token.Unveil()
 	s.vc.Put(key, id, ttl)
+}
+
+// Delete terminates the session associated with the given token.
+//
+// Memcache is the authoritative store and is deleted first; the local volatile
+// cache is always cleared, even if the memcache deletion fails.
+func (s *Store) Delete(token *conceal.Text) error {
+	merr := s.mc.SessionDelete(token)
+
+	// the volatile cache delete never fails, but must still be cleared
+	_ = s.vc.Delete(token.Unveil())
+
+	if merr != nil {
+		return fmt.Errorf("unable to delete session from memcache: %w", merr)
+	}
+
+	return nil
 }
