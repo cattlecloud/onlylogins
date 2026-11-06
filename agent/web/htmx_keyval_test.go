@@ -151,7 +151,7 @@ func TestKeyvalHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeKeyvalMux(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/keyval/add/miscellaneous/github", cookie)
@@ -170,7 +170,7 @@ func TestKeyvalHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeKeyvalMux(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r := requestGet(t, "/internal/keyval/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
@@ -187,7 +187,7 @@ func TestKeyvalHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -218,7 +218,7 @@ func TestKeyvalHTMX_Post_EmptyKey_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -247,7 +247,7 @@ func TestKeyvalHTMX_Post_EmptyValue_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -276,7 +276,7 @@ func TestKeyvalHTMX_Post_TooLongKey_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -306,7 +306,7 @@ func TestKeyvalHTMX_Post_DuplicateKey_Aborts(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -339,7 +339,7 @@ func TestKeyvalHTMX_Post_TrimsKeyWhitespace(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -368,7 +368,7 @@ func TestKeyvalHTMX_Post_PreservesValueWhitespace(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -395,7 +395,7 @@ func TestKeyvalHTMX_Post_MissingVault_Redirects(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
@@ -425,7 +425,7 @@ func TestKeyvalHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	setupGithubDocument(t, store, mocks.Nobody)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	r := postKeyvalForm(t, http.MethodPost,
@@ -451,7 +451,7 @@ func TestKeyvalEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "redis_url", "redis://localhost:6379", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("edit", "miscellaneous", "github", id)
@@ -477,7 +477,7 @@ func TestKeyvalEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("edit", "miscellaneous", "github", id)
@@ -500,7 +500,7 @@ func TestKeyvalEntryHTMX_Get_WrongKeyvalID_Aborts(t *testing.T) {
 	insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("edit", "miscellaneous", "github", records.KeyvalsAuto(9999))
@@ -517,7 +517,7 @@ func TestKeyvalEntryHTMX_Get_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeKeyvalMux(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/keyval/whatever/miscellaneous/github/1", cookie)
@@ -537,7 +537,7 @@ func TestKeyvalEntryHTMX_Put_HappyPath_ReturnsRow(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "oldkey", "oldvalue", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("update", "miscellaneous", "github", id)
@@ -574,7 +574,7 @@ func TestKeyvalEntryHTMX_Put_DuplicateKey_Aborts(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "second", "value2", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("update", "miscellaneous", "github", id)
@@ -605,7 +605,7 @@ func TestKeyvalEntryHTMX_Put_EmptyValue_ReturnsProblem(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("update", "miscellaneous", "github", id)
@@ -635,7 +635,7 @@ func TestKeyvalEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("wat", "miscellaneous", "github", id)
@@ -661,7 +661,7 @@ func TestKeyvalEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("update", "miscellaneous", "github", id)
@@ -688,7 +688,7 @@ func TestKeyvalEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := keyvalURL("update", "miscellaneous", "github", id)
@@ -714,7 +714,7 @@ func TestKeyvalEntryHTMX_Delete_HappyPath_ReturnsEmpty(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("delete", "miscellaneous", "github", id)
@@ -741,7 +741,7 @@ func TestKeyvalEntryHTMX_Delete_UnknownAction_Aborts(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := keyvalURL("wat", "miscellaneous", "github", id)
@@ -766,7 +766,7 @@ func TestKeyvalEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
 
 	router, scache := makeKeyvalMux(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := keyvalURL("delete", "miscellaneous", "github", id)

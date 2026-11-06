@@ -35,7 +35,7 @@ func newPortalHarness(t *testing.T, client payments.Client) (database.Store, *mu
 
 	scache := mocks.NewSessions()
 	router := mux.NewRouter()
-	router.Handle(handler.Path(), sessions(handler, scache)).Methods(http.MethodPost)
+	router.Handle(handler.Path(), session(handler, scache)).Methods(http.MethodPost)
 	return store, router, scache
 }
 

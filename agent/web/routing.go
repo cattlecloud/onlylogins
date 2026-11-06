@@ -148,7 +148,7 @@ func (a *Application) createRoutes(router *mux.Router) {
 	a.handleNormal(router, &loginHTTP{
 		log:         ulog.New("http/login"),
 		environment: a.environment,
-		sessions:    a.scache,
+		session:     a.scache,
 		store:       a.store,
 		html:        ui.Load("login.html"),
 	})
@@ -340,7 +340,7 @@ func (a *Application) handleNormal(router *mux.Router, h web) {
 	check(normal, h)
 
 	// multi-level session cache (volatile + memcache)
-	ss := sessions(h, a.scache)
+	ss := session(h, a.scache)
 
 	trace := &duration{
 		sum:  a.metrics.NewSummary("ol_web_" + h.Metric()),
@@ -359,14 +359,14 @@ func (a *Application) handleModerate(router *mux.Router, h api) {
 		log:     ulog.New("middle/moderation-gate"),
 	}
 
-	ss := sessions(gate, a.scache)
+	ss := session(gate, a.scache)
 
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
 func (a *Application) handleComponent(router *mux.Router, h api) {
 	check(component, h)
-	ss := sessions(h, a.scache)
+	ss := session(h, a.scache)
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
@@ -376,7 +376,7 @@ func (a *Application) handleAPI(router *mux.Router, h api) {
 	router.Handle(h.Path(), h).Methods(h.Methods()...)
 }
 
-func sessions(h http.Handler, scache middles.Sessions[users.Identity]) *middles.SetSession[*oauth.CookieContent[users.Identity], users.Identity] {
+func session(h http.Handler, scache middles.Sessions[users.Identity]) *middles.SetSession[*oauth.CookieContent[users.Identity], users.Identity] {
 	ss := &middles.SetSession[*oauth.CookieContent[users.Identity], users.Identity]{
 		SessionCookieName: "onlylogins-session",
 		Sessions:          scache,

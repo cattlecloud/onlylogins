@@ -56,7 +56,7 @@ func TestShare_ServeHTTP_GET(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeShareMux(t, mockdb.Open(t), mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r := requestGet(t, "/share", nil)
 	w := httptest.NewRecorder()
@@ -74,7 +74,7 @@ func TestShare_ServeHTTP_GET_logged_in(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 	r := requestGet(t, "/share", cookie)
@@ -92,7 +92,7 @@ func TestShare_ServeHTTP_PUT_not_logged_in(t *testing.T) {
 	t.Parallel()
 
 	router, scache := makeShareMux(t, mockdb.Open(t), mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r, rerr := http.NewRequestWithContext(t.Context(), http.MethodPut,
 		"/share?content=secretvalue&ttl=900", nil)
@@ -112,7 +112,7 @@ func TestShare_ServeHTTP_PUT(t *testing.T) {
 	const userID = mocks.Nobody
 	store := mockdb.Open(t)
 	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	cookie := scache.Create(userID, 1*time.Minute)
 
@@ -135,7 +135,7 @@ func TestShare_ServeHTTP_PUT_empty_content(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
@@ -157,7 +157,7 @@ func TestShare_ServeHTTP_PUT_content_too_long(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := makeShareMux(t, store, mocks.NewTestCrypt())
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 

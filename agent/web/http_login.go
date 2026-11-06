@@ -20,6 +20,7 @@ import (
 	"cattlecloud.net/go/webtools/runtime"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
+	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/go-conceal"
 )
@@ -27,7 +28,7 @@ import (
 type loginHTTP struct {
 	log         *ulog.Log
 	store       database.Store
-	sessions    middles.Sessions[users.Identity]
+	session     middles.Sessions[users.Identity]
 	environment runtime.Environment
 	html        *template.Template
 }
@@ -156,7 +157,7 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
-	http.SetCookie(w, h.sessions.Create(id, cookieTTL))
+	http.SetCookie(w, h.session.Create(id, sessions.TTL))
 
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
@@ -189,13 +190,11 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
-	http.SetCookie(w, h.sessions.Create(userID, cookieTTL))
+	http.SetCookie(w, h.session.Create(userID, sessions.TTL))
 
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
 }
-
-const cookieTTL = 10 * time.Minute
 
 func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 	return &http.Cookie{
@@ -203,7 +202,7 @@ func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 		Value:    base64.StdEncoding.EncodeToString(key.Unveil()),
 		Path:     "/",
 		HttpOnly: true,
-		Expires:  time.Now().Add(cookieTTL),
+		Expires:  time.Now().Add(sessions.TTL),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   h.environment.NonLocal(),
 	}

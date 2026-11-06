@@ -124,7 +124,7 @@ func TestUsernameHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newUsernameRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/username/add/miscellaneous/github", cookie)
@@ -142,7 +142,7 @@ func TestUsernameHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newUsernameRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r := requestGet(t, "/internal/username/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
@@ -159,7 +159,7 @@ func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create a document under the default folder
@@ -200,7 +200,7 @@ func TestUsernameHTMX_Post_EmptyUsername_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -240,7 +240,7 @@ func TestUsernameHTMX_Post_WhitespaceOnlyUsername_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -280,7 +280,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -319,7 +319,7 @@ func TestUsernameHTMX_Post_MissingVault_Redirects(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := postUsernameForm(t, http.MethodPost,
@@ -357,7 +357,7 @@ func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	}
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	r := postUsernameForm(t, http.MethodPost,
@@ -382,7 +382,7 @@ func TestUsernameEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := usernameURL("edit", "miscellaneous", "github", id)
@@ -406,7 +406,7 @@ func TestUsernameEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := usernameURL("update", "miscellaneous", "github", id)
@@ -435,7 +435,7 @@ func TestUsernameEntryHTMX_Put_EmptyUsername_ReturnsProblem(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := usernameURL("update", "miscellaneous", "github", id)
@@ -464,7 +464,7 @@ func TestUsernameEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := usernameURL("update", "miscellaneous", "github", id)
@@ -487,7 +487,7 @@ func TestUsernameEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := usernameURL("delete", "miscellaneous", "github", id)
@@ -514,7 +514,7 @@ func TestUsernameEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
 
 	router, scache := newUsernameRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := usernameURL("delete", "miscellaneous", "github", id)

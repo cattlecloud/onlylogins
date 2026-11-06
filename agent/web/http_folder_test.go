@@ -38,7 +38,7 @@ func TestFolder_CreateDocument(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodPost)
@@ -73,7 +73,7 @@ func TestFolder_CreateDocument_BadLabel(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodPost)
@@ -110,7 +110,7 @@ func TestFolder_CreateDocument_DuplicateLabel(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodPost)
@@ -153,7 +153,7 @@ func TestFolder_Get_Empty(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -189,7 +189,7 @@ func TestFolder_Get_WithDocuments(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -251,7 +251,7 @@ func TestFolder_Get_DangerZone_ForUserCreated(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -295,7 +295,7 @@ func TestFolderHTTP_Delete_HappyPath(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -338,7 +338,7 @@ func TestFolderHTTP_Delete_NoSession(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -364,7 +364,7 @@ func TestFolderHTTP_Delete_ProtectedFolder(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
@@ -399,7 +399,7 @@ func TestFolderHTTP_Delete_NotFound(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)

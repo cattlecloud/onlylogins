@@ -25,7 +25,7 @@ func TestFolders_ServeHTTP_GET_not_logged_in(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	request := requestGet(t, "/folders", nil)
 	w := httptest.NewRecorder()
@@ -44,7 +44,7 @@ func TestFolders_ServeHTTP_GET_logged_in(t *testing.T) {
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
 
 	request := requestGet(t, "/folders", cookie)
@@ -69,7 +69,7 @@ func TestFolders_ServeHTTP_POST_success(t *testing.T) {
 	t.Cleanup(cancel)
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
 
 	request := requestPost(t, "/folders", cookie, url.Values{

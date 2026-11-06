@@ -83,7 +83,7 @@ func newPatreonPageHarness(t *testing.T, client payments.Client) (database.Store
 
 	scache := mocks.NewSessions()
 	router := mux.NewRouter()
-	router.Handle(handler.Path(), sessions(handler, scache)).Methods(http.MethodGet)
+	router.Handle(handler.Path(), session(handler, scache)).Methods(http.MethodGet)
 	return store, router, scache
 }
 

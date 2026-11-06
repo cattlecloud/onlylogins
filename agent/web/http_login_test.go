@@ -47,7 +47,7 @@ func newSignupRouter(t *testing.T) (*mux.Router, database.Store) {
 	routes.Handle("/login", &loginHTTP{
 		log:         ulog.New("test"),
 		store:       store,
-		sessions:    mocks.NewSessions(),
+		session:     mocks.NewSessions(),
 		environment: env,
 		html:        ui.Load("login.html"),
 	})

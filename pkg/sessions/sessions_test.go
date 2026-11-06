@@ -15,19 +15,19 @@ func Test_remainingTTL(t *testing.T) {
 
 	s := &Store{
 		now: func() time.Time {
-			return time.Date(2026, 2, 2, 9, 20, 0, 0, time.UTC)
+			return time.Date(2026, 2, 2, 9, 30, 0, 0, time.UTC)
 		},
 	}
 
 	t.Run("normal", func(t *testing.T) {
-		insertion := time.Date(2026, 2, 1, 9, 20, 0, 0, time.UTC)
+		insertion := time.Date(2026, 2, 2, 9, 29, 0, 0, time.UTC)
 		result := s.remainingTTL(insertion)
-		must.Eq(t, result, 364*24*time.Hour) // 1 year - 1 day
+		must.Eq(t, result, 9*time.Minute) // insert was 1 minute ago
 	})
 
 	t.Run("grace", func(t *testing.T) {
-		insertion := time.Date(2025, 2, 2, 8, 0, 0, 0, time.UTC)
+		insertion := time.Date(2025, 2, 2, 9, 30, 0, 0, time.UTC)
 		result := s.remainingTTL(insertion)
-		must.Eq(t, result, 3*time.Hour) // grace period
+		must.Eq(t, result, 1*time.Minute) // grace period
 	})
 }
