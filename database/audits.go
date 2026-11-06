@@ -5,6 +5,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -20,6 +21,9 @@ type Audits interface {
 	// track login attempts
 	Record(scope.C, *users.LoginRequest, bool) error
 	RecordBogus(scope.C, *users.LoginRequest) error
+
+	// prune old login attempts
+	Prune(scope.C, time.Duration) error
 }
 
 type auditsql struct {
@@ -103,6 +107,28 @@ func (s *auditsql) RecordBogus(ctx scope.C, request *users.LoginRequest) error {
 	); err != nil {
 		s.log.E.Fmt("unable to insert bogus login audit: %v", err)
 		return fmt.Errorf("unable to record login audit: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+func (s *auditsql) Prune(ctx scope.C, threshold time.Duration) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to prune audit records: %w", xerr)
+	}
+	defer done()
+
+	cutoff := time.Now().Add(-threshold).Unix()
+
+	const logins = `delete from logins where creation < ?`
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectAnything, logins, cutoff); err != nil {
+		return fmt.Errorf("unable to prune login attempts: %w", err)
+	}
+
+	const bogus = `delete from bogus where creation < ?`
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectAnything, bogus, cutoff); err != nil {
+		return fmt.Errorf("unable to prune bogus attempts: %w", err)
 	}
 
 	return tx.Commit()
