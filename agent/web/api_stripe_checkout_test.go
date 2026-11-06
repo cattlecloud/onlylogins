@@ -33,7 +33,7 @@ func newCheckoutHarness(t *testing.T, client payments.Client) (database.Store, *
 
 	scache := mocks.NewSessions()
 	router := mux.NewRouter()
-	router.Handle(handler.Path(), sessions(handler, scache)).Methods(http.MethodPost)
+	router.Handle(handler.Path(), session(handler, scache)).Methods(http.MethodPost)
 	return store, router, scache
 }
 

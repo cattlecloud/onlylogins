@@ -129,7 +129,7 @@ func TestNoteHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newNoteRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/note/add/miscellaneous/github", cookie)
@@ -148,7 +148,7 @@ func TestNoteHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newNoteRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r := requestGet(t, "/internal/note/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
@@ -165,7 +165,7 @@ func TestNoteHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create a document under the default folder
@@ -207,7 +207,7 @@ func TestNoteHTMX_Post_EmptyNote_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -247,7 +247,7 @@ func TestNoteHTMX_Post_TooLongNote_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -288,7 +288,7 @@ func TestNoteHTMX_Post_PreservesWhitespace(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -328,7 +328,7 @@ func TestNoteHTMX_Post_PreservesNewlines(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -369,7 +369,7 @@ func TestNoteHTMX_Post_AlreadyExists_Aborts(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first", crypt)
@@ -399,7 +399,7 @@ func TestNoteHTMX_Post_MissingVault_Redirects(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := postNoteForm(t, http.MethodPost,
@@ -437,7 +437,7 @@ func TestNoteHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	}
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	r := postNoteForm(t, http.MethodPost,
@@ -462,7 +462,7 @@ func TestNoteEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "something clever", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// server decrypts the note itself using the vault cookie, so no ?note= query param
@@ -488,7 +488,7 @@ func TestNoteEntryHTMX_Get_PreservesNewlinesInEditForm(t *testing.T) {
 	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first\nsecond", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	ctx, cancel := scope.TTL(testwait)
@@ -519,7 +519,7 @@ func TestNoteEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
 	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "anything", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	ctx, cancel := scope.TTL(testwait)
@@ -549,7 +549,7 @@ func TestNoteEntryHTMX_Get_WrongNoteID_Aborts(t *testing.T) {
 	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("edit", "miscellaneous", "github", records.NotesAuto(9999))
@@ -566,7 +566,7 @@ func TestNoteEntryHTMX_Get_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newNoteRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/note/whatever/miscellaneous/github/1", cookie)
@@ -585,7 +585,7 @@ func TestNoteEntryHTMX_Put_HappyPath_ReturnsPanel(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("update", "miscellaneous", "github", id)
@@ -616,7 +616,7 @@ func TestNoteEntryHTMX_Put_PreservesNewlines(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("update", "miscellaneous", "github", id)
@@ -643,7 +643,7 @@ func TestNoteEntryHTMX_Put_EmptyNote_ReturnsProblem(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("update", "miscellaneous", "github", id)
@@ -670,7 +670,7 @@ func TestNoteEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("what", "miscellaneous", "github", id)
@@ -693,7 +693,7 @@ func TestNoteEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("update", "miscellaneous", "github", id)
@@ -717,7 +717,7 @@ func TestNoteEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := noteURL("update", "miscellaneous", "github", id)
@@ -740,7 +740,7 @@ func TestNoteEntryHTMX_Delete_HappyPath_RestoresAddButton(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "secret", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("delete", "miscellaneous", "github", id)
@@ -770,7 +770,7 @@ func TestNoteEntryHTMX_Delete_UnknownAction_Aborts(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := noteURL("wat", "miscellaneous", "github", id)
@@ -794,7 +794,7 @@ func TestNoteEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
 
 	router, scache := newNoteRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := noteURL("delete", "miscellaneous", "github", id)

@@ -86,7 +86,7 @@ func TestShareOpen_ServeHTTP_not_logged_in(t *testing.T) {
 	t.Parallel()
 
 	env := newOpenEnv(t, time.Now, "a top secret hush-hush thing")
-	ss := sessions(env.router, env.scache)
+	ss := session(env.router, env.scache)
 
 	r := requestGet(t, "/share/open/"+string(env.uid), nil)
 	w := httptest.NewRecorder()
@@ -103,7 +103,7 @@ func TestShareOpen_ServeHTTP_not_found(t *testing.T) {
 
 	env := newOpenEnv(t, time.Now, "a top secret hush-hush thing")
 	_ = env // share is irrelevant; we exercise the missing-share branch
-	ss := sessions(env.router, env.scache)
+	ss := session(env.router, env.scache)
 
 	r := requestGet(t, "/share/open/nonexistent", nil)
 	w := httptest.NewRecorder()
@@ -117,7 +117,7 @@ func TestShareOpen_ServeHTTP_already_consumed(t *testing.T) {
 	t.Parallel()
 
 	env := newOpenEnv(t, time.Now, "a top secret hush-hush thing")
-	ss := sessions(env.router, env.scache)
+	ss := session(env.router, env.scache)
 
 	// consume once
 	r := requestGet(t, "/share/open/"+string(env.uid), nil)
@@ -156,7 +156,7 @@ func TestShareOpen_ServeHTTP_expired(t *testing.T) {
 		html:  ui.Load("share_open.html"),
 	})
 
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	r := requestGet(t, "/share/open/"+string(uid), nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)

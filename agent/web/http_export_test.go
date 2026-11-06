@@ -85,7 +85,7 @@ func newExportHarness(t *testing.T) (database.Store, *mux.Router, *mocks.Session
 	}
 
 	routes := mux.NewRouter()
-	routes.Handle("/export", sessions(handler, scache))
+	routes.Handle("/export", session(handler, scache))
 
 	return store, routes, scache, crypt
 }

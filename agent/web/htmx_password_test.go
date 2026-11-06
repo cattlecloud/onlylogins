@@ -129,7 +129,7 @@ func TestPasswordHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newPasswordRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/password/add/miscellaneous/github", cookie)
@@ -148,7 +148,7 @@ func TestPasswordHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newPasswordRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	r := requestGet(t, "/internal/password/add/miscellaneous/github", nil)
 	w := httptest.NewRecorder()
@@ -165,7 +165,7 @@ func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create a document under the default folder
@@ -206,7 +206,7 @@ func TestPasswordHTMX_Post_EmptyPassword_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -246,7 +246,7 @@ func TestPasswordHTMX_Post_TooLongPassword_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -287,7 +287,7 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -325,7 +325,7 @@ func TestPasswordHTMX_Post_MissingVault_Redirects(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := postPasswordForm(t, http.MethodPost,
@@ -363,7 +363,7 @@ func TestPasswordHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	}
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	r := postPasswordForm(t, http.MethodPost,
@@ -388,7 +388,7 @@ func TestPasswordEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := passwordURL("edit", "miscellaneous", "github", id)
@@ -413,7 +413,7 @@ func TestPasswordEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "oldpass", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := passwordURL("update", "miscellaneous", "github", id)
@@ -443,7 +443,7 @@ func TestPasswordEntryHTMX_Put_EmptyPassword_ReturnsProblem(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := passwordURL("update", "miscellaneous", "github", id)
@@ -472,7 +472,7 @@ func TestPasswordEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := passwordURL("update", "miscellaneous", "github", id)
@@ -495,7 +495,7 @@ func TestPasswordEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "secret", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := passwordURL("delete", "miscellaneous", "github", id)
@@ -522,7 +522,7 @@ func TestPasswordEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
 
 	router, scache := newPasswordRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := passwordURL("delete", "miscellaneous", "github", id)

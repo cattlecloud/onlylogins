@@ -31,7 +31,7 @@ func newDocumentTestHarness(t *testing.T) (database.Store, *mux.Router, *http.Co
 	}
 
 	scache := mocks.NewSessions()
-	ss := sessions(handler, scache)
+	ss := session(handler, scache)
 
 	routes := mux.NewRouter()
 	routes.Handle("/folders/{folder}/{document}", ss).Methods(http.MethodGet, http.MethodDelete)

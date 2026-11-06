@@ -13,8 +13,11 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
-// YearTTL is a duration representing one full non-leap year.
-const YearTTL = 365 * 24 * time.Hour
+// TTL is the hard-coded lifespan of sessions.
+//
+// As a password manager we force users to re-login after a short period of time
+// so that someone leaving their computer unattended is less of a security risk.
+const TTL = 10 * time.Minute
 
 // Store is an implementation of oauth.Cache that makes use of both the basic
 // in-memory oauth.Volatile cache as well as a fallback memcached client for
@@ -37,12 +40,12 @@ func New(mc memcache.Client) *Store {
 
 // remainingTTL computes the amount of time the item should remain in cache
 // given its original insertion time and the fact that we store sessions for
-// up to one year, with three hours of grace period.
+// up to one year, with one minute of grace period.
 func (s *Store) remainingTTL(insertion time.Time) time.Duration {
 	now := s.now()
 	elapsed := now.Sub(insertion)
-	remaining := YearTTL - elapsed
-	return max(3*time.Hour, remaining)
+	remaining := TTL - elapsed
+	return max(1*time.Minute, remaining)
 }
 
 func (s *Store) Get(token *conceal.Text) (users.Identity, bool) {

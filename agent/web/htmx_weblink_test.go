@@ -138,7 +138,7 @@ func TestWeblinkHTMX_Get_RendersForm(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newWeblinkRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/weblink/add/miscellaneous/github", cookie)
@@ -156,7 +156,7 @@ func TestWeblinkHTMX_Get_NoSession_Redirects(t *testing.T) {
 	t.Parallel()
 
 	router, scache := newWeblinkRouter(t, mockdb.Open(t))
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 
 	// No cookie => session middleware sets an inactive session; the handler
 	// emits an HX-Redirect to /login so the page can recover via a fresh login.
@@ -175,7 +175,7 @@ func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create a document under the default folder
@@ -216,7 +216,7 @@ func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 	crypt := mocks.NewTestCrypt()
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	// create document
@@ -254,7 +254,7 @@ func TestWeblinkHTMX_Post_MissingVault_Redirects(t *testing.T) {
 
 	store := mockdb.Open(t)
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := postForm(t, http.MethodPost,
@@ -292,7 +292,7 @@ func TestWeblinkHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	}
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	r := postForm(t, http.MethodPost,
@@ -319,7 +319,7 @@ func TestWeblinkEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := weblinkURL("edit", "miscellaneous", "github", id)
@@ -343,7 +343,7 @@ func TestWeblinkEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := weblinkURL("update", "miscellaneous", "github", id)
@@ -372,7 +372,7 @@ func TestWeblinkEntryHTMX_Put_InvalidURL_ReturnsProblem(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := weblinkURL("update", "miscellaneous", "github", id)
@@ -401,7 +401,7 @@ func TestWeblinkEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := weblinkURL("update", "miscellaneous", "github", id)
@@ -424,7 +424,7 @@ func TestWeblinkEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	u := weblinkURL("delete", "miscellaneous", "github", id)
@@ -451,7 +451,7 @@ func TestWeblinkEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
 
 	router, scache := newWeblinkRouter(t, store)
-	ss := sessions(router, scache)
+	ss := session(router, scache)
 	bobCookie := scache.Create(bob, 1*time.Minute)
 
 	u := weblinkURL("delete", "miscellaneous", "github", id)
