@@ -12,14 +12,16 @@ import (
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
+	"cattlecloud.net/go/webtools/middles/identity"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/sessions/cookies"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type accountHTMX struct {
-	log   *ulog.Log
-	store database.Store
+	log     *ulog.Log
+	store   database.Store
+	session middles.Sessions[users.Identity]
 }
 
 func (h *accountHTMX) Path() string {
@@ -53,7 +55,7 @@ func (h *accountHTMX) delete(ctx scope.C, w http.ResponseWriter, r *http.Request
 			h.log.E.Fmt("unable to delete user account: %v", err)
 			return abort(h.log, w, err)
 		}
-		h.expire(w)
+		h.expire(w, sess)
 		return htmx.SetRedirect(w, "/")
 	}
 
@@ -64,7 +66,7 @@ func (h *accountHTMX) post(_ scope.C, w http.ResponseWriter, r *http.Request) er
 	// if the user is logged in, expire the cookie and send them to homepage
 	if sess := middles.GetSession[users.Identity](r); sess.Active() {
 		h.log.T.Fmt("user %d is logging out", sess.Identity())
-		h.expire(w)
+		h.expire(w, sess)
 		return htmx.SetRedirect(w, "/")
 	}
 
@@ -73,7 +75,12 @@ func (h *accountHTMX) post(_ scope.C, w http.ResponseWriter, r *http.Request) er
 	return nil
 }
 
-func (h *accountHTMX) expire(w http.ResponseWriter) {
+func (h *accountHTMX) expire(w http.ResponseWriter, session identity.UserSession[users.Identity]) {
+	// delete the session token server-side
+	if err := h.session.Delete(session.Token()); err != nil {
+		h.log.E.Fmt("unable to delete session: %v", err)
+	}
+
 	// delete the user encryption cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookies.Encryption,

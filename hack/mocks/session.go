@@ -69,3 +69,17 @@ func (s *Sessions) Match(id users.Identity, token *conceal.Text) error {
 
 	return nil
 }
+
+func (s *Sessions) Delete(token *conceal.Text) error {
+	s.lock.Lock()
+	defer s.lock.Unlock()
+
+	for k, v := range s.active {
+		if token.Equal(v) {
+			delete(s.active, k)
+			break
+		}
+	}
+
+	return nil
+}

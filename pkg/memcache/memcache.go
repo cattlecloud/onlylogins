@@ -25,6 +25,7 @@ type Client interface {
 
 	SessionPut(users.Identity, *conceal.Text, time.Duration)
 	SessionGet(*conceal.Text) (*Item[users.Identity], bool)
+	SessionDelete(*conceal.Text) error
 }
 
 func New(cache *memc.Client, metset *metrics.Set) Client {
@@ -115,4 +116,18 @@ func (c *client) SessionGet(token *conceal.Text) (*Item[users.Identity], bool) {
 
 	c.missSessions.Inc()
 	return nil, false
+}
+
+func (c *client) SessionDelete(token *conceal.Text) error {
+	key := c.sessionKey(token)
+
+	if err := c.cache.Delete(key); err != nil {
+		// deleting an already expired/missing session is not a failure
+		if !errors.Is(err, memc.ErrNotFound) {
+			c.log.W.Fmt("unable to delete session: %v", err)
+			return err
+		}
+	}
+
+	return nil
 }
