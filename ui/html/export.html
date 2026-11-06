@@ -6,7 +6,7 @@
 
     {{if .Session.Active}}
     <p class="lede">
-      Create a complete copy of your OnlyLogins vault. The downloadable export
+      Create a complete copy of your OnlyLogins data. The downloadable export
       includes every folder and secure document in your account, along with
       each document's weblinks, usernames, passwords, key/value pairs, and
       notes.
@@ -22,7 +22,7 @@
     </ul>
     {{else}}
     <p class="lede">
-      Export lets you download a complete copy of your OnlyLogins vault,
+      Export lets you download a complete copy of your OnlyLogins data,
       including your folders, documents, usernames, passwords, key/value
       pairs, and notes, in a single
       <a href="https://www.json.org/json-en.html">JSON</a> file.
@@ -38,7 +38,7 @@
     <strong>This backup is not encrypted.</strong>
     <p>
       Your passphrase does not protect this file. It contains every secret in
-      your vault, so store it somewhere secure, such as an encrypted drive or
+      your account, so store it somewhere secure, such as an encrypted drive or
       password manager, and delete it when you no longer need it.
     </p>
   </div>
@@ -58,8 +58,7 @@
   <section class="action">
     <h2>Log in to continue</h2>
     <p>
-      Log in to download a complete copy of your OnlyLogins vault as one JSON
-      file.
+      Log in to download a complete copy of your OnlyLogins data as one JSON file.
     </p>
     <form method="get" action="/login">
       <button type="submit">Log in to export your data</button>
