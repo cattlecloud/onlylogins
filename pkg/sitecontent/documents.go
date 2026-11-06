@@ -121,6 +121,18 @@ func (r *CreateDocumentRequest) Validate() error {
 	return nil
 }
 
+func (r *ListDocumentsRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if r.Folder == "" {
+		return errors.New("folder must be set")
+	}
+
+	return nil
+}
+
 func (r *GetDocumentRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
@@ -757,8 +769,13 @@ type DeleteDocumentRequest struct {
 }
 
 func (r *DeleteDocumentRequest) Validate() error {
+	if r.ID <= 0 {
+		return errors.New("document must be set")
+	}
+
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}
+
 	return nil
 }

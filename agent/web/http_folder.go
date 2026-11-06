@@ -77,10 +77,15 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 
 	name := h.folder(r)
 
-	documents, lerr := h.store.Documents().List(ctx, &sitecontent.ListDocumentsRequest{
+	request := &sitecontent.ListDocumentsRequest{
 		User:   session.Identity(),
 		Folder: name,
-	})
+	}
+	if verr := request.Validate(); verr != nil {
+		return problem(w, verr)
+	}
+
+	documents, lerr := h.store.Documents().List(ctx, request)
 	if lerr != nil {
 		return abort(h.log, w, lerr)
 	}

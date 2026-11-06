@@ -71,6 +71,50 @@ func TestValidateKeyvalValue(t *testing.T) {
 	})
 }
 
+func TestListDocumentsRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &ListDocumentsRequest{Folder: "f"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing folder is rejected", func(t *testing.T) {
+		r := &ListDocumentsRequest{User: 1}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &ListDocumentsRequest{User: 1, Folder: "f"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
+func TestDeleteDocumentRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing id is rejected", func(t *testing.T) {
+		r := &DeleteDocumentRequest{User: 1}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &DeleteDocumentRequest{ID: 1}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &DeleteDocumentRequest{ID: 1, User: 1}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
 func TestCreateKeyvalRequest_Validate(t *testing.T) {
 	t.Parallel()
 
