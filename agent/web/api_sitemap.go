@@ -66,15 +66,42 @@ func (h *sitemapAPI) create(ctx scope.C) (sitemaps.Site, error) {
 
 	const basics = 5
 	today := sitemaps.DayFrom(time.Now())
-	origin := sitemaps.CalendarDay{Year: 2026, Month: 3, Day: 5}
+	origin := sitemaps.CalendarDay{Year: 2026, Month: 11, Day: 13}
 	urls := make(sitemaps.Site, 0, basics)
+
+	// home page
 
 	urls = append(urls, &sitemaps.URL{
 		Location:  h.url("/"),
 		Modified:  today,
-		Frequency: sitemaps.Daily,
-		Priority:  sitemaps.Bump,
+		Frequency: sitemaps.Monthly,
+		Priority:  sitemaps.Normal,
 	})
+
+	// navigation pages
+
+	urls = append(urls, &sitemaps.URL{
+		Location:  h.url("/export"),
+		Modified:  today,
+		Frequency: sitemaps.Monthly,
+		Priority:  sitemaps.Normal,
+	})
+
+	urls = append(urls, &sitemaps.URL{
+		Location:  h.url("/share"),
+		Modified:  today,
+		Frequency: sitemaps.Monthly,
+		Priority:  sitemaps.Normal,
+	})
+
+	urls = append(urls, &sitemaps.URL{
+		Location:  h.url("/patreon"),
+		Modified:  today,
+		Frequency: sitemaps.Monthly,
+		Priority:  sitemaps.Normal,
+	})
+
+	// basic pages
 
 	urls = append(urls, &sitemaps.URL{
 		Location:  h.url("/about"),
