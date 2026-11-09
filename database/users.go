@@ -37,6 +37,7 @@ type Users interface {
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
 	Delete(scope.C, users.Identity) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
+	Profile(scope.C, users.Identity) (*sitecontent.Profile, error)
 	Moderate(scope.C, users.Identity) (*sitecontent.UserModeration, error)
 	Check(scope.C, *users.LoginRequest) (users.Identity, *conceal.Bytes, error)
 	List(scope.C) ([]*users.Profile, error)
@@ -97,6 +98,48 @@ func (s *usersql) Lookup(ctx scope.C, id users.Identity) (*users.Profile, error)
 			&profile.Standing,
 		)
 		return &profile, err
+	}
+
+	return litesql.QueryRow(ctx, tx, f, statement, id)
+}
+
+func (s *usersql) Profile(ctx scope.C, id users.Identity) (*sitecontent.Profile, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, xerr
+	}
+	defer done()
+
+	const statement = `
+	select
+		users.username,
+		plans.id,
+		plans.label,
+		plans.price,
+		plans.docs_limit,
+		(select count(d.id)
+		 from documents d
+		 join folders f on f.id = d.folders_id
+		 where f.users_id = users.id)
+	from users
+		join plans on users.plans_id = plans.id
+	where
+		users.id = ?`
+
+	f := func(scan litesql.ScanFunc) (*sitecontent.Profile, error) {
+		profile := new(sitecontent.Profile)
+		if err := scan(
+			&profile.Username,
+			&profile.Usage.Plan.ID,
+			&profile.Usage.Plan.Label,
+			&profile.Usage.Plan.MonthlyPrice,
+			&profile.Usage.Plan.DocumentsLimit,
+			&profile.Usage.Documents,
+		); err != nil {
+			return nil, err
+		}
+		profile.Usage.User = id
+		return profile, nil
 	}
 
 	return litesql.QueryRow(ctx, tx, f, statement, id)

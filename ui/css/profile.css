@@ -2,12 +2,32 @@
   display: flex; flex-flow: column; gap: 1rem;
 }
 
-.middle.profile > .user > div {
-  display: flex; flex-flow: row nowrap; gap: .5rem;
+.middle.profile > .user h1 {
+  margin: 0;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.middle.profile > .user > div > .value.unset {
-  font-style: italic;
+.middle.profile > .user > .row {
+  display: flex; flex-flow: row nowrap; gap: 0.75rem;
+  align-items: baseline;
+}
+
+.middle.profile > .user > .row > .key {
+  min-width: 8rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.middle.profile > .user > .row > .value {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* plan labels are stored lowercase; display them capitalized */
+.middle.profile > .user > .row > .value.plan {
+  text-transform: capitalize;
 }
 
 .middle.profile > .user #error {

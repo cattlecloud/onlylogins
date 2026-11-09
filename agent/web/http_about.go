@@ -61,7 +61,7 @@ func (h *aboutHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	}
 
 	head := &pages.Head{
-		Title:       "About OnlyLogins | The place to store login information.",
+		Title:       format.PageTitle("About"),
 		Styles:      []string{"basics.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),

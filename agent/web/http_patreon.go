@@ -111,7 +111,7 @@ func (h *patreonHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	head := &pages.Head{
-		Title:       "Patreon | OnlyLogins",
+		Title:       format.PageTitle("Patreon"),
 		Styles:      []string{"patreon.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),

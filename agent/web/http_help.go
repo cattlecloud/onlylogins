@@ -61,7 +61,7 @@ func (h *helpHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) erro
 	}
 
 	head := &pages.Head{
-		Title:       "Help | OnlyLogins",
+		Title:       format.PageTitle("Help"),
 		Styles:      []string{"basics.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),

@@ -1,71 +1,23 @@
 {{define "middle"}}
 <div class="middle profile">
   <section class="user">
-    <div class="username" id="edit-username">
-      <label class="key">username</label>
+    <h1>profile</h1>
+
+    <div class="row">
+      <span class="key">username</span>
       <div class="value">{{.Section.Profile.Username}}</div>
-      <button hx-get="/internal/username/edit" hx-target="#edit-username" hx-swap="outerHTML">
-        change
-      </button>
     </div>
 
-    <div class="idp">
-      <label class="key">login via</label>
-      <div class="value">{{.Section.Profile.IDP}}</div>
+    <div class="row">
+      <span class="key">plan</span>
+      <div class="value plan">{{.Section.Profile.Usage.Plan.Label}}</div>
     </div>
 
-    <div class="standing">
-      <label class="key">standing</label>
-      <div class="value">{{.Section.Profile.Standing}}</div>
-    </div>
-
-    <div class="email">
-      <label class="key">email</label>
-      <div class="value">{{.Section.Profile.Email}}</div>
-    </div>
-
-    <div class="showemail">
-      <label class="key">show email</label>
-      {{template "profile_edit_showemail" .Section.Profile.ShowEmail}}
-    </div>
-
-    <div class="location" id="edit-location">
-      <label class="key">location</label>
-      {{if .Section.Profile.Location}}
-      <div class="value">{{.Section.Profile.Location}}</div>
-      {{else}}
-      <div class="value unset">not set</div>
-      {{end}}
-      <button
-        hx-get="/internal/profile/edit?key=editloc&value={{.Section.Profile.Location}}"
-        hx-target="#edit-location"
-        hx-swap="outerHTML">edit</button>
-    </div>
-
-    <div class="link" id="edit-link">
-      <label class="key">website</label>
-      {{if .Section.Profile.Link}}
-      <div class="value">{{.Section.Profile.Link}}</div>
-      {{else}}
-      <div class="value unset">not set</div>
-      {{end}}
-      <button
-        hx-get="/internal/profile/edit?key=editlink&value={{.Section.Profile.Link}}"
-        hx-target="#edit-link"
-        hx-swap="outerHTML">edit</button>
-    </div>
-
-    <div class="about" id="edit-about">
-      <label class="key">about</label>
-      {{if .Section.Profile.About}}
-      <div class="value">{{.Section.Profile.About}}</div>
-      {{else}}
-      <div class="value unset">not set</div>
-      {{end}}
-      <button
-        hx-get="/internal/profile/edit?key=editabout&value={{.Section.Profile.About}}"
-        hx-target="#edit-about"
-        hx-swap="outerHTML">edit</button>
+    <div class="row">
+      <span class="key">documents</span>
+      <div class="value">
+        {{.Section.Profile.Usage.Documents}} / {{.Section.Profile.Usage.Plan.DocumentsLimit}}
+      </div>
     </div>
   </section>
 </div>

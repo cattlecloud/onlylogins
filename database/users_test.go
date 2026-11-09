@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"cattlecloud.net/go/scope"
+	"cattlecloud.net/onlylogins/database/records"
+	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/go-conceal"
@@ -101,6 +103,55 @@ func TestUsers_Lookup(t *testing.T) {
 		must.NoError(t, err)
 		must.Eq(t, "carol", u.Username)
 		must.Eq(t, "carol@example.com", u.Email)
+	})
+}
+
+func TestUsers_Profile(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	u := db.Users()
+
+	t.Run("nobody empty", func(t *testing.T) {
+		p, err := u.Profile(ctx, mocks.Nobody)
+		must.NoError(t, err)
+		must.NotNil(t, p)
+		must.Eq(t, "_nobody", p.Username)
+		must.Eq(t, mocks.Nobody, p.Usage.User)
+		must.Eq(t, records.PlansFree, p.Usage.Plan.ID)
+		must.Eq(t, "free", p.Usage.Plan.Label)
+		must.Eq(t, 256, p.Usage.Plan.DocumentsLimit)
+		must.Zero(t, p.Usage.Documents)
+	})
+
+	t.Run("nobody with documents", func(t *testing.T) {
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertDocument(t, ctx, db, mocks.Nobody, "gitlab")
+
+		p, err := u.Profile(ctx, mocks.Nobody)
+		must.NoError(t, err)
+		must.NotNil(t, p)
+		must.Eq(t, "_nobody", p.Username)
+		must.Eq(t, 2, p.Usage.Documents)
+		must.Eq(t, 256, p.Usage.Plan.DocumentsLimit)
+	})
+
+	t.Run("other user", func(t *testing.T) {
+		alice := insertUser(t, ctx, db, "alice")
+
+		p, err := u.Profile(ctx, alice)
+		must.NoError(t, err)
+		must.NotNil(t, p)
+		must.Eq(t, "alice", p.Username)
+		must.Eq(t, alice, p.Usage.User)
+		must.Eq(t, records.PlansFree, p.Usage.Plan.ID)
+		must.Zero(t, p.Usage.Documents)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		p, err := u.Profile(ctx, users.Identity(999))
+		must.Error(t, err)
+		must.Nil(t, p)
 	})
 }
 

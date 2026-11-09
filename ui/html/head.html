@@ -15,7 +15,7 @@
 <div class="right">
   <div class="profile">
     {{if .Session.Active}}
-    <span class="username">{{.Section.Profile.Username}}</span>
+    <span class="username"><a href="/profile">{{.Section.Profile.Username}}</a></span>
     <span class="logout"><a href="#" hx-post="/internal/logout" hx-swap="none">logout</a></span>
     {{else}}
     <span class="login"><a href="/login">login</a></span>
