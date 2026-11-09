@@ -106,7 +106,7 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	go webapp.Start(parent)
 
 	// startup cron framework and registrations
-	l.crons(parent, db)
+	l.crons(parent, db, stripec)
 
 	// wait for overall context to complete
 	<-parent.Done()
@@ -133,7 +133,7 @@ func (l *OnlyLogins) connectDB(parent scope.C) (database.Store, error) {
 	return db, nil
 }
 
-func (l *OnlyLogins) crons(parent scope.C, store database.Store) {
+func (l *OnlyLogins) crons(parent scope.C, store database.Store, client payments.Client) {
 	dc := dispatch.New(parent, store.Crons())
 
 	register := func(job crons.Cronjob) {
@@ -166,5 +166,11 @@ func (l *OnlyLogins) crons(parent scope.C, store database.Store) {
 	register(cronjobs.NewSyncSubscriptions(
 		l.config.Crons.SubscriptionSync,
 		store,
+	))
+
+	register(cronjobs.NewRetryStripeEvents(
+		l.config.Crons.StripeEvents,
+		store,
+		client,
 	))
 }

@@ -53,20 +53,21 @@ func (a *Application) createRoutes(router *mux.Router) {
 	})
 
 	a.handleAPI(router, &stripeWebhookAPI{
-		log:    ulog.New("api/stripe/webhooks"),
-		store:  a.store,
-		client: a.payments,
+		log:       ulog.New("internal/stripe/webhooks"),
+		store:     a.store,
+		client:    a.payments,
+		processor: payments.NewProcessor(a.store.Stripe(), a.payments),
 	})
 
 	a.handleComponent(router, &stripeCheckoutAPI{
-		log:         ulog.New("internal/patreon/checkout"),
+		log:         ulog.New("internal/stripe/checkout"),
 		store:       a.store,
 		client:      a.payments,
 		environment: a.environment,
 	})
 
 	a.handleComponent(router, &stripePortalAPI{
-		log:         ulog.New("internal/patreon/portal"),
+		log:         ulog.New("internal/stripe/portal"),
 		store:       a.store,
 		client:      a.payments,
 		environment: a.environment,

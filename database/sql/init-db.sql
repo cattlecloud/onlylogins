@@ -373,3 +373,37 @@ create table if not exists stripe_subscriptions (
 ) strict;
 
 create index if not exists idx_stripe_subscriptions_expiry   on stripe_subscriptions(status, current_period_end);
+
+create table if not exists stripe_events (
+    event_id text primary key,
+    -- unique stripe event identifier
+
+    etype text not null,
+    -- stripe event type
+
+    livemode integer check(livemode in (0, 1)) not null,
+    -- whether the event originated in live mode
+
+    created integer not null,
+    -- timestamp the event was created, per stripe
+
+    received integer default (unixepoch('now')) not null,
+    -- timestamp we received the event
+
+    payload blob not null,
+    -- raw verified json payload, kept for replay
+
+    status text check(status in ('pending', 'done', 'failed', 'dead')) not null default 'pending',
+    -- processing state; failed events remain for later retry
+
+    attempts integer not null default 0,
+    -- number of processing attempts
+
+    last_error text not null default '',
+    -- most recent processing failure
+
+    updated integer default (unixepoch('now')) not null
+    -- timestamp of the last state transition
+) strict;
+
+create index if not exists idx_stripe_events_status on stripe_events(status, received);
