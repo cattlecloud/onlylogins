@@ -5,48 +5,55 @@
     <a class="back-link" href="/">&larr; back to folders</a>
   </section>
 
-  <section>
-    <form hx-post="/folders/{{.Section.Name}}">
-      <div class="field">
-        <label for="document-label">
-          New document name
-          <a
-            class="field-hint"
-            href="/help#documents"
-            target="_blank"
-            rel="noopener noreferrer"
-            title="What is a document? Opens help in a new tab."
-          >(what is this?)</a>
-        </label>
-        <input
-          type="text"
-          id="document-label"
-          name="label"
-          placeholder="amazon, reddit, netflix, ..."
-          pattern="[a-zA-Z0-9-]+"
-          title="alphanumeric letters or numbers only"
-          autocomplete="off"
-          required>
-      </div>
+  <section class="new-document">
+    <details {{if not .Section.Documents}}open{{end}}>
+      <summary>
+        <span>New document</span>
+        <span class="summary-chevron" aria-hidden="true"></span>
+      </summary>
 
-      <div class="doc-hint">
-        <p class="hint-text">
-          A secure document holds the usernames, passwords, and secrets for
-          <strong>one account or website</strong>.
-        </p>
-        <p class="hint-examples">
-          <span class="hint-examples-label">Examples:</span>
-          <button type="button" class="example-chip" data-example="google">google</button>
-          <button type="button" class="example-chip" data-example="netflix">netflix</button>
-          <button type="button" class="example-chip" data-example="amazon">amazon</button>
-          <button type="button" class="example-chip" data-example="spotify">spotify</button>
-          <button type="button" class="example-chip" data-example="reddit">reddit</button>
-        </p>
-        <p class="hint-footnote">click an example to fill the name field</p>
-      </div>
+      <form hx-post="/folders/{{.Section.Name}}">
+        <div class="field">
+          <label for="document-label">
+            New document name
+            <a
+              class="field-hint"
+              href="/help#documents"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="What is a document? Opens help in a new tab."
+            >(what is this?)</a>
+          </label>
+          <input
+            type="text"
+            id="document-label"
+            name="label"
+            placeholder="amazon, reddit, netflix, ..."
+            pattern="[a-zA-Z0-9-]+"
+            title="alphanumeric letters or numbers only"
+            autocomplete="off"
+            required>
+        </div>
 
-      <button type="submit">Create</button>
-    </form>
+        <div class="doc-hint">
+          <p class="hint-text">
+            A secure document holds the usernames, passwords, and secrets for
+            <strong>one account or website</strong>.
+          </p>
+          <p class="hint-examples">
+            <span class="hint-examples-label">Examples:</span>
+            <button type="button" class="example-chip" data-example="google">google</button>
+            <button type="button" class="example-chip" data-example="netflix">netflix</button>
+            <button type="button" class="example-chip" data-example="amazon">amazon</button>
+            <button type="button" class="example-chip" data-example="spotify">spotify</button>
+            <button type="button" class="example-chip" data-example="reddit">reddit</button>
+          </p>
+          <p class="hint-footnote">click an example to fill the name field</p>
+        </div>
+
+        <button type="submit">Create</button>
+      </form>
+    </details>
   </section>
 
   <section>
