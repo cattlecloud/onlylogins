@@ -39,6 +39,16 @@ body > header > .right {
   border-radius: 8px;
 }
 
+.profile .username a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.profile .username a:hover {
+  color: var(--primary);
+  text-decoration: underline;
+}
+
 .brand {
   display: flex;
   align-items: center;

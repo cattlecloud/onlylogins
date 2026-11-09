@@ -61,7 +61,7 @@ func (h *privacyHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	head := &pages.Head{
-		Title:       "Privacy | OnlyLogins",
+		Title:       format.PageTitle("Privacy"),
 		Styles:      []string{"basics.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),

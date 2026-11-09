@@ -78,7 +78,7 @@ func (h *foldersHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	head := &pages.Head{
-		Title:       "Manage folders | OnlyLogins",
+		Title:       format.PageTitle("Manage folders"),
 		Styles:      []string{"folders.css"},
 		Description: h.description(),
 		Profile:     profile,

@@ -61,7 +61,7 @@ func (h *tosHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error
 	}
 
 	head := &pages.Head{
-		Title:       "Terms of Service | OnlyLogins",
+		Title:       format.PageTitle("Terms of Service"),
 		Styles:      []string{"basics.css"},
 		Canonical:   h.environment.Canonical("%s", h.Path()),
 		Description: h.description(),

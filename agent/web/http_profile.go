@@ -4,6 +4,7 @@
 package web
 
 import (
+	"fmt"
 	"html/template"
 	"net/http"
 
@@ -14,13 +15,12 @@ import (
 	"cattlecloud.net/onlylogins/agent/web/pages"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
+	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
 
 type profileContent struct {
-	// TODO: we may want to expand this one
-	// so that we have additional information, like quota and usage, etc.
-	Profile *users.Profile
+	Profile *sitecontent.Profile
 }
 
 type profileHTTP struct {
@@ -70,15 +70,20 @@ func (h *profileHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		return perr
 	}
 
+	content, cerr := h.store.Users().Profile(ctx, session.Identity())
+	if cerr != nil {
+		return fmt.Errorf("unable to get profile: %w", cerr)
+	}
+
 	head := &pages.Head{
-		Title:       "Profile | OnlyLogins",
+		Title:       format.PageTitle("Profile"),
 		Styles:      []string{"profile.css"},
 		Description: h.description(),
 		Profile:     profile,
 	}
 
 	middle := &profileContent{
-		Profile: profile,
+		Profile: content,
 	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
@@ -86,6 +91,6 @@ func (h *profileHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 func (h *profileHTTP) description() string {
 	const text = `
-	Configure your own profile.`
+	Your username and how many documents you have stored.`
 	return format.PageDescription(text)
 }
