@@ -1,5 +1,3 @@
-/* --- folder page (individual folder view + new-document form) --- */
-
 .middle.folder {
   display: flex;
   flex-flow: column nowrap;
@@ -157,7 +155,70 @@
   color: var(--text-muted);
 }
 
-/* --- inline hint + example chips --- */
+.middle.folder > section.new-document {
+  padding: 0;
+  overflow: hidden;
+  box-shadow: none;
+  transition: box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.folder > section.new-document:has(details[open]) {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+
+.middle.folder .new-document summary {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  list-style: none;
+  cursor: pointer;
+  outline: none;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.middle.folder .new-document summary::-webkit-details-marker {
+  display: none;
+}
+
+.middle.folder .new-document summary:hover,
+.middle.folder .new-document summary:focus-visible {
+  color: var(--primary);
+  background: var(--surface-raised);
+}
+
+.middle.folder .new-document summary:focus-visible {
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+.middle.folder .new-document details[open] summary {
+  border-bottom: 1px solid var(--border);
+}
+
+.middle.folder .new-document .summary-chevron {
+  flex: 0 0 auto;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: -0.2rem;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.15s ease, margin-top 0.15s ease;
+}
+
+.middle.folder .new-document details[open] .summary-chevron {
+  margin-top: 0.2rem;
+  transform: rotate(-135deg);
+}
+
+.middle.folder .new-document form {
+  padding: 1.25rem 1.5rem 1.5rem;
+}
 
 .middle.folder .doc-hint {
   display: flex;
@@ -231,8 +292,6 @@
   font-style: italic;
   color: var(--text-muted);
 }
-
-/* --- danger zone (folder deletion) --- */
 
 .middle.folder .danger-zone {
   border-color: var(--danger);
@@ -310,6 +369,14 @@
 
   .middle.folder .doc-hint {
     padding: 0.75rem 0.85rem;
+  }
+
+  .middle.folder .new-document summary {
+    padding: 0.9rem 1.25rem;
+  }
+
+  .middle.folder .new-document form {
+    padding: 1rem 1.25rem 1.25rem;
   }
 
   .middle.folder .header {
