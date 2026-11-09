@@ -37,6 +37,9 @@ schedule = "0 5 1 * *"
 [crons.sync-subscriptions]
 schedule = "0 3 * * *"
 
+[crons.stripe-events]
+schedule = "15 * * * *"
+
 [vault]
 passphrase = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
 

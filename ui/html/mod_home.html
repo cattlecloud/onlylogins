@@ -6,6 +6,21 @@
   <p class="instructions">quick summary metrics</p>
 </div>
 
+{{if .StripeProblems}}
+<div class="notice warning">
+  <strong>stripe webhook events need attention ({{len .StripeProblems}})</strong>
+  <p>failed events are retried for up to 3 days; dead events require manual review</p>
+  <ul>
+  {{range .StripeProblems}}
+    <li>
+      <code>{{.ID}}</code> &middot; {{.Type}} &middot; {{.Status}} &middot; {{Ago .Received}}{{if .Attempts}} &middot; attempts {{.Attempts}}{{end}}
+      {{if .LastError}}<div class="error">{{.LastError}}</div>{{end}}
+    </li>
+  {{end}}
+  </ul>
+</div>
+{{end}}
+
 <div class="content">
   <table>
     <thead>
@@ -18,6 +33,10 @@
       <tr>
         <td>users</td>
         <td>{{.UsersCount}}</td>
+      </tr>
+      <tr>
+        <td>stripe event problems</td>
+        <td>{{len .StripeProblems}}</td>
       </tr>
     </tbody>
   </table>

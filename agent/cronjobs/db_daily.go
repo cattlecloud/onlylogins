@@ -10,10 +10,7 @@ import (
 	"github.com/hashicorp/cronexpr"
 )
 
-func NewDailyDBM(
-	config *crons.Config,
-	store database.Store,
-) *DailyDBM {
+func NewDailyDBM(config *crons.Config, store database.Store) *DailyDBM {
 	return &DailyDBM{
 		expression: cronexpr.MustParse(config.Expression),
 		store:      store,
@@ -41,12 +38,14 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	ctx, cancel := scope.TTL(1 * time.Minute)
 	defer cancel()
 
-	// guarnteed to be expired by this time
+	// guaranteed to be expired by these times
 	const (
-		expireShares = 31 * 24 * time.Hour
+		expireStripe = 60 * 24 * time.Hour
+		expireShares = 32 * 24 * time.Hour
 		expireLogins = 7 * 24 * time.Hour
 	)
 
+	// expire outdated shared secrets
 	shares, serr := c.store.Shares(nil).Prune(ctx, expireShares)
 	if serr != nil {
 		c.log.E.Fmt("failed to prune shares: %v", serr)
@@ -58,6 +57,7 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	}
 	c.log.I.Fmt("pruned %d old shares", shares)
 
+	// expire login data from over a week ago
 	if err := c.store.Audit().Prune(ctx, expireLogins); err != nil {
 		c.log.E.Fmt("failed to prune audit records: %v", err)
 		return &crons.RunMetric{
@@ -68,6 +68,19 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	}
 	c.log.I.Fmt("pruned old login and bogus attempts")
 
+	// expire stripe events more than two months old
+	events, eerr := c.store.Stripe().PruneEvents(ctx, expireStripe)
+	if eerr != nil {
+		c.log.E.Fmt("failed to prune stripe events: %v", eerr)
+		return &crons.RunMetric{
+			Code:  crons.ExitFailure,
+			Start: start,
+			Stop:  time.Now(),
+		}
+	}
+	c.log.I.Fmt("pruned %d old stripe events", events)
+
+	// run the database optimize pragma
 	if err := c.store.Maint().Optimize(ctx); err != nil {
 		c.log.E.Fmt("failed to optimize: %v", err)
 		return &crons.RunMetric{

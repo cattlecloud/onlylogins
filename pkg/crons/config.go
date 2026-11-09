@@ -13,6 +13,7 @@ type Configs struct {
 	WeeklyDBM        *Config `toml:"db-weekly"`
 	MonthlyDBM       *Config `toml:"db-monthly"`
 	SubscriptionSync *Config `toml:"sync-subscriptions"`
+	StripeEvents     *Config `toml:"stripe-events"`
 }
 
 func (c *Configs) Validate() error {
@@ -37,6 +38,10 @@ func (c *Configs) Validate() error {
 	}
 
 	if err := c.SubscriptionSync.Validate(); err != nil {
+		return err
+	}
+
+	if err := c.StripeEvents.Validate(); err != nil {
 		return err
 	}
 

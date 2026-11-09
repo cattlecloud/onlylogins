@@ -99,6 +99,44 @@ body > .contains {
   background-color: rgba(0, 0, 0, 0.02);
 }
 
+.modpage > .notice.warning {
+  background-color: #fff8e1;
+  border: 1px solid #f0b429;
+  border-left: 4px solid #f0b429;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.modpage > .notice.warning > strong {
+  color: #7a5900;
+}
+
+.modpage > .notice.warning > p {
+  color: var(--font-color-light);
+  margin: 0.25rem 0 0.5rem;
+}
+
+.modpage > .notice.warning > ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+
+.modpage > .notice.warning > ul > li {
+  margin-bottom: 0.5rem;
+}
+
+.modpage > .notice.warning code {
+  font-family: monospace;
+}
+
+.modpage > .notice.warning .error {
+  color: var(--primary-color);
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
 .modpage.users > .content > table > tbody > tr > td:nth-child(2),
 .modpage.users > .content > table > tbody > tr > td:nth-child(3) {
   font-family: monospace;
