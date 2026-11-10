@@ -79,7 +79,7 @@ func (h *shareHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 
 	middle := struct{}{}
 
-	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
 }
 
 // put handles the creation of a new share.

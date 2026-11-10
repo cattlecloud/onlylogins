@@ -13,20 +13,18 @@ import (
 	"github.com/shoenig/lang"
 )
 
-// New is used to render a full HTML page with a head, middle component,
-// and right component, by executing the given HTML template file with a
-// "layout" template as the root.
+// New is used to render a full HTML page with a head and middle component,
+// by executing the given HTML template file with a "layout" template as the
+// root.
 func New[S identity.UserSession[users.Identity], M any](
 	html *template.Template,
 	head *Head,
 	middle M,
-	right *Right,
 ) *Page[S, M] {
 	return &Page[S, M]{
 		html:   html,
 		head:   head,
 		middle: middle,
-		right:  right,
 	}
 }
 
@@ -48,7 +46,6 @@ type Page[S identity.UserSession[users.Identity], M any] struct {
 	html   *template.Template
 	head   *Head
 	middle M
-	right  *Right
 }
 
 func (p *Page[S, M]) Execute(w http.ResponseWriter, session S) error {
@@ -65,14 +62,12 @@ func (p *Page[S, M]) Execute(w http.ResponseWriter, session S) error {
 	type total struct {
 		Head   union[*Head]
 		Middle union[M]
-		Right  union[*Right]
 	}
 
 	// assemble the parts together
 	content := &total{
 		Head:   union[*Head]{Session: session, Section: p.head},
 		Middle: union[M]{Session: session, Section: p.middle},
-		Right:  union[*Right]{Session: session, Section: p.right},
 	}
 
 	// finally render the page with our compilation of data

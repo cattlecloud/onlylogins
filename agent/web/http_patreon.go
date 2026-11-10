@@ -118,7 +118,7 @@ func (h *patreonHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		Profile:     profile,
 	}
 
-	return pages.New[identity.UserSession[users.Identity]](h.html, head, content, nil).Execute(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, content).Execute(w, session)
 }
 
 func (h *patreonHTTP) enabled() bool {

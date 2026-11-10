@@ -80,7 +80,7 @@ func (h *indexHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		middle.Folders, _ = h.store.Folders().List(ctx, session.Identity())
 	}
 
-	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
 }
 
 func (h *indexHTTP) head(_ scope.C, w http.ResponseWriter, _ *http.Request) error {
