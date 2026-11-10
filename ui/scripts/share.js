@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Cattle Cloud LLC
+// SPDX-License-Identifier: AGPL-3.0
+
 // share.js implements the click-to-copy behavior for share-link buttons.
 //
 //   Copy: writes the share URL to the system clipboard via

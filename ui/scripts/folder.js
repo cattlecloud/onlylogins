@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Cattle Cloud LLC
+// SPDX-License-Identifier: AGPL-3.0
+
 // folder.js implements the "example chip" behaviour on the new-document form.
 //
 // When a user clicks one of the .example-chip buttons, this script copies the

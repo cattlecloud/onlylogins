@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Cattle Cloud LLC
+// SPDX-License-Identifier: AGPL-3.0
+
 // note.js implements the click-to-reveal behavior for notes:
 //
 // This is intentionally one-way (no Hide, no Copy).
