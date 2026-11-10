@@ -19,6 +19,27 @@
         {{.Section.Profile.Usage.Documents}} / {{.Section.Profile.Usage.Plan.DocumentsLimit}}
       </div>
     </div>
+
+    {{if .Section.CanDelete}}
+    <div class="row account">
+      <span class="key">account</span>
+      <div class="value">
+        <a class="delete-account"
+           href="#"
+           hx-delete="/internal/logout"
+           hx-confirm="Are you sure you want to delete your account? All of your documents and data will be permanently lost."
+           hx-swap="none">delete</a>
+      </div>
+    </div>
+    {{else}}
+    <div class="row account">
+      <span class="key">account</span>
+      <div class="value">
+        <span class="delete-notice">Your Patreon subscription must end before you can delete your account.</span>
+        <a href="/patreon">manage your subscription</a>
+      </div>
+    </div>
+    {{end}}
   </section>
 </div>
 {{end}}

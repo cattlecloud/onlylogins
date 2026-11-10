@@ -60,6 +60,10 @@ func TestProfile_ServeHTTP_GET_logged_in(t *testing.T) {
 	must.StrContains(t, w.Body.String(), `_nobody`)
 	must.StrContains(t, w.Body.String(), `<div class="value plan">free</div>`)
 	must.StrContains(t, w.Body.String(), `0 / 256`)
+
+	// a user without a paid subscription may delete their account
+	must.StrContains(t, w.Body.String(), `hx-delete="/internal/logout"`)
+	must.StrContains(t, w.Body.String(), `>delete</a>`)
 }
 
 func TestProfile_ServeHTTP_GET_logged_in_with_documents(t *testing.T) {
@@ -93,4 +97,35 @@ func TestProfile_ServeHTTP_GET_logged_in_with_documents(t *testing.T) {
 
 	must.Eq(t, http.StatusOK, w.Code)
 	must.StrContains(t, w.Body.String(), `1 / 256`)
+}
+
+func TestProfile_ServeHTTP_GET_logged_in_patreon(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &profileHTTP{
+		log:   ulog.New("test"),
+		store: store,
+		html:  ui.Load("profile.html"),
+	}
+
+	uid := newTestUser(t, store, "patreon-user")
+	setPatreonPlan(t, store, uid)
+
+	scache := mocks.NewSessions()
+	ss := session(handler, scache)
+	cookie := ss.Sessions.Create(uid, 1*time.Minute)
+
+	request := requestGet(t, "/profile", cookie)
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+
+	body := w.Body.String()
+
+	// a paid subscriber cannot delete their account yet
+	must.StrNotContains(t, body, `hx-delete="/internal/logout"`)
+	must.StrContains(t, body, `Your Patreon subscription must end before you can delete your account.`)
+	must.StrContains(t, body, `href="/patreon"`)
 }

@@ -30,6 +30,22 @@
   text-transform: capitalize;
 }
 
+/* the delete account action looks like a simple link */
+.middle.profile > .user > .row > .value > a.delete-account {
+  color: var(--primary);
+  font-weight: normal;
+  text-decoration: none;
+}
+
+.middle.profile > .user > .row > .value > a.delete-account:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
+.middle.profile > .user > .row > .value > .delete-notice {
+  color: var(--text-muted);
+}
+
 .middle.profile > .user #error {
   color: red;
 }
