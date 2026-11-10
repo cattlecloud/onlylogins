@@ -65,7 +65,15 @@ stripe listen --all-snapshot --forward-to localhost:3000/api/stripe/webhooks
 
 OnlyLogins is made available under the [AGPL-3.0](LICENSE) license.
 
-The AGPL is an aggresive copy-left license; beware of the ramifications before
-using, operating, modifying, or distributing the OnlyLogins source code. As
-the creator and owner of this source repository, CattleCloud LLC intends to
-enforce this copyright license as legally applicaple.
+The AGPL-3.0 is a strong copyleft license that imposes obligations materially
+broader than those of permissive licenses. Any use, reproduction, modification,
+or distribution of the OnlyLogins source code - including making a modified
+version available to third parties over a network - is subject to the terms and
+conditions of that license, and such terms should be reviewed in full prior to
+any such activity.
+
+CattleCloud LLC, as the copyright holder and owner of this repository, reserves
+all rights not expressly granted under the AGPL-3.0. No additional permission
+or exception is granted, whether by implication, estoppel, or otherwise, and
+CattleCloud LLC intends to enforce the terms of the license to the fullest
+extent permitted by applicable law.
