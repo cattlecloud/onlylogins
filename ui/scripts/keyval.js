@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Cattle Cloud LLC
+// SPDX-License-Identifier: AGPL-3.0
+
 // keyval.js implements the client-side how-hide behavior for keyvals.
 (function () {
   'use strict';

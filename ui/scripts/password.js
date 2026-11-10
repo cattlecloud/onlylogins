@@ -1,3 +1,6 @@
+// Copyright (c) 2026 Cattle Cloud LLC
+// SPDX-License-Identifier: AGPL-3.0
+
 // password.js implements client-side Copy / Show / Hide behavior for passwords
 //
 //   Copy: writes the plaintext to the clipboard via navigator.clipboard.writeText
