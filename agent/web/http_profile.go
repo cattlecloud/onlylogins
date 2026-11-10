@@ -14,6 +14,7 @@ import (
 	"cattlecloud.net/go/webtools/middles/identity"
 	"cattlecloud.net/onlylogins/agent/web/pages"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/database/records"
 	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
@@ -21,6 +22,10 @@ import (
 
 type profileContent struct {
 	Profile *sitecontent.Profile
+
+	// CanDelete indicates the user is allowed to delete their account;
+	// a user with a paid subscription must cancel it first
+	CanDelete bool
 }
 
 type profileHTTP struct {
@@ -83,7 +88,8 @@ func (h *profileHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	middle := &profileContent{
-		Profile: content,
+		Profile:   content,
+		CanDelete: content.Usage.Plan.ID != records.PlansPatreon,
 	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)

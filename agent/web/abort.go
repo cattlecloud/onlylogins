@@ -41,6 +41,14 @@ func deny(log *ulog.Log, w http.ResponseWriter, err error) error {
 	return nil
 }
 
+func conflict(log *ulog.Log, w http.ResponseWriter, err error) error {
+	log.W.Fmt("conflicting request: %v", err)
+	webtools.SetContentType(w, webtools.ContentTypeText)
+	w.WriteHeader(http.StatusConflict)
+	_, _ = io.WriteString(w, "request not possible due to conflict")
+	return nil
+}
+
 func lost(log *ulog.Log, w http.ResponseWriter, r *http.Request) error {
 	log.W.Fmt("request of page that does not exist %q", r.URL.Path)
 	webtools.SetContentType(w, webtools.ContentTypeText)
