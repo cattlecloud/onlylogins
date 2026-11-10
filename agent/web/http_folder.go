@@ -105,7 +105,7 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 		Documents: documents,
 	}
 
-	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
 }
 
 func (h *folderHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) error {

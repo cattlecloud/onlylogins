@@ -70,7 +70,7 @@ func (h *tosHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error
 
 	middle := struct{}{}
 
-	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle, nil).Execute(w, session)
+	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
 }
 
 func (h *tosHTTP) description() string {
