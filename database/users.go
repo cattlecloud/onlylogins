@@ -64,9 +64,9 @@ func (s *usersql) Count(ctx scope.C) (int, error) {
 
 	const statement = `select count(id) from users`
 
-	f := func(sf litesql.ScanFunc) (int, error) {
+	f := func(scan litesql.ScanFunc) (int, error) {
 		var i int
-		err := sf(&i)
+		err := scan(&i)
 		return i, err
 	}
 
@@ -293,11 +293,11 @@ func (s *usersql) Check(ctx scope.C, request *users.LoginRequest) (users.Identit
 		verifier *conceal.Bytes
 	}
 
-	f := func(sf litesql.ScanFunc) (inputs, error) {
+	f := func(scan litesql.ScanFunc) (inputs, error) {
 		var id users.Identity
 		var salt []byte
 		var verifier []byte
-		err := sf(&id, &salt, &verifier)
+		err := scan(&id, &salt, &verifier)
 		return inputs{
 			id:       id,
 			salt:     conceal.NewBytes(salt),

@@ -87,9 +87,9 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 		users_id = ?
 	order by label asc`
 
-	f := func(sf litesql.ScanFunc) (*sitecontent.Folder, error) {
+	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
 		folder := new(sitecontent.Folder)
-		err := sf(&folder.ID, &folder.Label, &folder.Icon)
+		err := scan(&folder.ID, &folder.Label, &folder.Icon)
 		return folder, err
 	}
 

@@ -107,11 +107,11 @@ func (s *cronsql) Latest(ctx scope.C, name string) (*crons.RunResult, error) {
 	return litesql.QueryRow(ctx, tx, scanCronRunResult, statement, name)
 }
 
-func scanCronRunResult(sf litesql.ScanFunc) (*crons.RunResult, error) {
+func scanCronRunResult(scan litesql.ScanFunc) (*crons.RunResult, error) {
 	r := new(crons.RunResult)
 	var start, stop int64
 
-	if err := sf(
+	if err := scan(
 		&r.ID,
 		&r.Label,
 		&r.State,
@@ -128,10 +128,10 @@ func scanCronRunResult(sf litesql.ScanFunc) (*crons.RunResult, error) {
 	return r, nil
 }
 
-func scanCronCurrentStatus(sf litesql.ScanFunc) (*crons.CurrentStatus, error) {
+func scanCronCurrentStatus(scan litesql.ScanFunc) (*crons.CurrentStatus, error) {
 	c := new(crons.CurrentStatus)
 
-	if err := sf(
+	if err := scan(
 		&c.ID,
 		&c.Label,
 		&c.State,
