@@ -1,10 +1,17 @@
 name: Build Release Artifact
 on:
   workflow_dispatch:
+    inputs:
+      tag:
+        description: 'git tag to associate with this release (e.g. v1.1.0)'
+        required: true
+        type: string
 jobs:
-  compile:
+  build:
     timeout-minutes: 10
     runs-on: ubuntu-26.04
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v7
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3
@@ -18,7 +25,7 @@ jobs:
           just sysinfo
       - name: Build Artifact
         run: |
-          just compile
+          just compile "${{ github.event.inputs.tag }}"
       - uses: actions/upload-artifact@v7
         with:
           name: "onlylogins"
@@ -27,3 +34,11 @@ jobs:
           compression-level: 9
           if-no-files-found: error
           overwrite: true
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ github.event.inputs.tag }}" \
+            .bin/onlylogins \
+            --title "${{ github.event.inputs.tag }}" \
+            --generate-notes
