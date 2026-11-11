@@ -10,14 +10,14 @@ on:
       - 'main'
 jobs:
   run-tests:
-    timeout-minutes: 5
-    runs-on: fedora-41
+    timeout-minutes: 10
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
       - uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3
       - uses: actions/setup-go@v7
         with:
-          cache: false
+          cache: true
           go-version-file: go.mod
       - name: Show System
         run: |
