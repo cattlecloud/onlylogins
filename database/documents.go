@@ -133,9 +133,9 @@ func (s *documentsql) Resolve(ctx scope.C, request *sitecontent.GetDocumentReque
 		f.label = ? and
 		d.label = ?`
 
-	f := func(sf litesql.ScanFunc) (records.DocumentsAuto, error) {
+	f := func(scan litesql.ScanFunc) (records.DocumentsAuto, error) {
 		var id records.DocumentsAuto
-		err := sf(&id)
+		err := scan(&id)
 		return id, err
 	}
 
@@ -190,9 +190,9 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 		f.label = ?
 	order by d.modification desc`
 
-	f := func(sf litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
+	f := func(scan litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
 		listing := new(sitecontent.DocumentListing)
-		err := sf(&listing.ID, &listing.Label)
+		err := scan(&listing.ID, &listing.Label)
 		return listing, err
 	}
 
@@ -221,9 +221,9 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 		ID    records.DocumentsAuto
 		Label string
 	}
-	scanDoc := func(sf litesql.ScanFunc) (docRow, error) {
+	scanDoc := func(scan litesql.ScanFunc) (docRow, error) {
 		var row docRow
-		err := sf(&row.ID, &row.Label)
+		err := scan(&row.ID, &row.Label)
 		return row, err
 	}
 
@@ -239,10 +239,10 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	from weblinks
 	where did = ?
 	order by id asc`
-	scanWeblink := func(sf litesql.ScanFunc) (*sitecontent.Weblink, error) {
+	scanWeblink := func(scan litesql.ScanFunc) (*sitecontent.Weblink, error) {
 		w := new(sitecontent.Weblink)
 		var v []byte
-		err := sf(&w.ID, &v)
+		err := scan(&w.ID, &v)
 		w.V = conceal.NewBytes(v)
 		return w, err
 	}
@@ -256,10 +256,10 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	from usernames
 	where did = ?
 	order by id asc`
-	scanUsername := func(sf litesql.ScanFunc) (*sitecontent.Username, error) {
+	scanUsername := func(scan litesql.ScanFunc) (*sitecontent.Username, error) {
 		u := new(sitecontent.Username)
 		var v []byte
-		err := sf(&u.ID, &v)
+		err := scan(&u.ID, &v)
 		u.V = conceal.NewBytes(v)
 		return u, err
 	}
@@ -273,10 +273,10 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	from passwords
 	where did = ?
 	order by id asc`
-	scanPassword := func(sf litesql.ScanFunc) (*sitecontent.Password, error) {
+	scanPassword := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
 		p := new(sitecontent.Password)
 		var v []byte
-		err := sf(&p.ID, &v)
+		err := scan(&p.ID, &v)
 		p.V = conceal.NewBytes(v)
 		return p, err
 	}
@@ -290,11 +290,11 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	from keyvals
 	where did = ?
 	order by id asc`
-	scanKeyval := func(sf litesql.ScanFunc) (*sitecontent.Keyval, error) {
+	scanKeyval := func(scan litesql.ScanFunc) (*sitecontent.Keyval, error) {
 		kv := new(sitecontent.Keyval)
 		var k string
 		var v []byte
-		err := sf(&kv.ID, &k, &v)
+		err := scan(&kv.ID, &k, &v)
 		kv.K = conceal.New(k)
 		kv.V = conceal.NewBytes(v)
 		return kv, err
@@ -310,10 +310,10 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	where did = ?
 	order by id asc
 	limit 1`
-	scanNote := func(sf litesql.ScanFunc) (*sitecontent.Note, error) {
+	scanNote := func(scan litesql.ScanFunc) (*sitecontent.Note, error) {
 		n := new(sitecontent.Note)
 		var v []byte
-		err := sf(&n.ID, &v)
+		err := scan(&n.ID, &v)
 		n.V = conceal.NewBytes(v)
 		return n, err
 	}
@@ -389,10 +389,10 @@ func (s *documentsql) GetWeblink(ctx scope.C, request *sitecontent.GetWeblinkReq
 		d.label = ?
 	limit 1`
 
-	scanWeblink := func(sf litesql.ScanFunc) (*sitecontent.Weblink, error) {
+	scanWeblink := func(scan litesql.ScanFunc) (*sitecontent.Weblink, error) {
 		w := new(sitecontent.Weblink)
 		var v []byte
-		err := sf(&w.ID, &v)
+		err := scan(&w.ID, &v)
 		w.V = conceal.NewBytes(v)
 		return w, err
 	}
@@ -525,10 +525,10 @@ func (s *documentsql) GetUsername(ctx scope.C, request *sitecontent.GetUsernameR
 		d.label = ?
 	limit 1`
 
-	scanUsername := func(sf litesql.ScanFunc) (*sitecontent.Username, error) {
+	scanUsername := func(scan litesql.ScanFunc) (*sitecontent.Username, error) {
 		u := new(sitecontent.Username)
 		var v []byte
-		err := sf(&u.ID, &v)
+		err := scan(&u.ID, &v)
 		u.V = conceal.NewBytes(v)
 		return u, err
 	}
@@ -663,10 +663,10 @@ func (s *documentsql) GetPassword(ctx scope.C, request *sitecontent.GetPasswordR
 		d.label = ?
 	limit 1`
 
-	scanPassword := func(sf litesql.ScanFunc) (*sitecontent.Password, error) {
+	scanPassword := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
 		p := new(sitecontent.Password)
 		var v []byte
-		err := sf(&p.ID, &v)
+		err := scan(&p.ID, &v)
 		p.V = conceal.NewBytes(v)
 		return p, err
 	}
@@ -799,10 +799,10 @@ func (s *documentsql) GetNote(ctx scope.C, request *sitecontent.GetNoteRequest) 
 		d.label = ?
 	limit 1`
 
-	scanNote := func(sf litesql.ScanFunc) (*sitecontent.Note, error) {
+	scanNote := func(scan litesql.ScanFunc) (*sitecontent.Note, error) {
 		n := new(sitecontent.Note)
 		var v []byte
-		err := sf(&n.ID, &v)
+		err := scan(&n.ID, &v)
 		n.V = conceal.NewBytes(v)
 		return n, err
 	}
@@ -935,11 +935,11 @@ func (s *documentsql) GetKeyval(ctx scope.C, request *sitecontent.GetKeyvalReque
 		d.label = ?
 	limit 1`
 
-	scanKeyval := func(sf litesql.ScanFunc) (*sitecontent.Keyval, error) {
+	scanKeyval := func(scan litesql.ScanFunc) (*sitecontent.Keyval, error) {
 		kv := new(sitecontent.Keyval)
 		var k string
 		var v []byte
-		err := sf(&kv.ID, &k, &v)
+		err := scan(&kv.ID, &k, &v)
 		kv.K = conceal.New(k)
 		kv.V = conceal.NewBytes(v)
 		return kv, err
