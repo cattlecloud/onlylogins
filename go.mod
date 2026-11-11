@@ -5,7 +5,7 @@ go 1.27
 require (
 	cattlecloud.net/go/babycli v0.2.0
 	cattlecloud.net/go/forms v1.1.0
-	cattlecloud.net/go/litesql v1.4.0
+	cattlecloud.net/go/litesql v1.4.1
 	cattlecloud.net/go/memc v0.6.0
 	cattlecloud.net/go/scope v1.3.0
 	cattlecloud.net/go/sitemaps v1.0.2
@@ -29,7 +29,7 @@ require (
 require (
 	cattlecloud.net/go/stacks v1.1.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/mattn/go-sqlite3 v1.14.52 // indirect
+	github.com/mattn/go-sqlite3 v1.14.53 // indirect
 	github.com/mileusna/useragent v1.3.5 // indirect
 	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
