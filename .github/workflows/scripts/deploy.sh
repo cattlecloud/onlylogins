@@ -4,25 +4,27 @@ set -euo pipefail
 
 binary="onlylogins"
 
-archives=$(curl -s -L \
+release=$(curl -s -L \
   -H "Accept: application/vnd.github+json" \
   -H "Authorization: Bearer ${GITHUB_TOKEN}" \
   -H "X-GitHub-Api-Version: 2022-11-28" \
-  https://api.github.com/repos/cattlecloud/${binary}/actions/artifacts)
+  https://api.github.com/repos/cattlecloud/${binary}/releases/latest)
 
-best=$(echo "${archives}" | jq -r '.artifacts | sort_by(.created_at) | last | .archive_download_url')
-dest="/tmp/${binary}.zip"
-file="/tmp/${binary}"
+url=$(echo "${release}" | jq -r '.assets[] | select(.name == "'"${binary}"'") | .url')
+dest="/tmp/${binary}"
 
-echo "downloading ${best} into ${dest}"
-curl -L -H "Authorization: Bearer ${GITHUB_TOKEN}" -H "X-GitHub-Api-Version: 2022-11-28" -o "${dest}" -s "${best}"
-pushd /tmp && unzip "${dest}" && popd
+echo "downloading ${url} into ${dest}"
+curl -L \
+  -H "Accept: application/octet-stream" \
+  -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  -o "${dest}" -s "${url}"
 echo "download complete."
 
-scp "${file}" "${HOST}:~/${binary}"
+scp "${dest}" "${HOST}:~/${binary}"
 ssh -t "${HOST}" "sudo mv ~/${binary} /opt/bin/${binary}"
 ssh -t "${HOST}" "sudo systemctl restart ${binary}"
 ssh -t "${HOST}" "sudo systemctl status  ${binary}"
 
-rm "${dest}" "${file}"
+rm "${dest}"
 echo "done."
