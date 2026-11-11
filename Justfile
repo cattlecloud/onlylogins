@@ -19,8 +19,8 @@ run config: compile
 
 # compile the executable
 [group('build')]
-compile: tidy
-    go install
+compile version="localdev": tidy
+    go install -ldflags "-X cattlecloud.net/onlylogins/version.Version={{version}}"
 
 # run specific unit test
 [group('build')]
@@ -96,5 +96,5 @@ deploy host:
 
 # create release artifact
 [group('deploy')]
-artifact:
-    gh workflow run build.yaml
+artifact tag:
+    gh workflow run build.yaml -f tag={{tag}}

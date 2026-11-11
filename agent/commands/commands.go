@@ -12,12 +12,13 @@ import (
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/go/webtools/runtime/halt"
 	"cattlecloud.net/onlylogins/agent"
+	"cattlecloud.net/onlylogins/version"
 )
 
 func Invoke(args []string) babycli.Code {
 	return babycli.New(&babycli.Configuration{
 		Arguments: args,
-		Version:   "v0.0.0-dev",
+		Version:   version.Version,
 		Top: &babycli.Component{
 			Name:        "onlylogins",
 			Help:        "run the onlylogins agent",
