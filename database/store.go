@@ -36,13 +36,9 @@ func Open(config *Config) (Store, error) {
 	return &store{ldb: ldb}, nil
 }
 
-// Open an in-memory database for testing using the given litesql.Configuration.
-func Testing(config *litesql.Configuration) (Store, error) {
-	ldb, lerr := litesql.Open(":memory:", config)
-	if lerr != nil {
-		return nil, fmt.Errorf("unable to open testing sqlite3 database: %w", lerr)
-	}
-	return &store{ldb: ldb}, nil
+// New returns a Store backed by the given database.
+func New(ldb *litesql.LiteDB) Store {
+	return &store{ldb: ldb}
 }
 
 type store struct {

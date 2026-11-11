@@ -19,10 +19,9 @@ const (
 	timeout = 10 * time.Second
 )
 
-// Open an in-memory implementation of database.Store.
+// Open a temporary implementation of database.Store.
 func Open(t *testing.T) database.Store {
-	store, err := database.Testing(litesqltest.TestConfiguration)
-	must.NoError(t, err)
+	store := database.New(litesqltest.Open(t))
 
 	ctx, cancel := scope.TTL(timeout)
 	t.Cleanup(cancel)
