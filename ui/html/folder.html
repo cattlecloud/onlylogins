@@ -29,6 +29,8 @@
             id="document-label"
             name="label"
             placeholder="amazon, reddit, netflix, ..."
+            pattern="[a-zA-Z0-9\s-]+"
+            title="letters, numbers, and dashes only"
             autocomplete="off"
             required>
         </div>
@@ -50,6 +52,7 @@
         </div>
 
         <button type="submit">Create</button>
+        <span id="error"></span>
       </form>
     </details>
   </section>

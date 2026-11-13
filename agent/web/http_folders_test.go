@@ -55,7 +55,9 @@ func TestFolders_ServeHTTP_GET_logged_in(t *testing.T) {
 	ss.ServeHTTP(w, request)
 
 	must.Eq(t, http.StatusOK, w.Code)
-	must.StrContains(t, w.Body.String(), `<div class="middle folders">`)
+	body := w.Body.String()
+	must.StrContains(t, body, `<div class="middle folders">`)
+	must.StrContains(t, body, `<span id="error"></span>`)
 }
 
 func TestFolders_ServeHTTP_POST_success(t *testing.T) {
@@ -91,4 +93,41 @@ func TestFolders_ServeHTTP_POST_success(t *testing.T) {
 	must.SliceLen(t, 2, list) // 1 default ("miscellaneous") + 1 new ("work")
 	must.Eq(t, "miscellaneous", list[0].Label)
 	must.Eq(t, "work", list[1].Label)
+}
+
+func TestFolders_ServeHTTP_POST_bad_label(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &foldersHTTP{
+		log:   ulog.New("test"),
+		store: store,
+		html:  ui.Load("folders.html"),
+	}
+
+	ctx, cancel := scope.TTL(testwait)
+	t.Cleanup(cancel)
+
+	scache := mocks.NewSessions()
+	ss := session(handler, scache)
+	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
+
+	// a label with invalid characters fails Validate()
+	request := requestPost(t, "/folders", cookie, url.Values{
+		"label": {"!!!"},
+		"icon":  {"0"},
+	})
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, request)
+
+	// problem() renders the OOB error span at StatusOK
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `<span id="error" hx-swap-oob="true">`)
+	must.StrContains(t, body, "label must contain only letters, numbers, and dashes")
+
+	// the invalid folder was not persisted
+	list, err := store.Folders().List(ctx, mocks.Nobody)
+	must.NoError(t, err)
+	must.SliceLen(t, 1, list) // just the default "miscellaneous" folder
 }
