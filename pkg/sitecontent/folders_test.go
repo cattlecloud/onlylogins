@@ -40,7 +40,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
 	})
 
 	t.Run("uppercase label", func(t *testing.T) {
@@ -70,7 +70,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
 	})
 
 	t.Run("label with unicode", func(t *testing.T) {
@@ -80,7 +80,17 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only alphanumeric characters")
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+	})
+
+	t.Run("label with punctuation", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "***",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
 	})
 
 	t.Run("icon too low", func(t *testing.T) {

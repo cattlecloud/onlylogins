@@ -97,15 +97,17 @@ func (s *documentsql) Create(ctx scope.C, request *sitecontent.CreateDocumentReq
 	const statement = `
 	insert into documents (
 		folders_id,
-		label
-	) select id, ?
+		label,
+		slug
+	) select id, ?, ?
 	from folders
 	where
 		users_id = ? and
-		label = ?`
+		slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Label,
+		request.Slug,
 		request.User,
 		request.Folder,
 	)
@@ -130,8 +132,8 @@ func (s *documentsql) Resolve(ctx scope.C, request *sitecontent.GetDocumentReque
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	f := func(scan litesql.ScanFunc) (records.DocumentsAuto, error) {
 		var id records.DocumentsAuto
@@ -182,17 +184,18 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 	const statement = `
 	select
 		d.id,
-		d.label
+		d.label,
+		d.slug
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ?
+		f.slug = ?
 	order by d.modification desc`
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
 		listing := new(sitecontent.DocumentListing)
-		err := scan(&listing.ID, &listing.Label)
+		err := scan(&listing.ID, &listing.Label, &listing.Slug)
 		return listing, err
 	}
 
@@ -209,21 +212,27 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	const docStatement = `
 	select
 		d.id,
-		d.label
+		d.label,
+		d.slug,
+		f.label,
+		f.slug
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	type docRow struct {
-		ID    records.DocumentsAuto
-		Label string
+		ID         records.DocumentsAuto
+		Label      string
+		Slug       string
+		Folder     string
+		FolderSlug string
 	}
 	scanDoc := func(scan litesql.ScanFunc) (docRow, error) {
 		var row docRow
-		err := scan(&row.ID, &row.Label)
+		err := scan(&row.ID, &row.Label, &row.Slug, &row.Folder, &row.FolderSlug)
 		return row, err
 	}
 
@@ -328,14 +337,16 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	}
 
 	return &sitecontent.Document{
-		ID:        doc.ID,
-		Label:     doc.Label,
-		Folder:    request.Folder,
-		Weblinks:  weblinks,
-		Usernames: usernames,
-		Passwords: passwords,
-		Keyvals:   keyvals,
-		Note:      note,
+		ID:         doc.ID,
+		Label:      doc.Label,
+		Slug:       doc.Slug,
+		Folder:     doc.Folder,
+		FolderSlug: doc.FolderSlug,
+		Weblinks:   weblinks,
+		Usernames:  usernames,
+		Passwords:  passwords,
+		Keyvals:    keyvals,
+		Note:       note,
 	}, nil
 }
 
@@ -353,8 +364,8 @@ func (s *documentsql) CreateWeblink(ctx scope.C, request *sitecontent.CreateWebl
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Encrypted.Unveil(),
@@ -385,8 +396,8 @@ func (s *documentsql) GetWeblink(ctx scope.C, request *sitecontent.GetWeblinkReq
 	where
 		w.id = ? and
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	limit 1`
 
 	scanWeblink := func(scan litesql.ScanFunc) (*sitecontent.Weblink, error) {
@@ -424,8 +435,8 @@ func (s *documentsql) UpdateWeblink(ctx scope.C, request *sitecontent.UpdateWebl
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -457,8 +468,8 @@ func (s *documentsql) DeleteWeblink(ctx scope.C, request *sitecontent.DeleteWebl
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -489,8 +500,8 @@ func (s *documentsql) CreateUsername(ctx scope.C, request *sitecontent.CreateUse
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Encrypted.Unveil(),
@@ -521,8 +532,8 @@ func (s *documentsql) GetUsername(ctx scope.C, request *sitecontent.GetUsernameR
 	where
 		u.id = ? and
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	limit 1`
 
 	scanUsername := func(scan litesql.ScanFunc) (*sitecontent.Username, error) {
@@ -562,8 +573,8 @@ func (s *documentsql) UpdateUsername(ctx scope.C, request *sitecontent.UpdateUse
 	join folders f on f.id = d.folders_id
 		where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -596,8 +607,8 @@ func (s *documentsql) DeleteUsername(ctx scope.C, request *sitecontent.DeleteUse
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -627,8 +638,8 @@ func (s *documentsql) CreatePassword(ctx scope.C, request *sitecontent.CreatePas
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Encrypted.Unveil(),
@@ -659,8 +670,8 @@ func (s *documentsql) GetPassword(ctx scope.C, request *sitecontent.GetPasswordR
 	where
 		p.id = ? and
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	limit 1`
 
 	scanPassword := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
@@ -699,8 +710,8 @@ func (s *documentsql) UpdatePassword(ctx scope.C, request *sitecontent.UpdatePas
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -733,8 +744,8 @@ func (s *documentsql) DeletePassword(ctx scope.C, request *sitecontent.DeletePas
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -764,8 +775,8 @@ func (s *documentsql) CreateNote(ctx scope.C, request *sitecontent.CreateNoteReq
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Encrypted.Unveil(),
@@ -795,8 +806,8 @@ func (s *documentsql) GetNote(ctx scope.C, request *sitecontent.GetNoteRequest) 
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	limit 1`
 
 	scanNote := func(scan litesql.ScanFunc) (*sitecontent.Note, error) {
@@ -834,8 +845,8 @@ func (s *documentsql) UpdateNote(ctx scope.C, request *sitecontent.UpdateNoteReq
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -867,8 +878,8 @@ func (s *documentsql) DeleteNote(ctx scope.C, request *sitecontent.DeleteNoteReq
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -898,8 +909,8 @@ func (s *documentsql) CreateKeyval(ctx scope.C, request *sitecontent.CreateKeyva
 	join folders f on f.id = d.folders_id
 	where
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?`
+		f.slug = ? and
+		d.slug = ?`
 
 	id, rerr := s.ldb.ExecID(ctx, tx, statement,
 		request.Key,
@@ -931,8 +942,8 @@ func (s *documentsql) GetKeyval(ctx scope.C, request *sitecontent.GetKeyvalReque
 	where
 		k.id = ? and
 		f.users_id = ? and
-		f.label = ? and
-		d.label = ?
+		f.slug = ? and
+		d.slug = ?
 	limit 1`
 
 	scanKeyval := func(scan litesql.ScanFunc) (*sitecontent.Keyval, error) {
@@ -972,8 +983,8 @@ func (s *documentsql) UpdateKeyval(ctx scope.C, request *sitecontent.UpdateKeyva
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
@@ -1006,8 +1017,8 @@ func (s *documentsql) DeleteKeyval(ctx scope.C, request *sitecontent.DeleteKeyva
 		join folders f on f.id = d.folders_id
 		where
 			f.users_id = ? and
-			f.label = ? and
-			d.label = ?
+			f.slug = ? and
+			d.slug = ?
 	)`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,

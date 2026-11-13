@@ -75,23 +75,27 @@ func (n *Note) Unlock(v encrypt.Vault) string {
 type DocumentListing struct {
 	ID    records.DocumentsAuto
 	Label string
+	Slug  string
 }
 
 type Document struct {
-	ID        records.DocumentsAuto
-	Label     string
-	Folder    string
-	Weblinks  []*Weblink
-	Usernames []*Username
-	Passwords []*Password
-	Keyvals   []*Keyval
-	Note      *Note
+	ID         records.DocumentsAuto
+	Label      string
+	Slug       string
+	Folder     string
+	FolderSlug string
+	Weblinks   []*Weblink
+	Usernames  []*Username
+	Passwords  []*Password
+	Keyvals    []*Keyval
+	Note       *Note
 }
 
 type CreateDocumentRequest struct {
 	User   users.Identity
 	Folder string
 	Label  string
+	Slug   string
 }
 
 type ListDocumentsRequest struct {
@@ -110,12 +114,12 @@ func (r *CreateDocumentRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if !labelRe.MatchString(r.Label) {
-		return errors.New("document label must contain alphanumeric characters")
+	if !ValidateName(r.Label) {
+		return errors.New("document must contain at least one letter or number")
 	}
 
 	return nil
@@ -126,7 +130,7 @@ func (r *ListDocumentsRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
@@ -138,11 +142,11 @@ func (r *GetDocumentRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -162,11 +166,11 @@ func (r *CreateWeblinkRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -200,11 +204,11 @@ func (r *UpdateWeblinkRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -236,11 +240,11 @@ func (r *DeleteWeblinkRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -261,10 +265,10 @@ func (r *GetWeblinkRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 	return nil
@@ -289,11 +293,11 @@ func (r *CreateUsernameRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -326,11 +330,11 @@ func (r *UpdateUsernameRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -361,11 +365,11 @@ func (r *DeleteUsernameRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -386,10 +390,10 @@ func (r *GetUsernameRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 	return nil
@@ -407,11 +411,11 @@ func (r *CreatePasswordRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -447,11 +451,11 @@ func (r *UpdatePasswordRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -474,11 +478,11 @@ func (r *DeletePasswordRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -499,10 +503,10 @@ func (r *GetPasswordRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 	return nil
@@ -525,11 +529,11 @@ func (r *CreateNoteRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -547,11 +551,11 @@ func (r *GetNoteRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -587,11 +591,11 @@ func (r *UpdateNoteRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -614,11 +618,11 @@ func (r *DeleteNoteRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -647,11 +651,11 @@ func (r *CreateKeyvalRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -680,10 +684,10 @@ func (r *GetKeyvalRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 	return nil
@@ -717,11 +721,11 @@ func (r *UpdateKeyvalRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 
@@ -752,11 +756,11 @@ func (r *DeleteKeyvalRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if r.Folder == "" {
+	if !ValidateSlug(r.Folder) {
 		return errors.New("folder must be set")
 	}
 
-	if r.Document == "" {
+	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
 	}
 

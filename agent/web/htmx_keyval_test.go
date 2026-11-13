@@ -59,7 +59,7 @@ func setupGithubDocument(t *testing.T, store database.Store, user users.Identity
 
 	folder := list[0].Label
 	_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-		User: user, Folder: folder, Label: "github",
+		User: user, Folder: folder, Label: "github", Slug: "github",
 	})
 	must.NoError(t, err)
 }

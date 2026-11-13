@@ -123,7 +123,10 @@ create table if not exists folders (
     -- foreign key into users; the user owning the folder
 
     label text check(length(label) > 0 and length(label) < 32) not null,
-    -- the name of the folder; unique per user
+    -- the display name of the folder; unique per user
+
+    slug text check(length(slug) > 0 and length(slug) < 32) not null,
+    -- the url-safe name of the folder; unique per user
 
     icon integer not null check(icon >= 0 and icon <= 17) not null,
     -- enum; the associated icon
@@ -132,6 +135,7 @@ create table if not exists folders (
     -- enum; 1: permenant, 0: can be modified / deleted
 
     unique(users_id, label),
+    unique(users_id, slug),
     foreign key (users_id) references users(id) on delete cascade
 ) strict;
 
@@ -141,8 +145,8 @@ create trigger if not exists default_folder_after_user_insert
 after insert on users
 for each row
 begin
-    insert into folders (users_id, label, icon, protected)
-    values (new.id, "miscellaneous", 7, 1);
+    insert into folders (users_id, label, slug, icon, protected)
+    values (new.id, "miscellaneous", "miscellaneous", 7, 1);
 end;
 
 create table if not exists documents (
@@ -153,7 +157,10 @@ create table if not exists documents (
     -- foreign key into folders; the folder in which this document belongs
 
     label text check(length(label) > 0 and length(label) < 32) not null,
-    -- the name of the document; unique per folder
+    -- the display name of the document; unique per folder
+
+    slug text check(length(slug) > 0 and length(slug) < 32) not null,
+    -- the url-safe name of the document; unique per folder
 
     creation integer default (unixepoch('now')) not null,
     -- creation timestamp
@@ -162,11 +169,12 @@ create table if not exists documents (
     -- modification timestamp
 
     unique(folders_id, label),
+    unique(folders_id, slug),
     foreign key (folders_id) references folders(id) on delete cascade
 ) strict;
 
 create index if not exists idx_documents_folder_listing
-    on documents(folders_id, modification desc, label);
+    on documents(folders_id, modification desc, label, slug);
 
 create table if not exists weblinks (
     id integer primary key autoincrement,

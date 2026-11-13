@@ -970,6 +970,7 @@ func insertDocument(t *testing.T, ctx scope.C, store Store, user users.Identity,
 		User:   user,
 		Folder: miscFolderOf(t, ctx, store, user),
 		Label:  label,
+		Slug:   sitecontent.Slugify(label),
 	})
 	must.NoError(t, err)
 
@@ -996,10 +997,71 @@ func TestDocuments_Create(t *testing.T) {
 			User:   nobody,
 			Folder: miscFolderOf(t, ctx, db, mocks.Nobody),
 			Label:  "github",
+			Slug:   "github",
 		}
 		_, err := d.Create(ctx, request)
 		must.Error(t, err)
 	})
+
+	t.Run("duplicate slug", func(t *testing.T) {
+		// "My Doc" and "my-doc" differ as labels but slugify to the same
+		// value; the second must be rejected as a duplicate
+		must.Positive(t, insertDocument(t, ctx, db, mocks.Nobody, "My Doc"))
+
+		_, err := d.Create(ctx, &sitecontent.CreateDocumentRequest{
+			User:   mocks.Nobody,
+			Folder: miscFolderOf(t, ctx, db, mocks.Nobody),
+			Label:  "my-doc",
+			Slug:   "my-doc",
+		})
+		must.Error(t, err)
+	})
+}
+
+func TestDocuments_Get_Slug(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+
+	// create a folder (folder names may not contain spaces), then a document
+	// inside it with spaces in its display name
+	must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+		User:  nobody,
+		Label: "WorkAccounts",
+		Slug:  "workaccounts",
+		Icon:  sitecontent.Icon(0),
+	}))
+
+	_, err := d.Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   nobody,
+		Folder: "workaccounts",
+		Label:  "Git Hub",
+		Slug:   "git-hub",
+	})
+	must.NoError(t, err)
+
+	// the document resolves through slugs, while Label/Folder keep the display names
+	doc, gerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+		User:     nobody,
+		Folder:   "workaccounts",
+		Document: "git-hub",
+	})
+	must.NoError(t, gerr)
+	must.Eq(t, "Git Hub", doc.Label)
+	must.Eq(t, "git-hub", doc.Slug)
+	must.Eq(t, "WorkAccounts", doc.Folder)
+	must.Eq(t, "workaccounts", doc.FolderSlug)
+
+	// a listing also carries the slug for URL construction
+	list, lerr := d.List(ctx, &sitecontent.ListDocumentsRequest{
+		User:   nobody,
+		Folder: "workaccounts",
+	})
+	must.NoError(t, lerr)
+	must.SliceLen(t, 1, list)
+	must.Eq(t, "Git Hub", list[0].Label)
+	must.Eq(t, "git-hub", list[0].Slug)
 }
 
 func TestDocuments_List(t *testing.T) {

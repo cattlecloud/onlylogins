@@ -50,6 +50,7 @@ func TestFolders_Create(t *testing.T) {
 		request := &sitecontent.CreateFolderRequest{
 			User:  nobody,
 			Label: "work",
+			Slug:  "work",
 			Icon:  sitecontent.Icon(0),
 		}
 		err := f.Create(ctx, request)
@@ -70,10 +71,29 @@ func TestFolders_Create(t *testing.T) {
 		request := &sitecontent.CreateFolderRequest{
 			User:  nobody,
 			Label: "work",
+			Slug:  "work",
 			Icon:  sitecontent.Icon(0),
 		}
 		err := f.Create(ctx, request)
 		must.Error(t, err)
+		must.Error(t, err)
+	})
+
+	t.Run("duplicate slug", func(t *testing.T) {
+		// "Home" and "home" differ as labels but slugify to the same value;
+		// the second must be rejected as a duplicate
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "Home",
+			Slug:  "home",
+			Icon:  sitecontent.Icon(0),
+		}))
+		err := f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "home",
+			Slug:  "home",
+			Icon:  sitecontent.Icon(0),
+		})
 		must.Error(t, err)
 	})
 }
@@ -90,6 +110,7 @@ func TestFolders_Delete(t *testing.T) {
 		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
 			User:  nobody,
 			Label: "work",
+			Slug:  "work",
 			Icon:  sitecontent.Icon(0),
 		}))
 
@@ -100,6 +121,7 @@ func TestFolders_Delete(t *testing.T) {
 			User:   nobody,
 			Folder: "work",
 			Label:  "github",
+			Slug:   "github",
 		})
 		must.NoError(t, err)
 
@@ -148,8 +170,8 @@ func TestFolders_Delete(t *testing.T) {
 		// delete the folder; cascade should also wipe the document and all
 		// of its children
 		err = f.Delete(ctx, &sitecontent.DeleteFolderRequest{
-			User:  nobody,
-			Label: "work",
+			User: nobody,
+			Slug: "work",
 		})
 		must.NoError(t, err)
 
@@ -173,6 +195,7 @@ func TestFolders_Delete(t *testing.T) {
 		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
 			User:  nobody,
 			Label: "work",
+			Slug:  "work",
 			Icon:  sitecontent.Icon(0),
 		}))
 		// inserting bob creates his own system "miscellaneous" folder via the
@@ -181,8 +204,8 @@ func TestFolders_Delete(t *testing.T) {
 		_ = bob
 
 		err := f.Delete(ctx, &sitecontent.DeleteFolderRequest{
-			User:  bob,
-			Label: "work",
+			User: bob,
+			Slug: "work",
 		})
 		must.Error(t, err)
 
@@ -204,8 +227,8 @@ func TestFolders_Delete(t *testing.T) {
 		f := db.Folders()
 
 		err := f.Delete(ctx, &sitecontent.DeleteFolderRequest{
-			User:  nobody,
-			Label: "no-such-folder",
+			User: nobody,
+			Slug: "no-such-folder",
 		})
 		must.Error(t, err)
 	})
@@ -217,8 +240,8 @@ func TestFolders_Delete(t *testing.T) {
 		// attempting to delete the default "miscellaneous" system folder must
 		// fail; the SQL `protected = 0` filter refuses to delete protected rows
 		err := f.Delete(ctx, &sitecontent.DeleteFolderRequest{
-			User:  nobody,
-			Label: "miscellaneous",
+			User: nobody,
+			Slug: "miscellaneous",
 		})
 		must.Error(t, err)
 
@@ -226,4 +249,31 @@ func TestFolders_Delete(t *testing.T) {
 		must.NoError(t, cerr)
 		must.Eq(t, testUsersCount, count)
 	})
+}
+
+func TestFolders_List_Slug(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	f := db.Folders()
+
+	must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+		User:  nobody,
+		Label: "Work",
+		Slug:  "work",
+		Icon:  sitecontent.Icon(0),
+	}))
+
+	list, err := f.List(ctx, nobody)
+	must.NoError(t, err)
+
+	var found *sitecontent.Folder
+	for _, folder := range list {
+		if folder.Label == "Work" {
+			found = folder
+			break
+		}
+	}
+	must.NotNil(t, found)
+	must.Eq(t, "work", found.Slug)
 }

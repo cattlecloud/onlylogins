@@ -84,6 +84,7 @@ func TestProfile_ServeHTTP_GET_logged_in_with_documents(t *testing.T) {
 		User:   mocks.Nobody,
 		Folder: "miscellaneous",
 		Label:  "github",
+		Slug:   "github",
 	})
 	must.NoError(t, derr)
 
