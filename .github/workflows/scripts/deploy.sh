@@ -21,6 +21,8 @@ curl -L \
   -o "${dest}" -s "${url}"
 echo "download complete."
 
+chmod +x "${dest}"
+
 scp "${dest}" "${HOST}:~/${binary}"
 ssh -t "${HOST}" "sudo mv ~/${binary} /opt/bin/${binary}"
 ssh -t "${HOST}" "sudo systemctl restart ${binary}"
