@@ -169,6 +169,7 @@ func TestFolder_Get_Empty(t *testing.T) {
 	must.StrContains(t, body, `<h2>Your documents in miscellaneous</h2>`)
 	must.StrContains(t, body, "No documents yet")
 	must.StrContains(t, body, `class="empty"`)
+	must.StrContains(t, body, `<span id="error"></span>`)
 	must.StrNotContains(t, body, `class="documents-list"`)
 
 	// the default "miscellaneous" folder is the well-known system folder; the
