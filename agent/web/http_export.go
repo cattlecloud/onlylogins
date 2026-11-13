@@ -114,7 +114,7 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 		doclist := &sitecontent.ListDocumentsRequest{
 			User:   session.Identity(),
-			Folder: folder.Label,
+			Folder: folder.Slug,
 		}
 
 		// iterate each document in the folder
@@ -126,8 +126,8 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		for _, doc := range documents {
 			docreq := &sitecontent.GetDocumentRequest{
 				User:     session.Identity(),
-				Folder:   folder.Label,
-				Document: doc.Label,
+				Folder:   folder.Slug,
+				Document: doc.Slug,
 			}
 
 			// get the document and extract the data

@@ -80,9 +80,9 @@ func TestFolder_CreateDocument_BadLabel(t *testing.T) {
 
 	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
 
-	// a label containing non-alphanumeric characters fails Validate()
+	// a label with no letters or numbers fails Validate()
 	request := requestPost(t, "/folders/miscellaneous", cookie, url.Values{
-		"label": {"bad-name!"},
+		"label": {"!!!"},
 	})
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
@@ -91,7 +91,7 @@ func TestFolder_CreateDocument_BadLabel(t *testing.T) {
 	must.Eq(t, http.StatusOK, w.Code)
 	body := w.Body.String()
 	must.StrContains(t, body, `<span id="error" hx-swap-oob="true">`)
-	must.StrContains(t, body, "document label must contain alphanumeric characters")
+	must.StrContains(t, body, "document must contain at least one letter or number")
 
 	count, err := store.Documents().Count(t.Context())
 	must.NoError(t, err)
@@ -203,6 +203,7 @@ func TestFolder_Get_WithDocuments(t *testing.T) {
 		User:   mocks.Nobody,
 		Folder: "miscellaneous",
 		Label:  "github",
+		Slug:   "github",
 	})
 	must.NoError(t, err)
 
@@ -210,6 +211,7 @@ func TestFolder_Get_WithDocuments(t *testing.T) {
 		User:   mocks.Nobody,
 		Folder: "miscellaneous",
 		Label:  "gitlab",
+		Slug:   "gitlab",
 	})
 	must.NoError(t, err)
 
@@ -264,6 +266,7 @@ func TestFolder_Get_DangerZone_ForUserCreated(t *testing.T) {
 	must.NoError(t, store.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
 		User:  mocks.Nobody,
 		Label: "work",
+		Slug:  "work",
 		Icon:  sitecontent.Icon(0),
 	}))
 
@@ -309,6 +312,7 @@ func TestFolderHTTP_Delete_HappyPath(t *testing.T) {
 	must.NoError(t, store.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
 		User:  mocks.Nobody,
 		Label: "work",
+		Slug:  "work",
 		Icon:  sitecontent.Icon(0),
 	}))
 

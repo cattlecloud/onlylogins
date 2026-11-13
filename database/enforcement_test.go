@@ -28,6 +28,7 @@ func TestEnforcement_quotas(t *testing.T) {
 			User:   mocks.Nobody,
 			Folder: "miscellaneous",
 			Label:  "another",
+			Slug:   "another",
 		})
 		must.NoError(t, err)
 	})
@@ -45,6 +46,7 @@ func TestEnforcement_quotas(t *testing.T) {
 			User:   mocks.Nobody,
 			Folder: "miscellaneous",
 			Label:  "over-the-limit",
+			Slug:   "over-the-limit",
 		})
 		must.ErrorIs(t, err, ErrQuotaExceeded)
 	})

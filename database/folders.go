@@ -20,6 +20,7 @@ type Folders interface {
 	// folder operations
 	Create(scope.C, *sitecontent.CreateFolderRequest) error
 	List(scope.C, users.Identity) ([]*sitecontent.Folder, error)
+	Get(scope.C, users.Identity, string) (*sitecontent.Folder, error)
 	Delete(scope.C, *sitecontent.DeleteFolderRequest) error
 }
 
@@ -56,12 +57,13 @@ func (s *foldersql) Create(ctx scope.C, request *sitecontent.CreateFolderRequest
 
 	const statement = `
 	insert into folders (
-		users_id, label, icon
-	) values ( ?, ?, ? )`
+		users_id, label, slug, icon
+	) values ( ?, ?, ?, ? )`
 
 	if _, ferr := s.ldb.ExecID(ctx, tx, statement,
 		request.User,
 		request.Label,
+		request.Slug,
 		int(request.Icon),
 	); ferr != nil {
 		return fmt.Errorf("unable to create folder: %w", ferr)
@@ -81,6 +83,7 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 	select
 		id,
 		label,
+		slug,
 		icon
 	from folders
 	where
@@ -89,11 +92,39 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
 		folder := new(sitecontent.Folder)
-		err := scan(&folder.ID, &folder.Label, &folder.Icon)
+		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon)
 		return folder, err
 	}
 
 	return litesql.QueryRows(ctx, tx, f, statement, user)
+}
+
+func (s *foldersql) Get(ctx scope.C, user users.Identity, slug string) (*sitecontent.Folder, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to get folder: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select
+		id,
+		label,
+		slug,
+		icon
+	from folders
+	where
+		users_id = ? and
+		slug = ?
+	limit 1`
+
+	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
+		folder := new(sitecontent.Folder)
+		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon)
+		return folder, err
+	}
+
+	return litesql.QueryRow(ctx, tx, f, statement, user, slug)
 }
 
 func (s *foldersql) Delete(ctx scope.C, request *sitecontent.DeleteFolderRequest) error {
@@ -110,12 +141,12 @@ func (s *foldersql) Delete(ctx scope.C, request *sitecontent.DeleteFolderRequest
 	delete from folders
 	where
 		users_id = ? and
-		label = ? and
+		slug = ? and
 		protected = 0`
 
 	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
 		request.User,
-		request.Label,
+		request.Slug,
 	); rerr != nil {
 		s.log.E.Fmt("unable to delete folder: %v", rerr)
 		return fmt.Errorf("unable to delete folder: %w", rerr)

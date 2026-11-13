@@ -103,6 +103,7 @@ func TestExport_Post(t *testing.T) {
 		User:   mocks.Nobody,
 		Folder: "miscellaneous",
 		Label:  "github",
+		Slug:   "github",
 	})
 	must.NoError(t, err)
 

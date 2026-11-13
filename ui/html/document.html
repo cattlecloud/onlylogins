@@ -2,7 +2,7 @@
 <div class="middle document">
   <section class="doc-header">
     <h1>{{.Section.Document.Label}}</h1>
-    <a class="back-link" href="/folders/{{.Section.Document.Folder}}">&larr; back to {{.Section.Document.Folder}}</a>
+    <a class="back-link" href="/folders/{{.Section.Document.FolderSlug}}">&larr; back to {{.Section.Document.Folder}}</a>
   </section>
 
   <script src="/ui/scripts/password.js" defer></script>
@@ -14,7 +14,7 @@
       <h3>Website Links</h3>
       <button
         class="add-btn"
-        hx-get="/internal/weblink/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-get="/internal/weblink/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
         hx-target="#weblinks-form-container"
         hx-swap="innerHTML"
       >+ Weblink</button>
@@ -28,12 +28,12 @@
           <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
           <span class="weblink-actions">
             <button class="weblink-edit-btn"
-              hx-get="/internal/weblink/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-get="/internal/weblink/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .weblink-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
             <button class="weblink-delete-btn"
-              hx-delete="/internal/weblink/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-delete="/internal/weblink/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-confirm="Delete this weblink?"
               hx-target="closest .weblink-row"
               hx-swap="delete"
@@ -52,7 +52,7 @@
       <h3>Usernames</h3>
       <button
         class="add-btn"
-        hx-get="/internal/username/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-get="/internal/username/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
         hx-target="#usernames-form-container"
         hx-swap="innerHTML"
       >+ Username</button>
@@ -66,12 +66,12 @@
           <code class="username-value">{{$u}}</code>
           <span class="username-actions">
             <button class="username-edit-btn"
-              hx-get="/internal/username/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-get="/internal/username/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .username-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
             <button class="username-delete-btn"
-              hx-delete="/internal/username/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-delete="/internal/username/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-confirm="Delete this username?"
               hx-target="closest .username-row"
               hx-swap="delete"
@@ -90,7 +90,7 @@
       <h3>Passwords</h3>
       <button
         class="add-btn"
-        hx-get="/internal/password/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-get="/internal/password/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
         hx-target="#passwords-form-container"
         hx-swap="innerHTML"
       >+ Password</button>
@@ -106,12 +106,12 @@
             <button type="button" class="password-copy-btn" title="Copy">Copy</button>
             <button type="button" class="password-show-btn" title="Show">Show</button>
             <button class="password-edit-btn"
-              hx-get="/internal/password/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-get="/internal/password/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .password-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
             <button class="password-delete-btn"
-              hx-delete="/internal/password/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-delete="/internal/password/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-confirm="Delete this password?"
               hx-target="closest .password-row"
               hx-swap="delete"
@@ -130,7 +130,7 @@
       <h3>Key Values</h3>
       <button
         class="add-btn"
-        hx-get="/internal/keyval/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-get="/internal/keyval/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
         hx-target="#keyvals-form-container"
         hx-swap="innerHTML"
       >+ Key Value</button>
@@ -146,12 +146,12 @@
           <span class="keyval-actions">
             <button type="button" class="keyval-show-btn" title="Show">Show</button>
             <button class="keyval-edit-btn"
-              hx-get="/internal/keyval/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-get="/internal/keyval/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .keyval-row"
               hx-swap="outerHTML"
               title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
             <button class="keyval-delete-btn"
-              hx-delete="/internal/keyval/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{.ID}}"
+              hx-delete="/internal/keyval/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-confirm="Delete this key/value pair?"
               hx-target="closest .keyval-row"
               hx-swap="delete"
@@ -171,7 +171,7 @@
       <button
         id="note-add-btn"
         class="add-btn"
-        hx-get="/internal/note/add/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+        hx-get="/internal/note/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
         hx-target="#note-form-container"
         hx-swap="innerHTML"
         {{if .Section.Document.Note}}hidden{{end}}
@@ -186,12 +186,12 @@
         </div>
         <div class="note-actions" hidden>
           <button class="note-edit-btn"
-            hx-get="/internal/note/edit/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{$.Section.Document.Note.ID}}"
+            hx-get="/internal/note/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{$.Section.Document.Note.ID}}"
             hx-target="closest .note-area"
             hx-swap="outerHTML"
             title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
           <button class="note-delete-btn"
-            hx-delete="/internal/note/delete/{{$.Section.Document.Folder}}/{{$.Section.Document.Label}}/{{$.Section.Document.Note.ID}}"
+            hx-delete="/internal/note/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{$.Section.Document.Note.ID}}"
             hx-confirm="Delete this note?"
             hx-target="closest .note-area"
             hx-swap="delete"
@@ -215,7 +215,7 @@
         <button
           type="button"
           class="danger-zone-delete-btn"
-          hx-delete="/folders/{{.Section.Document.Folder}}/{{.Section.Document.Label}}"
+          hx-delete="/folders/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
           hx-confirm="Delete this document {{.Section.Document.Label}} and all its secrets?"
         >Delete document</button>
       </div>

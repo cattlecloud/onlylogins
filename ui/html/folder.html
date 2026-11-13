@@ -12,7 +12,7 @@
         <span class="summary-chevron" aria-hidden="true"></span>
       </summary>
 
-      <form hx-post="/folders/{{.Section.Name}}">
+      <form hx-post="/folders/{{.Section.Slug}}">
         <div class="field">
           <label for="document-label">
             New document name
@@ -29,8 +29,6 @@
             id="document-label"
             name="label"
             placeholder="amazon, reddit, netflix, ..."
-            pattern="[a-zA-Z0-9-]+"
-            title="alphanumeric letters or numbers only"
             autocomplete="off"
             required>
         </div>
@@ -62,7 +60,7 @@
     <ul class="documents-list">
       {{range .Section.Documents}}
       <li>
-        <a href="/folders/{{$.Section.Name}}/{{.Label}}">{{.Label}}</a>
+        <a href="/folders/{{$.Section.Slug}}/{{.Slug}}">{{.Label}}</a>
       </li>
       {{end}}
     </ul>
@@ -85,7 +83,7 @@
         <button
           type="button"
           class="danger-zone-delete-btn"
-          hx-delete="/folders/{{.Section.Name}}"
+          hx-delete="/folders/{{.Section.Slug}}"
           hx-confirm="Delete this folder {{.Section.Name}} and ALL of its documents and secrets?"
         >Delete folder</button>
       </div>

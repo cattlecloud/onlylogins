@@ -6,6 +6,7 @@ package web
 import (
 	"html/template"
 	"net/http"
+	"strings"
 
 	"cattlecloud.net/go/forms"
 	"cattlecloud.net/go/scope"
@@ -133,9 +134,11 @@ func (*foldersHTTP) fields(r *http.Request, user users.Identity) *sitecontent.Cr
 		"label": forms.String(&label),
 		"icon":  forms.Int(&icon),
 	})
+	label = strings.TrimSpace(label)
 	return &sitecontent.CreateFolderRequest{
 		User:  user,
 		Label: label,
+		Slug:  sitecontent.Slugify(label),
 		Icon:  sitecontent.Icon(icon),
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"net/http"
 	"path"
+	"strings"
 
 	"cattlecloud.net/go/forms"
 	"cattlecloud.net/go/scope"
@@ -25,6 +26,7 @@ import (
 
 type folderContent struct {
 	Name      string
+	Slug      string
 	Documents []*sitecontent.DocumentListing
 }
 
@@ -78,11 +80,16 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 		return abort(h.log, w, perr)
 	}
 
-	name := h.folder(r)
+	slug := h.folder(r)
+
+	folder, ferr := h.store.Folders().Get(ctx, session.Identity(), slug)
+	if ferr != nil {
+		return abort(h.log, w, ferr)
+	}
 
 	request := &sitecontent.ListDocumentsRequest{
 		User:   session.Identity(),
-		Folder: name,
+		Folder: slug,
 	}
 	if verr := request.Validate(); verr != nil {
 		return problem(w, verr)
@@ -94,14 +101,15 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 	}
 
 	head := &pages.Head{
-		Title:       format.PageTitle(name),
+		Title:       format.PageTitle(folder.Label),
 		Styles:      []string{"folder.css"},
 		Description: h.description(),
 		Profile:     profile,
 	}
 
 	middle := &folderContent{
-		Name:      name,
+		Name:      folder.Label,
+		Slug:      folder.Slug,
 		Documents: documents,
 	}
 
@@ -129,7 +137,7 @@ func (h *folderHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	}
 
 	// send the user to the document page (handler does not exist yet)
-	target := path.Join("/folders", request.Folder, request.Label)
+	target := path.Join("/folders", request.Folder, request.Slug)
 	return htmx.SetRedirect(w, target)
 }
 
@@ -141,8 +149,8 @@ func (h *folderHTTP) delete(ctx scope.C, w http.ResponseWriter, r *http.Request)
 	}
 
 	request := &sitecontent.DeleteFolderRequest{
-		User:  session.Identity(),
-		Label: h.folder(r),
+		User: session.Identity(),
+		Slug: h.folder(r),
 	}
 	if verr := request.Validate(); verr != nil {
 		return problem(w, verr)
@@ -161,10 +169,12 @@ func (h *folderHTTP) fields(r *http.Request, user users.Identity) *sitecontent.C
 	forms.MustParse(r, forms.Schema{
 		"label": forms.String(&label),
 	})
+	label = strings.TrimSpace(label)
 	return &sitecontent.CreateDocumentRequest{
 		User:   user,
 		Folder: h.folder(r),
 		Label:  label,
+		Slug:   sitecontent.Slugify(label),
 	}
 }
 

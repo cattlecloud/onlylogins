@@ -57,7 +57,7 @@ func insertUsernameHandlerHelper(t *testing.T, store database.Store, user users.
 	folder := list[0].Label
 
 	_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-		User: user, Folder: folder, Label: doc,
+		User: user, Folder: folder, Label: doc, Slug: sitecontent.Slugify(doc),
 	})
 	must.NoError(t, err)
 
@@ -169,7 +169,7 @@ func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		must.NoError(t, err)
 		folder := list[0].Label
 		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-			User: mocks.Nobody, Folder: folder, Label: "github",
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
 		})
 		must.NoError(t, err)
 		cancel()
@@ -210,7 +210,7 @@ func TestUsernameHTMX_Post_EmptyUsername_ReturnsProblem(t *testing.T) {
 		must.NoError(t, err)
 		folder := list[0].Label
 		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-			User: mocks.Nobody, Folder: folder, Label: "github",
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
 		})
 		must.NoError(t, err)
 		cancel()
@@ -250,7 +250,7 @@ func TestUsernameHTMX_Post_WhitespaceOnlyUsername_ReturnsProblem(t *testing.T) {
 		must.NoError(t, err)
 		folder := list[0].Label
 		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-			User: mocks.Nobody, Folder: folder, Label: "github",
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
 		})
 		must.NoError(t, err)
 		cancel()
@@ -290,7 +290,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 		must.NoError(t, err)
 		folder := list[0].Label
 		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-			User: mocks.Nobody, Folder: folder, Label: "github",
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
 		})
 		must.NoError(t, err)
 		cancel()
@@ -350,7 +350,7 @@ func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		must.NoError(t, err)
 		folder := list[0].Label
 		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
-			User: mocks.Nobody, Folder: folder, Label: "github",
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
 		})
 		must.NoError(t, err)
 		cancel()

@@ -16,6 +16,7 @@ import (
 type Folder struct {
 	ID    records.FoldersAuto
 	Label string
+	Slug  string
 	Icon  Icon
 }
 
@@ -43,13 +44,14 @@ var FolderIcons = map[Icon]string{
 	17: "mail.svg",
 }
 
-// labelRe restricts folder and document label names to alphanumeric characters and dashes.
-// this way they can be used in url paths without encoding
-var labelRe = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+// folderLabelRe restricts folder names to alphanumeric characters and dashes.
+// Unlike document names, folder names may not contain spaces.
+var folderLabelRe = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
 
 type CreateFolderRequest struct {
 	User  users.Identity
 	Label string
+	Slug  string
 	Icon  Icon
 }
 
@@ -58,8 +60,8 @@ func (r *CreateFolderRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if !labelRe.MatchString(r.Label) {
-		return errors.New("label must contain only alphanumeric characters")
+	if !folderLabelRe.MatchString(r.Label) {
+		return errors.New("label must contain only letters, numbers, and dashes")
 	}
 
 	if r.Icon < 0 || r.Icon > 17 {
@@ -70,8 +72,8 @@ func (r *CreateFolderRequest) Validate() error {
 }
 
 type DeleteFolderRequest struct {
-	User  users.Identity
-	Label string
+	User users.Identity
+	Slug string
 }
 
 func (r *DeleteFolderRequest) Validate() error {
@@ -79,8 +81,8 @@ func (r *DeleteFolderRequest) Validate() error {
 		return errors.New("user must be set")
 	}
 
-	if !labelRe.MatchString(r.Label) {
-		return errors.New("folder label must contain only alphanumeric characters")
+	if !ValidateSlug(r.Slug) {
+		return errors.New("folder slug must contain only lowercase alphanumeric characters")
 	}
 
 	return nil
