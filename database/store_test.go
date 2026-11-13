@@ -4,6 +4,7 @@
 package database
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 	"time"
@@ -41,4 +42,35 @@ func TestOpenDB(t *testing.T) {
 	db, ctx := openTestDB(t)
 	must.NotNil(t, ctx)
 	must.NotNil(t, db)
+}
+
+func TestOpen_CreatesFile0600(t *testing.T) {
+	t.Parallel()
+
+	filename := filepath.Join(t.TempDir(), "new.db")
+
+	db, err := Open(&Config{Path: filename})
+	must.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	info, serr := os.Stat(filename)
+	must.NoError(t, serr)
+	must.Eq(t, os.FileMode(0o600), info.Mode().Perm())
+}
+
+func TestOpen_PreservesExistingPermissions(t *testing.T) {
+	t.Parallel()
+
+	filename := filepath.Join(t.TempDir(), "existing.db")
+	file, cerr := os.OpenFile(filename, os.O_RDWR|os.O_CREATE, 0o644)
+	must.NoError(t, cerr)
+	must.NoError(t, file.Close())
+
+	db, err := Open(&Config{Path: filename})
+	must.NoError(t, err)
+	t.Cleanup(func() { _ = db.Close() })
+
+	info, serr := os.Stat(filename)
+	must.NoError(t, serr)
+	must.Eq(t, os.FileMode(0o644), info.Mode().Perm())
 }
