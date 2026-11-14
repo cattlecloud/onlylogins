@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"cattlecloud.net/onlylogins/database/records"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
@@ -79,16 +80,17 @@ type DocumentListing struct {
 }
 
 type Document struct {
-	ID         records.DocumentsAuto
-	Label      string
-	Slug       string
-	Folder     string
-	FolderSlug string
-	Weblinks   []*Weblink
-	Usernames  []*Username
-	Passwords  []*Password
-	Keyvals    []*Keyval
-	Note       *Note
+	ID           records.DocumentsAuto
+	Label        string
+	Slug         string
+	Folder       string
+	FolderSlug   string
+	Modification time.Time
+	Weblinks     []*Weblink
+	Usernames    []*Username
+	Passwords    []*Password
+	Keyvals      []*Keyval
+	Note         *Note
 }
 
 type CreateDocumentRequest struct {
@@ -762,6 +764,38 @@ func (r *DeleteKeyvalRequest) Validate() error {
 
 	if !ValidateSlug(r.Document) {
 		return errors.New("document must be set")
+	}
+
+	return nil
+}
+
+type RenameDocumentRequest struct {
+	User     users.Identity
+	Folder   string
+	Document string
+	Label    string
+	NewSlug  string
+}
+
+func (r *RenameDocumentRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if !ValidateSlug(r.Folder) {
+		return errors.New("folder must be set")
+	}
+
+	if !ValidateSlug(r.Document) {
+		return errors.New("document must be set")
+	}
+
+	if !ValidateName(r.Label) {
+		return errors.New("document must contain at least one letter or number")
+	}
+
+	if !ValidateSlug(r.NewSlug) {
+		return errors.New("document must contain at least one letter or number")
 	}
 
 	return nil

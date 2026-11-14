@@ -348,7 +348,7 @@ func TestFolders_Rename(t *testing.T) {
 			Label:   "home",
 			NewSlug: "home",
 		})
-		must.Error(t, err)
+		must.ErrorIs(t, err, ErrFolderExists)
 	})
 
 	t.Run("protected folder", func(t *testing.T) {

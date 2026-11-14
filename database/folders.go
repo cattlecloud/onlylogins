@@ -4,14 +4,20 @@
 package database
 
 import (
+	"errors"
 	"fmt"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
+	"cattlecloud.net/onlylogins/database/records"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 )
+
+// ErrFolderExists indicates a folder with the given label/slug already exists
+// for the user, so the rename cannot be applied.
+var ErrFolderExists = errors.New("a folder with that name already exists")
 
 type Folders interface {
 	// metrics
@@ -137,24 +143,62 @@ func (s *foldersql) Rename(ctx scope.C, request *sitecontent.RenameFolderRequest
 	}
 	defer done()
 
-	// refuse to rename system-protected rows (e.g. the default "miscellaneous"
-	// folder with protected=1); the where clause ensures we never touch them
-	// even if the caller tries
-	const statement = `
+	// locate the folder to rename, refusing system-protected rows (i.e. the
+	// default "miscellaneous" folder with protected=1)
+	const findSQL = `
+	select id
+	from folders
+	where
+		users_id = ? and
+		slug = ? and
+		protected = 0
+	limit 1`
+
+	findID := func(scan litesql.ScanFunc) (records.FoldersAuto, error) {
+		var id records.FoldersAuto
+		err := scan(&id)
+		return id, err
+	}
+
+	id, ferr := litesql.QueryRow(ctx, tx, findID, findSQL, request.User, request.Slug)
+	if ferr != nil {
+		s.log.E.Fmt("unable to rename folder: %v", ferr)
+		return fmt.Errorf("unable to rename folder: %w", ferr)
+	}
+
+	// refuse to rename onto an existing folder; a folder with the same slug
+	// (excluding this folder) means the name is already taken
+	const conflictSQL = `
+	select count(id)
+	from folders
+	where
+		users_id = ? and
+		(label = ? or slug = ?) and
+		id != ?`
+
+	count, cerr := litesql.QueryRow(ctx, tx, scanCount, conflictSQL,
+		request.User, request.Label, request.NewSlug, id,
+	)
+	if cerr != nil {
+		s.log.E.Fmt("unable to rename folder: %v", cerr)
+		return fmt.Errorf("unable to rename folder: %w", cerr)
+	}
+
+	if count > 0 {
+		return fmt.Errorf("unable to rename folder: %w", ErrFolderExists)
+	}
+
+	const updateSQL = `
 	update folders
 	set
 		label = ?,
 		slug = ?
-	where
-		users_id = ? and
-		slug = ? and
-		protected = 0`
+	where id = ?`
 
-	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, updateSQL,
 		request.Label,
 		request.NewSlug,
-		request.User,
-		request.Slug,
+		id,
 	); rerr != nil {
 		s.log.E.Fmt("unable to rename folder: %v", rerr)
 		return fmt.Errorf("unable to rename folder: %w", rerr)

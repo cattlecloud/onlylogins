@@ -1442,6 +1442,66 @@
   font-weight: 600;
 }
 
+.middle.document .document-rename-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.6rem;
+}
+
+.middle.document .document-rename-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.middle.document .document-rename-form input {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  caret-color: var(--primary);
+}
+
+.middle.document .document-rename-form input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .document-rename-form .danger-zone-rename-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document .document-rename-form .danger-zone-rename-btn:hover,
+.middle.document .document-rename-form .danger-zone-rename-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .document-rename-form #error:empty {
+  display: none;
+}
+
+.middle.document .document-rename-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
 .middle.document .danger-zone-delete-btn {
   align-self: flex-start;
   padding: 0.5rem 1rem;

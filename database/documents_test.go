@@ -1166,3 +1166,152 @@ func TestDocuments_Delete(t *testing.T) {
 		must.Error(t, err)
 	})
 }
+
+func TestDocuments_Rename(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		before, err := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+
+		// ensure the modification timestamp advances by a full second
+		time.Sleep(time.Second)
+
+		rerr := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Label:    "gitlab",
+			NewSlug:  "gitlab",
+		})
+		must.NoError(t, rerr)
+
+		// the new slug resolves with the new label and a bumped timestamp
+		after, gerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "gitlab",
+		})
+		must.NoError(t, gerr)
+		must.Eq(t, "gitlab", after.Label)
+		must.True(t, after.Modification.After(before.Modification))
+
+		// the child row survived the rename (keyed by document id, not slug)
+		must.SliceLen(t, 1, after.Usernames)
+
+		// the old slug no longer resolves
+		_, oerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.Error(t, oerr)
+	})
+
+	t.Run("case-only rename", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		must.NoError(t, d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Label:    "GitHub",
+			NewSlug:  "github",
+		}))
+
+		doc, gerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, gerr)
+		must.Eq(t, "GitHub", doc.Label)
+	})
+
+	t.Run("duplicate label", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertDocument(t, ctx, db, mocks.Nobody, "gitlab")
+
+		err := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Label:    "gitlab",
+			NewSlug:  "gitlab",
+		})
+		must.ErrorIs(t, err, ErrDocumentExists)
+	})
+
+	t.Run("duplicate slug", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "My Doc") // slug "my-doc"
+		insertDocument(t, ctx, db, mocks.Nobody, "second")
+
+		err := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "second",
+			Label:    "my-doc",
+			NewSlug:  "my-doc",
+		})
+		must.ErrorIs(t, err, ErrDocumentExists)
+	})
+
+	t.Run("unknown document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		err := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "nope",
+			Label:    "x",
+			NewSlug:  "x",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("unknown folder", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		err := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "no-such-folder",
+			Document: "github",
+			Label:    "gitlab",
+			NewSlug:  "gitlab",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		bob := insertUser(t, ctx, db, "bob")
+
+		err := d.Rename(ctx, &sitecontent.RenameDocumentRequest{
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Label:    "gitlab",
+			NewSlug:  "gitlab",
+		})
+		must.Error(t, err)
+	})
+}

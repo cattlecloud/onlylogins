@@ -4,7 +4,9 @@
 package database
 
 import (
+	"errors"
 	"fmt"
+	"time"
 
 	"cattlecloud.net/go/litesql"
 	"cattlecloud.net/go/scope"
@@ -13,6 +15,10 @@ import (
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"github.com/shoenig/go-conceal"
 )
+
+// ErrDocumentExists indicates a document with the given label/slug already
+// exists within the folder, so the rename cannot be applied.
+var ErrDocumentExists = errors.New("a document with that name already exists")
 
 type Documents interface {
 	// metrics
@@ -23,6 +29,7 @@ type Documents interface {
 	List(scope.C, *sitecontent.ListDocumentsRequest) ([]*sitecontent.DocumentListing, error)
 	Get(scope.C, *sitecontent.GetDocumentRequest) (*sitecontent.Document, error)
 	Resolve(scope.C, *sitecontent.GetDocumentRequest) (records.DocumentsAuto, error)
+	Rename(scope.C, *sitecontent.RenameDocumentRequest) error
 	Delete(scope.C, *sitecontent.DeleteDocumentRequest) error
 
 	// document > weblinks
@@ -146,6 +153,89 @@ func (s *documentsql) Resolve(ctx scope.C, request *sitecontent.GetDocumentReque
 	)
 }
 
+func (s *documentsql) Rename(ctx scope.C, request *sitecontent.RenameDocumentRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to rename document: %w", xerr)
+	}
+	defer done()
+
+	// locate the document to rename, enforcing ownership and the folder slug
+	// by doing a join
+	const locateSQL = `
+	select
+		documents.id,
+		documents.folders_id
+	from documents
+	join folders on folders.id = documents.folders_id
+	where
+		folders.users_id = ? and
+		folders.slug = ? and
+		documents.slug = ?
+	limit 1`
+
+	type doc struct {
+		ID        records.DocumentsAuto
+		FoldersID records.FoldersAuto
+	}
+
+	find := func(scan litesql.ScanFunc) (doc, error) {
+		var loc doc
+		err := scan(&loc.ID, &loc.FoldersID)
+		return loc, err
+	}
+
+	loc, ferr := litesql.QueryRow(ctx, tx, find, locateSQL,
+		request.User, request.Folder, request.Document,
+	)
+	if ferr != nil {
+		s.log.E.Fmt("unable to rename document: %v", ferr)
+		return fmt.Errorf("unable to rename document: %w", ferr)
+	}
+
+	// refuse to rename onto an existing document; a document with the same
+	// slug within this folder (excluding this document) means the name is
+	// already taken
+	const conflictSQL = `
+	select count(id)
+	from documents
+	where
+		folders_id = ? and
+		(label = ? or slug = ?) and
+		id != ?`
+
+	count, cerr := litesql.QueryRow(ctx, tx, scanCount, conflictSQL,
+		loc.FoldersID, request.Label, request.NewSlug, loc.ID,
+	)
+	if cerr != nil {
+		s.log.E.Fmt("unable to rename document: %v", cerr)
+		return fmt.Errorf("unable to rename document: %w", cerr)
+	}
+
+	if count > 0 {
+		return fmt.Errorf("unable to rename document: %w", ErrDocumentExists)
+	}
+
+	const updateSQL = `
+	update documents
+	set
+		label = ?,
+		slug = ?,
+		modification = unixepoch('now')
+	where id = ?`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, updateSQL,
+		request.Label,
+		request.NewSlug,
+		loc.ID,
+	); rerr != nil {
+		s.log.E.Fmt("unable to rename document: %v", rerr)
+		return fmt.Errorf("unable to rename document: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
 func (s *documentsql) Delete(ctx scope.C, request *sitecontent.DeleteDocumentRequest) error {
 	tx, done, xerr := s.ldb.StartWrite(ctx)
 	if xerr != nil {
@@ -215,7 +305,8 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 		d.label,
 		d.slug,
 		f.label,
-		f.slug
+		f.slug,
+		d.modification
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
@@ -224,15 +315,18 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 		d.slug = ?`
 
 	type docRow struct {
-		ID         records.DocumentsAuto
-		Label      string
-		Slug       string
-		Folder     string
-		FolderSlug string
+		ID           records.DocumentsAuto
+		Label        string
+		Slug         string
+		Folder       string
+		FolderSlug   string
+		Modification time.Time
 	}
 	scanDoc := func(scan litesql.ScanFunc) (docRow, error) {
 		var row docRow
-		err := scan(&row.ID, &row.Label, &row.Slug, &row.Folder, &row.FolderSlug)
+		var modification int64
+		err := scan(&row.ID, &row.Label, &row.Slug, &row.Folder, &row.FolderSlug, &modification)
+		row.Modification = time.Unix(modification, 0)
 		return row, err
 	}
 
@@ -337,16 +431,17 @@ func (s *documentsql) Get(ctx scope.C, request *sitecontent.GetDocumentRequest) 
 	}
 
 	return &sitecontent.Document{
-		ID:         doc.ID,
-		Label:      doc.Label,
-		Slug:       doc.Slug,
-		Folder:     doc.Folder,
-		FolderSlug: doc.FolderSlug,
-		Weblinks:   weblinks,
-		Usernames:  usernames,
-		Passwords:  passwords,
-		Keyvals:    keyvals,
-		Note:       note,
+		ID:           doc.ID,
+		Label:        doc.Label,
+		Slug:         doc.Slug,
+		Folder:       doc.Folder,
+		FolderSlug:   doc.FolderSlug,
+		Modification: doc.Modification,
+		Weblinks:     weblinks,
+		Usernames:    usernames,
+		Passwords:    passwords,
+		Keyvals:      keyvals,
+		Note:         note,
 	}, nil
 }
 

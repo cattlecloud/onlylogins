@@ -207,6 +207,24 @@
     <details>
       <summary>Danger Zone</summary>
       <div class="danger-zone-body">
+        <form
+          class="document-rename-form"
+          hx-post="/internal/document/rename/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+        >
+          <label for="document-rename-label">Rename document</label>
+          <input
+            type="text"
+            id="document-rename-label"
+            name="label"
+            value="{{.Section.Document.Label}}"
+            pattern="[a-zA-Z0-9\s-]+"
+            title="letters, numbers, and dashes only"
+            autocomplete="off"
+            required>
+          <button type="submit" class="danger-zone-rename-btn">Rename</button>
+          <span id="error"></span>
+        </form>
+
         <p>
           Deleting <strong>{{.Section.Document.Label}}</strong> will permanently
           remove this document and every username, password, key/value, web
