@@ -45,9 +45,10 @@ var FolderIcons = map[Icon]string{
 	17: "mail.svg",
 }
 
-// folderLabelRe restricts folder names to alphanumeric characters and dashes.
-// Unlike document names, folder names may not contain spaces.
-var folderLabelRe = regexp.MustCompile(`^[a-zA-Z0-9-]+$`)
+// folderLabelRe restricts folder names to Unicode letters (including accented
+// letters), combining marks, ASCII digits, and dashes. Unlike document names,
+// folder names may not contain spaces.
+var folderLabelRe = regexp.MustCompile(`^[\p{L}\p{M}0-9-]+$`)
 
 type CreateFolderRequest struct {
 	User  users.Identity
@@ -63,6 +64,10 @@ func (r *CreateFolderRequest) Validate() error {
 
 	if !folderLabelRe.MatchString(r.Label) {
 		return errors.New("label must contain only letters, numbers, and dashes")
+	}
+
+	if !ValidateSlug(r.Slug) {
+		return errors.New("label must contain at least one letter or number")
 	}
 
 	if r.Icon < 0 || r.Icon > 17 {

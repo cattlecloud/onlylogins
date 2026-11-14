@@ -47,6 +47,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "Work",
+			Slug:  "work",
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
@@ -57,6 +58,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "my-folder",
+			Slug:  "my-folder",
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
@@ -73,14 +75,48 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
 	})
 
-	t.Run("label with unicode", func(t *testing.T) {
+	t.Run("label with accent", func(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "café",
+			Slug:  "cafe",
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+		must.NoError(t, err)
+	})
+
+	t.Run("label with Jalapeño", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "Jalapeño",
+			Slug:  "jalapeno",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+
+	t.Run("crazy letters only", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "日本語",
+			Slug:  "",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain at least one letter or number")
+	})
+
+	t.Run("label of only dashes", func(t *testing.T) {
+		r := &CreateFolderRequest{
+			User:  users.Identity(1),
+			Label: "---",
+			Slug:  "",
+			Icon:  Icon(0),
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain at least one letter or number")
 	})
 
 	t.Run("label with punctuation", func(t *testing.T) {
@@ -97,6 +133,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
+			Slug:  "work",
 			Icon:  Icon(-1),
 		}
 		err := r.Validate()
@@ -107,6 +144,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
+			Slug:  "work",
 			Icon:  Icon(18),
 		}
 		err := r.Validate()
@@ -117,6 +155,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
+			Slug:  "work",
 			Icon:  Icon(0),
 		}
 		err := r.Validate()
@@ -127,6 +166,7 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		r := &CreateFolderRequest{
 			User:  users.Identity(1),
 			Label: "work",
+			Slug:  "work",
 			Icon:  Icon(17),
 		}
 		err := r.Validate()
@@ -181,15 +221,15 @@ func TestRenameFolderRequest_Validate(t *testing.T) {
 		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
 	})
 
-	t.Run("label with unicode", func(t *testing.T) {
+	t.Run("label with accent", func(t *testing.T) {
 		r := &RenameFolderRequest{
 			User:    users.Identity(1),
 			Slug:    "work",
 			Label:   "café",
-			NewSlug: "caf",
+			NewSlug: "cafe",
 		}
 		err := r.Validate()
-		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+		must.NoError(t, err)
 	})
 
 	t.Run("label slugifies empty", func(t *testing.T) {

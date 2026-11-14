@@ -29,8 +29,8 @@
             id="document-label"
             name="label"
             placeholder="amazon, reddit, netflix, ..."
-            pattern="[a-zA-Z0-9\s-]+"
-            title="letters, numbers, and dashes only"
+            pattern="[\p{L}\p{M}0-9\s-]+"
+            title="letters (including accented), numbers, spaces, and dashes"
             autocomplete="off"
             required>
         </div>
@@ -85,8 +85,8 @@
               id="folder-rename-label"
               name="label"
               value="{{.Section.Name}}"
-              pattern="[a-zA-Z0-9-]+"
-              title="letters, numbers, and dashes only"
+              pattern="[\p{L}\p{M}0-9-]+"
+              title="letters (including accented), numbers, and dashes"
               autocomplete="off"
               required>
           </div>
