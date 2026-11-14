@@ -21,6 +21,7 @@ type Folders interface {
 	Create(scope.C, *sitecontent.CreateFolderRequest) error
 	List(scope.C, users.Identity) ([]*sitecontent.Folder, error)
 	Get(scope.C, users.Identity, string) (*sitecontent.Folder, error)
+	Rename(scope.C, *sitecontent.RenameFolderRequest) error
 	Delete(scope.C, *sitecontent.DeleteFolderRequest) error
 }
 
@@ -84,7 +85,8 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 		id,
 		label,
 		slug,
-		icon
+		icon,
+		protected
 	from folders
 	where
 		users_id = ?
@@ -92,7 +94,7 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
 		folder := new(sitecontent.Folder)
-		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon)
+		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon, &folder.Protected)
 		return folder, err
 	}
 
@@ -111,7 +113,8 @@ func (s *foldersql) Get(ctx scope.C, user users.Identity, slug string) (*sitecon
 		id,
 		label,
 		slug,
-		icon
+		icon,
+		protected
 	from folders
 	where
 		users_id = ? and
@@ -120,11 +123,44 @@ func (s *foldersql) Get(ctx scope.C, user users.Identity, slug string) (*sitecon
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
 		folder := new(sitecontent.Folder)
-		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon)
+		err := scan(&folder.ID, &folder.Label, &folder.Slug, &folder.Icon, &folder.Protected)
 		return folder, err
 	}
 
 	return litesql.QueryRow(ctx, tx, f, statement, user, slug)
+}
+
+func (s *foldersql) Rename(ctx scope.C, request *sitecontent.RenameFolderRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to rename folder: %w", xerr)
+	}
+	defer done()
+
+	// refuse to rename system-protected rows (e.g. the default "miscellaneous"
+	// folder with protected=1); the where clause ensures we never touch them
+	// even if the caller tries
+	const statement = `
+	update folders
+	set
+		label = ?,
+		slug = ?
+	where
+		users_id = ? and
+		slug = ? and
+		protected = 0`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement,
+		request.Label,
+		request.NewSlug,
+		request.User,
+		request.Slug,
+	); rerr != nil {
+		s.log.E.Fmt("unable to rename folder: %v", rerr)
+		return fmt.Errorf("unable to rename folder: %w", rerr)
+	}
+
+	return tx.Commit()
 }
 
 func (s *foldersql) Delete(ctx scope.C, request *sitecontent.DeleteFolderRequest) error {

@@ -133,3 +133,84 @@ func TestCreateFolderRequest_Validate(t *testing.T) {
 		must.NoError(t, err)
 	})
 }
+
+func TestRenameFolderRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("no user", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    0,
+			Slug:    "work",
+			Label:   "home",
+			NewSlug: "home",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "user must be set")
+	})
+
+	t.Run("bad current slug", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "Work",
+			Label:   "home",
+			NewSlug: "home",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "folder slug must contain only lowercase alphanumeric characters")
+	})
+
+	t.Run("empty label", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "work",
+			Label:   "",
+			NewSlug: "",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+	})
+
+	t.Run("label with space", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "work",
+			Label:   "my folder",
+			NewSlug: "my-folder",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+	})
+
+	t.Run("label with unicode", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "work",
+			Label:   "café",
+			NewSlug: "caf",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain only letters, numbers, and dashes")
+	})
+
+	t.Run("label slugifies empty", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "work",
+			Label:   "---",
+			NewSlug: "",
+		}
+		err := r.Validate()
+		must.ErrorContains(t, err, "label must contain at least one letter or number")
+	})
+
+	t.Run("ok", func(t *testing.T) {
+		r := &RenameFolderRequest{
+			User:    users.Identity(1),
+			Slug:    "work",
+			Label:   "home",
+			NewSlug: "home",
+		}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}

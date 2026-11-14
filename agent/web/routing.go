@@ -129,6 +129,11 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store: a.store,
 	})
 
+	a.handleComponent(router, &renameFolderHTMX{
+		log:   ulog.New("htmx/folder/rename"),
+		store: a.store,
+	})
+
 	a.handleModerate(router, &moderationHTTP{
 		log:   ulog.New("http/mod/home"),
 		store: a.store,
