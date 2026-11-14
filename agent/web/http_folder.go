@@ -27,6 +27,7 @@ import (
 type folderContent struct {
 	Name      string
 	Slug      string
+	Protected bool
 	Documents []*sitecontent.DocumentListing
 }
 
@@ -110,6 +111,7 @@ func (h *folderHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) er
 	middle := &folderContent{
 		Name:      folder.Label,
 		Slug:      folder.Slug,
+		Protected: folder.Protected,
 		Documents: documents,
 	}
 

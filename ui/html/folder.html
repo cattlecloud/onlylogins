@@ -72,11 +72,28 @@
     {{end}}
   </section>
 
-  {{if ne .Section.Name "miscellaneous"}}
+  {{if not .Section.Protected}}
   <section class="danger-zone">
     <details>
       <summary>Danger Zone</summary>
       <div class="danger-zone-body">
+        <form hx-post="/internal/folder/rename/{{.Section.Slug}}">
+          <div class="field">
+            <label for="folder-rename-label">Rename folder</label>
+            <input
+              type="text"
+              id="folder-rename-label"
+              name="label"
+              value="{{.Section.Name}}"
+              pattern="[a-zA-Z0-9-]+"
+              title="letters, numbers, and dashes only"
+              autocomplete="off"
+              required>
+          </div>
+          <button type="submit">Rename</button>
+          <span id="error"></span>
+        </form>
+
         <p>
           Deleting <strong>{{.Section.Name}}</strong> will permanently remove
           this folder and every document it contains, including all stored

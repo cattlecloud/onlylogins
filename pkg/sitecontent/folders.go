@@ -14,10 +14,11 @@ import (
 // A Folder is the categorization unit for each user to store
 // bits of data into.
 type Folder struct {
-	ID    records.FoldersAuto
-	Label string
-	Slug  string
-	Icon  Icon
+	ID        records.FoldersAuto
+	Label     string
+	Slug      string
+	Icon      Icon
+	Protected bool
 }
 
 // Icon is an enum associated with an SVG image.
@@ -66,6 +67,33 @@ func (r *CreateFolderRequest) Validate() error {
 
 	if r.Icon < 0 || r.Icon > 17 {
 		return errors.New("icon must be between 0 and 17")
+	}
+
+	return nil
+}
+
+type RenameFolderRequest struct {
+	User    users.Identity
+	Slug    string
+	Label   string
+	NewSlug string
+}
+
+func (r *RenameFolderRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if !ValidateSlug(r.Slug) {
+		return errors.New("folder slug must contain only lowercase alphanumeric characters")
+	}
+
+	if !folderLabelRe.MatchString(r.Label) {
+		return errors.New("label must contain only letters, numbers, and dashes")
+	}
+
+	if !ValidateSlug(r.NewSlug) {
+		return errors.New("label must contain at least one letter or number")
 	}
 
 	return nil

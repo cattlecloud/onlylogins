@@ -38,6 +38,7 @@ func TestFolders_List(t *testing.T) {
 	must.NoError(t, err)
 	must.SliceLen(t, 1, list)
 	must.Eq(t, "miscellaneous", list[0].Label)
+	must.True(t, list[0].Protected)
 }
 
 func TestFolders_Create(t *testing.T) {
@@ -248,6 +249,170 @@ func TestFolders_Delete(t *testing.T) {
 		count, cerr := f.Count(ctx)
 		must.NoError(t, cerr)
 		must.Eq(t, testUsersCount, count)
+	})
+}
+
+func TestFolders_Rename(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		_, err := db.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+			User:   nobody,
+			Folder: "work",
+			Label:  "github",
+			Slug:   "github",
+		})
+		must.NoError(t, err)
+
+		must.NoError(t, f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    nobody,
+			Slug:    "work",
+			Label:   "home",
+			NewSlug: "home",
+		}))
+
+		// the folder now exists under its new label and slug
+		list, lerr := f.List(ctx, nobody)
+		must.NoError(t, lerr)
+		var found bool
+		for _, folder := range list {
+			if folder.Label == "home" && folder.Slug == "home" {
+				found = true
+				break
+			}
+		}
+		must.True(t, found)
+
+		// the old slug no longer resolves
+		_, gerr := f.Get(ctx, nobody, "work")
+		must.Error(t, gerr)
+
+		// documents follow the folder id, so they resolve via the new slug
+		doc, derr := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
+			User: nobody, Folder: "home", Document: "github",
+		})
+		must.NoError(t, derr)
+		must.Eq(t, "github", doc.Slug)
+	})
+
+	t.Run("case-only rename", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		// renaming to the same slug (case change of the label) succeeds
+		must.NoError(t, f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    nobody,
+			Slug:    "work",
+			Label:   "work",
+			NewSlug: "work",
+		}))
+	})
+
+	t.Run("duplicate slug", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "home",
+			Slug:  "home",
+			Icon:  sitecontent.Icon(0),
+		}))
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		err := f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    nobody,
+			Slug:    "work",
+			Label:   "home",
+			NewSlug: "home",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("protected folder", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		err := f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    nobody,
+			Slug:    "miscellaneous",
+			Label:   "other",
+			NewSlug: "other",
+		})
+		must.Error(t, err)
+
+		count, cerr := f.Count(ctx)
+		must.NoError(t, cerr)
+		must.Eq(t, testUsersCount, count)
+	})
+
+	t.Run("unknown folder", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		err := f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    nobody,
+			Slug:    "no-such-folder",
+			Label:   "other",
+			NewSlug: "other",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		f := db.Folders()
+
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: "work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+		bob := insertUser(t, ctx, db, "bob")
+		_ = bob
+
+		err := f.Rename(ctx, &sitecontent.RenameFolderRequest{
+			User:    bob,
+			Slug:    "work",
+			Label:   "home",
+			NewSlug: "home",
+		})
+		must.Error(t, err)
+
+		// "work" must still exist under nobody
+		list, lerr := f.List(ctx, nobody)
+		must.NoError(t, lerr)
+		var found bool
+		for _, folder := range list {
+			if folder.Label == "work" {
+				found = true
+				break
+			}
+		}
+		must.True(t, found)
 	})
 }
 
