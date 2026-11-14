@@ -94,7 +94,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	}
 
 	head := &pages.Head{
-		Title:       format.PageTitle(document.Folder + "/" + document.Label),
+		Title:       format.PageTitle(document.Label),
 		Styles:      []string{"document.css"},
 		Description: h.description(),
 		Profile:     profile,
