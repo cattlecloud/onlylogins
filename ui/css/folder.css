@@ -338,6 +338,31 @@
   font-weight: 600;
 }
 
+.middle.folder .danger-zone-body form {
+  margin-bottom: 0.75rem;
+}
+
+.middle.folder .danger-zone-rename-btn {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.middle.folder .danger-zone-rename-btn:hover,
+.middle.folder .danger-zone-rename-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
 .middle.folder .danger-zone-delete-btn {
   align-self: flex-start;
   padding: 0.5rem 1rem;
