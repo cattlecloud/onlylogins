@@ -79,7 +79,7 @@
       <div class="danger-zone-body">
         <form hx-post="/internal/folder/rename/{{.Section.Slug}}">
           <div class="field">
-            <label for="folder-rename-label">Rename folder</label>
+            <label for="folder-rename-label">Rename</label>
             <input
               type="text"
               id="folder-rename-label"
@@ -90,7 +90,7 @@
               autocomplete="off"
               required>
           </div>
-          <button type="submit">Rename</button>
+          <button type="submit" class="danger-zone-rename-btn">Rename</button>
           <span id="error"></span>
         </form>
 
