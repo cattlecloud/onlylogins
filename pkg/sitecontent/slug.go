@@ -6,6 +6,9 @@ package sitecontent
 import (
 	"regexp"
 	"strings"
+	"unicode"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 // slugRe restricts URL path segments to lowercase letters, digits, and dashes.
@@ -20,11 +23,22 @@ var whitespaceRun = regexp.MustCompile(`\s+`)
 // dash; such characters are stripped silently during slugification.
 var nonSlug = regexp.MustCompile(`[^a-z0-9-]+`)
 
-// Slugify converts a display name into a URL-safe slug. It lowercases the
-// input, replaces runs of whitespace with a single dash, strips all other
-// non-alphanumeric characters, and trims any leading or trailing dashes.
+// Slugify converts a display name into a URL-safe slug. It first decomposes
+// accented letters into a base character plus combining marks and strips the
+// marks, so "Jalapeño" becomes "jalapeno". It then lowercases the input,
+// replaces runs of whitespace with a single dash, strips all remaining
+// characters that are not a lowercase ASCII letter, digit, or dash, and trims
+// leading and trailing dashes. Letters without a canonical decomposition
+// (such as ø, ß, or non-Latin scripts) are dropped.
 func Slugify(name string) string {
-	slug := strings.ToLower(strings.TrimSpace(name))
+	slug := norm.NFD.String(strings.TrimSpace(name))
+	slug = strings.Map(func(r rune) rune {
+		if unicode.Is(unicode.Mn, r) {
+			return -1
+		}
+		return r
+	}, slug)
+	slug = strings.ToLower(slug)
 	slug = whitespaceRun.ReplaceAllString(slug, "-")
 	slug = nonSlug.ReplaceAllString(slug, "")
 	return strings.Trim(slug, "-")
@@ -38,8 +52,9 @@ func ValidateSlug(s string) bool {
 // ValidateName reports whether name may be used as a document display name.
 // Document names may contain spaces and most printable characters, but must
 // not be empty (after trimming), must stay under the database length cap, and
-// must contain at least one alphanumeric character so the derived slug is
-// never empty. Folder names are more restrictive; see folderLabelRe.
+// must contain at least one character that transliterates to an ASCII letter
+// or digit so the derived slug is never empty. Folder names are more
+// restrictive; see folderLabelRe.
 func ValidateName(name string) bool {
 	trimmed := strings.TrimSpace(name)
 	if len(trimmed) == 0 || len(trimmed) >= 32 {

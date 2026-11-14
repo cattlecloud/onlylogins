@@ -19,7 +19,12 @@ func TestSlugify(t *testing.T) {
 		"UPPER CASE":        "upper-case",
 		"a-b--c":            "a-b--c",
 		"Amazon.com":        "amazoncom",
-		"café":              "caf",
+		"café":              "cafe",
+		"Jalapeño":          "jalapeno",
+		"Über":              "uber",
+		"naïve":             "naive",
+		"résumé":            "resume",
+		"Jalapeño-日本語":      "jalapeno",
 		"100% Done":         "100-done",
 		"---":               "",
 		"日本語":               "",
@@ -54,6 +59,7 @@ func TestValidateName(t *testing.T) {
 	must.True(t, ValidateName("My Folder"))
 	must.True(t, ValidateName("my-folder"))
 	must.True(t, ValidateName("café"))
+	must.True(t, ValidateName("Jalapeño"))
 	must.True(t, ValidateName("Amazon.com"))
 	must.True(t, ValidateName("   padded   "))
 

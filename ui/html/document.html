@@ -217,8 +217,8 @@
             id="document-rename-label"
             name="label"
             value="{{.Section.Document.Label}}"
-            pattern="[a-zA-Z0-9\s-]+"
-            title="letters, numbers, and dashes only"
+            pattern="[\p{L}\p{M}0-9\s-]+"
+            title="letters (including accented), numbers, spaces, and dashes"
             autocomplete="off"
             required>
           <button type="submit" class="danger-zone-rename-btn">Rename</button>
