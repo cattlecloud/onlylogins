@@ -115,6 +115,65 @@ func TestDeleteDocumentRequest_Validate(t *testing.T) {
 	})
 }
 
+func TestRenameDocumentRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{Folder: "f", Document: "d", Label: "x", NewSlug: "x"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing folder is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Document: "d", Label: "x", NewSlug: "x"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing document is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Label: "x", NewSlug: "x"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("empty label is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d", Label: "", NewSlug: ""}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("whitespace only label is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d", Label: "   ", NewSlug: ""}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("overlong label is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d",
+			Label: strings.Repeat("a", 32), NewSlug: strings.Repeat("a", 32)}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("label that slugifies empty is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d", Label: "---", NewSlug: ""}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("empty new slug is rejected", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d", Label: "Git Hub", NewSlug: ""}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &RenameDocumentRequest{User: 1, Folder: "f", Document: "d", Label: "Git Hub", NewSlug: "git-hub"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
 func TestCreateKeyvalRequest_Validate(t *testing.T) {
 	t.Parallel()
 

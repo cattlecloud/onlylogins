@@ -61,15 +61,10 @@ func (h *renameFolderHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return problem(w, err)
 	}
 
-	// refuse to rename onto an existing folder; a folder with the new slug
-	// that is not this very folder means the name is already taken
-	if existing, gerr := h.store.Folders().Get(ctx, session.Identity(), request.NewSlug); gerr == nil {
-		if existing.Slug != request.Slug {
-			return problem(w, errors.New("a folder with that name already exists"))
-		}
-	}
-
 	if rerr := h.store.Folders().Rename(ctx, request); rerr != nil {
+		if errors.Is(rerr, database.ErrFolderExists) {
+			return problem(w, database.ErrFolderExists)
+		}
 		return abort(h.log, w, rerr)
 	}
 
