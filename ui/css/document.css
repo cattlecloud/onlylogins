@@ -377,7 +377,7 @@
 .middle.document .fields .password-actions {
   display: flex;
   flex-flow: row nowrap;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex-shrink: 0;
 }
 
@@ -388,7 +388,7 @@
 .middle.document .fields .password-delete-btn {
   font-size: 0.85rem;
   line-height: 1;
-  padding: 0.3rem 0.55rem;
+  padding: 0.3rem 0.3rem;
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -409,6 +409,9 @@
   outline: none;
 }
 
+.middle.document .fields .password-copy-btn img,
+.middle.document .fields .password-show-btn img,
+.middle.document .fields .password-hide-btn img,
 .middle.document .fields .password-edit-btn img,
 .middle.document .fields .password-delete-btn img {
   width: 0.95rem;
@@ -416,6 +419,15 @@
   display: block;
   filter: invert(1) opacity(0.7);
   transition: filter 0.15s ease;
+}
+
+.middle.document .fields .password-copy-btn:hover img,
+.middle.document .fields .password-copy-btn:focus-visible img,
+.middle.document .fields .password-show-btn:hover img,
+.middle.document .fields .password-show-btn:focus-visible img,
+.middle.document .fields .password-hide-btn:hover img,
+.middle.document .fields .password-hide-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
 }
 
 .middle.document .fields .password-edit-btn:hover img,
@@ -579,15 +591,16 @@
 .middle.document .fields .weblink-actions {
   display: flex;
   flex-flow: row nowrap;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex-shrink: 0;
 }
 
+.middle.document .fields .weblink-copy-btn,
 .middle.document .fields .weblink-edit-btn,
 .middle.document .fields .weblink-delete-btn {
   font-size: 1rem;
   line-height: 1;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -596,6 +609,7 @@
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
+.middle.document .fields .weblink-copy-btn img,
 .middle.document .fields .weblink-edit-btn img,
 .middle.document .fields .weblink-delete-btn img {
   width: 0.95rem;
@@ -627,6 +641,19 @@
 .middle.document .fields .weblink-delete-btn:focus-visible {
   color: var(--danger);
   border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .weblink-copy-btn:hover img,
+.middle.document .fields .weblink-copy-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .fields .weblink-copy-btn:hover,
+.middle.document .fields .weblink-copy-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
   background: var(--surface-raised);
   outline: none;
 }
@@ -711,15 +738,16 @@
 .middle.document .fields .username-actions {
   display: flex;
   flex-flow: row nowrap;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex-shrink: 0;
 }
 
+.middle.document .fields .username-copy-btn,
 .middle.document .fields .username-edit-btn,
 .middle.document .fields .username-delete-btn {
   font-size: 1rem;
   line-height: 1;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -728,6 +756,7 @@
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
+.middle.document .fields .username-copy-btn img,
 .middle.document .fields .username-edit-btn img,
 .middle.document .fields .username-delete-btn img {
   width: 0.95rem;
@@ -759,6 +788,19 @@
 .middle.document .fields .username-delete-btn:focus-visible {
   color: var(--danger);
   border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document .fields .username-copy-btn:hover img,
+.middle.document .fields .username-copy-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+.middle.document .fields .username-copy-btn:hover,
+.middle.document .fields .username-copy-btn:focus-visible {
+  color: var(--text);
+  border-color: var(--border);
   background: var(--surface-raised);
   outline: none;
 }
@@ -896,7 +938,7 @@
   display: flex;
   flex-flow: row nowrap;
   justify-content: flex-end;
-  gap: 0.25rem;
+  gap: 0.125rem;
   padding-top: 0.25rem;
   border-top: 1px solid var(--border);
 }
@@ -909,7 +951,7 @@
 .middle.document .note-area .note-delete-btn {
   font-size: 1rem;
   line-height: 1;
-  padding: 0.3rem 0.5rem;
+  padding: 0.3rem 0.3rem;
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -1262,17 +1304,18 @@
 .middle.document .fields .keyval-actions {
   display: flex;
   flex-flow: row nowrap;
-  gap: 0.25rem;
+  gap: 0.125rem;
   flex-shrink: 0;
 }
 
+.middle.document .fields .keyval-copy-btn,
 .middle.document .fields .keyval-show-btn,
 .middle.document .fields .keyval-hide-btn,
 .middle.document .fields .keyval-edit-btn,
 .middle.document .fields .keyval-delete-btn {
   font-size: 0.85rem;
   line-height: 1;
-  padding: 0.3rem 0.55rem;
+  padding: 0.3rem 0.3rem;
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
@@ -1281,6 +1324,8 @@
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
 
+.middle.document .fields .keyval-copy-btn:hover,
+.middle.document .fields .keyval-copy-btn:focus-visible,
 .middle.document .fields .keyval-show-btn:hover,
 .middle.document .fields .keyval-show-btn:focus-visible,
 .middle.document .fields .keyval-hide-btn:hover,
@@ -1291,6 +1336,9 @@
   outline: none;
 }
 
+.middle.document .fields .keyval-copy-btn img,
+.middle.document .fields .keyval-show-btn img,
+.middle.document .fields .keyval-hide-btn img,
 .middle.document .fields .keyval-edit-btn img,
 .middle.document .fields .keyval-delete-btn img {
   width: 0.95rem;
@@ -1298,6 +1346,15 @@
   display: block;
   filter: invert(1) opacity(0.7);
   transition: filter 0.15s ease;
+}
+
+.middle.document .fields .keyval-copy-btn:hover img,
+.middle.document .fields .keyval-copy-btn:focus-visible img,
+.middle.document .fields .keyval-show-btn:hover img,
+.middle.document .fields .keyval-show-btn:focus-visible img,
+.middle.document .fields .keyval-hide-btn:hover img,
+.middle.document .fields .keyval-hide-btn:focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
 }
 
 .middle.document .fields .keyval-edit-btn:hover img,
@@ -1542,7 +1599,22 @@
   }
 
   .middle.document .fields.keyvals .keyval-key {
+    order: 1;
     min-width: 6rem;
     max-width: 12rem;
+  }
+
+  .middle.document .fields .keyval-row {
+    flex-wrap: wrap;
+  }
+
+  .middle.document .fields .keyval-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .middle.document .fields.keyvals .keyval-value {
+    order: 3;
+    flex: 1 1 100%;
   }
 }

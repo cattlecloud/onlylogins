@@ -4,22 +4,47 @@
 // password.js implements client-side Copy / Show / Hide behavior for passwords
 //
 //   Copy: writes the plaintext to the clipboard via navigator.clipboard.writeText
-//         with a brief confirmation in the button itself.
+//         and briefly swaps the copy icon for a checkmark on success.
 //
 //   Show: replaces the masked display (•••) in the password element
-//         with the plaintext.
+//         with the plaintext, and swaps the show icon for the hide icon.
 //
-//   Hide: replaces the plain text password with the masked bullets
+//   Hide: replaces the plain text password with the masked bullets, and
+//         swaps the hide icon back to the show icon.
 (function () {
   'use strict';
 
   var COPY_FEEDBACK_MS = 1500;
+  var COPY_ICON = '/ui/images/copy.svg';
+  var CHECK_ICON = '/ui/images/check.svg';
+  var SHOW_ICON = '/ui/images/show.svg';
+  var HIDE_ICON = '/ui/images/hide.svg';
 
-  function withRevert(button, newText, ms) {
-    var previous = button.textContent;
-    button.textContent = newText;
+  function withRevert(button, newTitle, ms) {
+    var previous = button.title;
+    button.title = newTitle;
     setTimeout(function () {
-      button.textContent = previous;
+      button.title = previous;
+    }, ms);
+  }
+
+  function setImg(button, src, alt) {
+    var img = button.querySelector('img');
+    if (img) {
+      img.src = src;
+      img.alt = alt;
+    }
+  }
+
+  function setIcon(button, src, alt, title) {
+    setImg(button, src, alt);
+    button.title = title;
+  }
+
+  function flashCheck(button, ms) {
+    setImg(button, CHECK_ICON, 'Copied!');
+    setTimeout(function () {
+      setImg(button, COPY_ICON, 'Copy');
     }, ms);
   }
 
@@ -40,36 +65,40 @@
     }
     var plaintext = row.getAttribute('data-password') || '';
 
-    // Copy: write plaintext to system clipboard, then flash confirmation.
-    if (target.matches('.password-copy-btn')) {
+    // Clicks land on the icon, so resolve the owning button.
+    var copyBtn = target.closest('.password-copy-btn');
+    var showBtn = target.closest('.password-show-btn');
+    var hideBtn = target.closest('.password-hide-btn');
+
+    // Copy: write plaintext to system clipboard, then briefly swap the
+    // copy icon for a checkmark to confirm success.
+    if (copyBtn) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(plaintext).then(
-          function () { withRevert(target, 'Copied!', COPY_FEEDBACK_MS); },
-          function () { withRevert(target, 'Copy failed', COPY_FEEDBACK_MS); }
+          function () { flashCheck(copyBtn, COPY_FEEDBACK_MS); },
+          function () { withRevert(copyBtn, 'Copy failed', COPY_FEEDBACK_MS); }
         );
       } else {
-        withRevert(target, 'Copy unsupported', COPY_FEEDBACK_MS);
+        withRevert(copyBtn, 'Copy unsupported', COPY_FEEDBACK_MS);
       }
       return;
     }
 
-    // Show: swap dots -> plaintext, flip button to Hide.
-    if (target.matches('.password-show-btn')) {
+    // Show: swap dots -> plaintext, flip icon and tooltip to Hide.
+    if (showBtn) {
       valueEl.textContent = plaintext;
-      target.textContent = 'Hide';
-      target.title = 'Hide';
-      target.classList.remove('password-show-btn');
-      target.classList.add('password-hide-btn');
+      setIcon(showBtn, HIDE_ICON, 'Hide', 'Hide');
+      showBtn.classList.remove('password-show-btn');
+      showBtn.classList.add('password-hide-btn');
       return;
     }
 
-    // Hide: swap plaintext -> dots, flip button back to Show.
-    if (target.matches('.password-hide-btn')) {
+    // Hide: swap plaintext -> dots, flip icon and tooltip back to Show.
+    if (hideBtn) {
       valueEl.textContent = maskFor(plaintext);
-      target.textContent = 'Show';
-      target.title = 'Show';
-      target.classList.remove('password-hide-btn');
-      target.classList.add('password-show-btn');
+      setIcon(hideBtn, SHOW_ICON, 'Show', 'Show');
+      hideBtn.classList.remove('password-hide-btn');
+      hideBtn.classList.add('password-show-btn');
       return;
     }
   });
