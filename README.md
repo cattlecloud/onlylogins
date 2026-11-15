@@ -61,6 +61,27 @@ stripe listen --all-snapshot --forward-to localhost:3000/api/stripe/webhooks
 
 4. Be sure to use the "-Sandbox" in stripe for managing test environments.
 
+### Publish
+
+You'll need a few Go tools not included with `just init`.
+
+- [envy](https://github.com/shoenig/envy) for managing environment variables
+- [taggit](https://github.com/shoenig/taggit) for creating git version tags
+- [fields](https://github.com/shoenig/fields) for parsing log line outputs
+
+Create a new artifact, supplying the version tag.
+
+```shell
+just artifact $(taggit patch --dry | fields -- -1)
+```
+
+Use the `deploy.sh` script to SCP and restart service.
+
+```shell
+just deploy <host>
+```
+
+
 ### License
 
 OnlyLogins is made available under the [AGPL-3.0](LICENSE) license.
