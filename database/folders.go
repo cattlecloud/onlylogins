@@ -96,7 +96,7 @@ func (s *foldersql) List(ctx scope.C, user users.Identity) ([]*sitecontent.Folde
 	from folders
 	where
 		users_id = ?
-	order by label asc`
+	order by label collate nocase asc`
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.Folder, error) {
 		folder := new(sitecontent.Folder)

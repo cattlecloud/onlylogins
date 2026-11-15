@@ -41,6 +41,34 @@ func TestFolders_List(t *testing.T) {
 	must.True(t, list[0].Protected)
 }
 
+func TestFolders_List_CaseInsensitive(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	f := db.Folders()
+
+	// create folders with mixed casing; ordering must be case-insensitive,
+	// so "apple" sorts before "Banana" and both sort before "Zebra"
+	for _, label := range []string{"Zebra", "apple", "Banana", "cherry"} {
+		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  nobody,
+			Label: label,
+			Slug:  sitecontent.Slugify(label),
+			Icon:  sitecontent.Icon(0),
+		}))
+	}
+
+	list, err := f.List(ctx, nobody)
+	must.NoError(t, err)
+	must.SliceLen(t, 5, list) // four created folders + default "miscellaneous"
+
+	must.Eq(t, "apple", list[0].Label)
+	must.Eq(t, "Banana", list[1].Label)
+	must.Eq(t, "cherry", list[2].Label)
+	must.Eq(t, "miscellaneous", list[3].Label)
+	must.Eq(t, "Zebra", list[4].Label)
+}
+
 func TestFolders_Create(t *testing.T) {
 	t.Parallel()
 
