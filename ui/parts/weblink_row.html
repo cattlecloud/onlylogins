@@ -1,7 +1,8 @@
 {{define "weblink_row"}}
-<li class="weblink-row">
+<li class="weblink-row" data-value="{{.URL}}">
   <a class="weblink-value" href="{{.URL}}" target="_blank" rel="noopener noreferrer">{{.URL}}</a>
   <span class="weblink-actions">
+    <button type="button" class="weblink-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
     <button class="weblink-edit-btn"
       hx-get="/internal/weblink/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
       hx-target="closest .weblink-row"

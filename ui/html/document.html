@@ -6,6 +6,7 @@
   </section>
 
   <script src="/ui/scripts/mask.js" defer></script>
+  <script src="/ui/scripts/copy.js" defer></script>
   <script src="/ui/scripts/password.js" defer></script>
   <script src="/ui/scripts/keyval.js" defer></script>
   <script src="/ui/scripts/note.js" defer></script>
@@ -25,9 +26,10 @@
       {{if .Section.Document.Weblinks}}
         {{range .Section.Document.Weblinks}}
         {{$u := .Unlock $.Section.Vault}}
-        <li class="weblink-row">
+        <li class="weblink-row" data-value="{{$u}}">
           <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
           <span class="weblink-actions">
+            <button type="button" class="weblink-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
             <button class="weblink-edit-btn"
               hx-get="/internal/weblink/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .weblink-row"
@@ -63,9 +65,10 @@
       {{if .Section.Document.Usernames}}
         {{range .Section.Document.Usernames}}
         {{$u := .Unlock $.Section.Vault}}
-        <li class="username-row">
+        <li class="username-row" data-value="{{$u}}">
           <code class="username-value">{{$u}}</code>
           <span class="username-actions">
+            <button type="button" class="username-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
             <button class="username-edit-btn"
               hx-get="/internal/username/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .username-row"
@@ -104,8 +107,8 @@
         <li class="password-row" data-password="{{$p}}">
           <code class="password-value">{{Mask $p}}</code>
           <span class="password-actions">
-            <button type="button" class="password-copy-btn" title="Copy">Copy</button>
-            <button type="button" class="password-show-btn" title="Show">Show</button>
+            <button type="button" class="password-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+            <button type="button" class="password-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
             <button class="password-edit-btn"
               hx-get="/internal/password/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .password-row"
@@ -145,7 +148,8 @@
           <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
           <code class="keyval-value">{{Mask $u}}</code>
           <span class="keyval-actions">
-            <button type="button" class="keyval-show-btn" title="Show">Show</button>
+            <button type="button" class="keyval-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+            <button type="button" class="keyval-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
             <button class="keyval-edit-btn"
               hx-get="/internal/keyval/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
               hx-target="closest .keyval-row"

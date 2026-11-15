@@ -3,7 +3,8 @@
   <span class="keyval-key" title="{{.Key}}">{{.Key}}</span>
   <code class="keyval-value">{{Mask .Value}}</code>
   <span class="keyval-actions">
-    <button type="button" class="keyval-show-btn" title="Show">Show</button>
+    <button type="button" class="keyval-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+    <button type="button" class="keyval-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
     <button class="keyval-edit-btn"
       hx-get="/internal/keyval/edit/{{.Folder}}/{{.Document}}/{{.ID}}"
       hx-target="closest .keyval-row"
