@@ -5,6 +5,7 @@
     <a class="back-link" href="/folders/{{.Section.Document.FolderSlug}}"><-- back to {{.Section.Document.Folder}}</a>
   </section>
 
+  <script src="/ui/scripts/mask.js" defer></script>
   <script src="/ui/scripts/password.js" defer></script>
   <script src="/ui/scripts/keyval.js" defer></script>
   <script src="/ui/scripts/note.js" defer></script>
@@ -101,7 +102,7 @@
         {{range .Section.Document.Passwords}}
         {{$p := .Unlock $.Section.Vault}}
         <li class="password-row" data-password="{{$p}}">
-          <code class="password-value">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</code>
+          <code class="password-value">{{Mask $p}}</code>
           <span class="password-actions">
             <button type="button" class="password-copy-btn" title="Copy">Copy</button>
             <button type="button" class="password-show-btn" title="Show">Show</button>
@@ -142,7 +143,7 @@
         {{$u := .Unlock $.Section.Vault}}
         <li class="keyval-row" data-value="{{$u}}">
           <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
-          <code class="keyval-value">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</code>
+          <code class="keyval-value">{{Mask $u}}</code>
           <span class="keyval-actions">
             <button type="button" class="keyval-show-btn" title="Show">Show</button>
             <button class="keyval-edit-btn"

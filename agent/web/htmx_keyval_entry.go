@@ -5,6 +5,7 @@ package web
 
 import (
 	"errors"
+	"html/template"
 	"net/http"
 
 	"cattlecloud.net/go/forms"
@@ -15,6 +16,7 @@ import (
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/database/records"
+	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
@@ -176,6 +178,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 		FS:       htmx.FS(ui.HTMX, "parts"),
 		Filename: "keyval_row.html",
 		Fields:   fields,
+		Funcs:    template.FuncMap{"Mask": format.Mask},
 	})
 }
 

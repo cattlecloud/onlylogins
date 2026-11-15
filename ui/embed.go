@@ -53,6 +53,7 @@ func Load(filename string, parts ...string) *template.Template {
 	funcs := template.FuncMap{
 		"Icon":     format.Icon,
 		"DateTime": format.DateTime,
+		"Mask":     format.Mask,
 	}
 
 	// parse template files

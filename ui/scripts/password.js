@@ -6,14 +6,13 @@
 //   Copy: writes the plaintext to the clipboard via navigator.clipboard.writeText
 //         with a brief confirmation in the button itself.
 //
-//   Show: replaces the masked display (••••••••) in the password element
+//   Show: replaces the masked display (•••) in the password element
 //         with the plaintext.
 //
 //   Hide: replaces the plain text password with the masked bullets
 (function () {
   'use strict';
 
-  var MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022'; // 8 bullets
   var COPY_FEEDBACK_MS = 1500;
 
   function withRevert(button, newText, ms) {
@@ -66,7 +65,7 @@
 
     // Hide: swap plaintext -> dots, flip button back to Show.
     if (target.matches('.password-hide-btn')) {
-      valueEl.textContent = MASK;
+      valueEl.textContent = maskFor(plaintext);
       target.textContent = 'Show';
       target.title = 'Show';
       target.classList.remove('password-hide-btn');
