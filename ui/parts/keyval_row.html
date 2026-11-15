@@ -1,7 +1,7 @@
 {{define "keyval_row"}}
 <li class="keyval-row" data-value="{{.Value}}">
   <span class="keyval-key" title="{{.Key}}">{{.Key}}</span>
-  <code class="keyval-value">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</code>
+  <code class="keyval-value">{{Mask .Value}}</code>
   <span class="keyval-actions">
     <button type="button" class="keyval-show-btn" title="Show">Show</button>
     <button class="keyval-edit-btn"

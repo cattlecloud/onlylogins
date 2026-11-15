@@ -5,8 +5,6 @@
 (function () {
   'use strict';
 
-  var MASK = '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';
-
   document.addEventListener('click', function (event) {
     var target = event.target;
     if (!(target instanceof Element)) {
@@ -36,7 +34,7 @@
 
     // hide: swap plaintext -> dots, flip button back to Show.
     if (target.matches('.keyval-hide-btn')) {
-      valueEl.textContent = MASK;
+      valueEl.textContent = maskFor(plaintext);
       target.textContent = 'Show';
       target.title = 'Show';
       target.classList.remove('keyval-hide-btn');
