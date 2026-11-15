@@ -3,7 +3,7 @@ module cattlecloud.net/onlylogins
 go 1.27
 
 require (
-	cattlecloud.net/go/babycli v0.2.0
+	cattlecloud.net/go/babycli v0.2.1
 	cattlecloud.net/go/forms v1.1.0
 	cattlecloud.net/go/litesql v1.4.1
 	cattlecloud.net/go/memc v0.6.0
@@ -13,7 +13,7 @@ require (
 	cattlecloud.net/go/urlpath v1.1.0
 	cattlecloud.net/go/webtools v0.7.0
 	github.com/BurntSushi/toml v1.6.0
-	github.com/VictoriaMetrics/metrics v1.44.1
+	github.com/VictoriaMetrics/metrics v1.45.0
 	github.com/dustin/go-humanize v1.1.0
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/cronexpr v1.1.3
@@ -23,7 +23,7 @@ require (
 	github.com/shoenig/lang v0.0.8
 	github.com/shoenig/test v1.13.2
 	github.com/stripe/stripe-go/v85 v85.2.0
-	golang.org/x/crypto v0.58.0
+	golang.org/x/crypto v0.59.0
 	golang.org/x/text v0.44.0
 )
 
@@ -35,5 +35,5 @@ require (
 	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect
 	github.com/valyala/histogram v1.2.0 // indirect
-	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/sys v0.50.0 // indirect
 )
