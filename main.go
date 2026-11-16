@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"cattlecloud.net/go/babycli"
-	"cattlecloud.net/onlylogins/agent/commands"
+	"cattlecloud.net/onlylogins/pkg/commands"
 )
 
 func main() {

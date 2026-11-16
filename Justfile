@@ -15,7 +15,7 @@ default:
 # start with given config file
 [group('build')]
 run config: compile
-    $GOBIN/onlylogins --config {{config}}
+    $GOBIN/onlylogins agent --config {{config}}
 
 # compile the executable
 [group('build')]
