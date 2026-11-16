@@ -4,7 +4,6 @@
 package web
 
 import (
-	"encoding/json"
 	"html/template"
 	"net/http"
 	"time"
@@ -20,6 +19,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
+	"github.com/BurntSushi/toml"
 )
 
 type exportHTTP struct {
@@ -99,7 +99,7 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		return abort(h.log, w, ferr)
 	}
 
-	// inflate the object to create a json payload
+	// inflate the object to create a toml payload
 	ee := &sitecontent.ExportEverything{
 		Username: profile.Username,
 		Folders:  make([]*sitecontent.ExportFolder, 0, len(folders)),
@@ -168,21 +168,20 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 	// create the filename with date
 	today := time.Now().Format(time.DateOnly)
-	filename := "onlylogins-" + today + ".json"
+	filename := "onlylogins-" + today + ".toml"
 
 	// set content-type and content-disposition headers
-	webtools.SetContentType(w, webtools.ContentTypeJSON)
+	webtools.SetContentType(w, webtools.ContentTypeTOML)
 	webtools.SetAttachment(w, filename)
 
-	// json encode the response
-	enc := json.NewEncoder(w)
-	enc.SetIndent("", "  ")
+	// toml encode the response
+	enc := toml.NewEncoder(w)
 	return enc.Encode(ee)
 }
 
 func (h *exportHTTP) description() string {
 	const text = `
 	Download a complete backup of your vault, including every document's
-	weblinks, usernames, passwords, key/value pairs, and notes, as one JSON file.`
+	weblinks, usernames, passwords, key/value pairs, and notes, as one TOML file.`
 	return format.PageDescription(text)
 }

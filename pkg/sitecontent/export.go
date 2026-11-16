@@ -4,20 +4,20 @@
 package sitecontent
 
 type ExportEverything struct {
-	Username string          `json:"username"`
-	Folders  []*ExportFolder `json:"folders"`
+	Username string          `toml:"username"`
+	Folders  []*ExportFolder `toml:"folders"`
 }
 
 type ExportFolder struct {
-	Name      string            `json:"name"`
-	Documents []*ExportDocument `json:"documents"`
+	Name      string            `toml:"name"`
+	Documents []*ExportDocument `toml:"documents"`
 }
 
 type ExportDocument struct {
-	Name      string      `json:"name"`
-	Weblinks  []string    `json:"weblinks,omitempty"`
-	Usernames []string    `json:"usernames,omitempty"`
-	Passwords []string    `json:"passwords,omitempty"`
-	Keyvals   [][2]string `json:"keyvals,omitempty"`
-	Note      string      `json:"note,omitempty"`
+	Name      string      `toml:"name"`
+	Weblinks  []string    `toml:"weblinks,omitempty"`
+	Usernames []string    `toml:"usernames,omitempty"`
+	Passwords []string    `toml:"passwords,omitempty"`
+	Keyvals   [][2]string `toml:"keyvals,omitempty"`
+	Note      string      `toml:"note,omitempty"`
 }
