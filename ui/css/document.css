@@ -106,13 +106,14 @@
 
 .middle.document .add-weblink-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .add-weblink-form .url-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   color: var(--text);
@@ -189,13 +190,14 @@
 
 .middle.document .add-username-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .add-username-form .username-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
@@ -273,13 +275,14 @@
 
 .middle.document .add-password-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .add-password-form .password-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
@@ -470,13 +473,14 @@
 
 .middle.document .fields .password-row.editing .password-edit-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .fields .password-row.editing .password-edit-form .password-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
@@ -672,13 +676,14 @@
 
 .middle.document .fields .weblink-row.editing .weblink-edit-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .fields .weblink-row.editing .weblink-edit-form .url-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   color: var(--text);
@@ -819,13 +824,14 @@
 
 .middle.document .fields .username-row.editing .username-edit-form .form-row {
   display: flex;
-  flex-flow: row nowrap;
+  flex-flow: row wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
 .middle.document .fields .username-row.editing .username-edit-form .username-input {
-  flex: 1;
+  flex: 1 1 12rem;
+  min-width: 0;
   padding: 0.5rem 0.65rem;
   font-size: 0.95rem;
   font-family: ui-monospace, Menlo, Monaco, "Cascadia Code", "Courier New", monospace;
