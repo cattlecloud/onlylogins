@@ -4,7 +4,6 @@
 package web
 
 import (
-	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -18,6 +17,7 @@ import (
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/ui"
+	"github.com/BurntSushi/toml"
 	"github.com/gorilla/mux"
 	"github.com/shoenig/go-conceal"
 	"github.com/shoenig/test/must"
@@ -163,11 +163,11 @@ func TestExport_Post(t *testing.T) {
 	routes.ServeHTTP(w, request)
 
 	must.Eq(t, http.StatusOK, w.Code)
-	must.Eq(t, "application/json", w.Header().Get("Content-Type"))
+	must.Eq(t, "application/toml; charset=utf8", w.Header().Get("Content-Type"))
 	must.StrContains(t, w.Header().Get("Content-Disposition"), "attachment")
 
 	var ee sitecontent.ExportEverything
-	must.NoError(t, json.Unmarshal(w.Body.Bytes(), &ee))
+	must.NoError(t, toml.Unmarshal(w.Body.Bytes(), &ee))
 
 	must.Eq(t, "_nobody", ee.Username)
 	must.SliceLen(t, 1, ee.Folders)
@@ -199,13 +199,13 @@ func TestExport_Post_Empty(t *testing.T) {
 	must.Eq(t, http.StatusOK, w.Code)
 
 	var ee sitecontent.ExportEverything
-	must.NoError(t, json.Unmarshal(w.Body.Bytes(), &ee))
+	must.NoError(t, toml.Unmarshal(w.Body.Bytes(), &ee))
 	must.SliceLen(t, 1, ee.Folders)
 
 	// the default folder exists but has no documents; it must serialize as []
 	must.Eq(t, "miscellaneous", ee.Folders[0].Name)
 	must.SliceEmpty(t, ee.Folders[0].Documents)
-	must.StrContains(t, w.Body.String(), `"documents": []`)
+	must.StrContains(t, w.Body.String(), `documents = []`)
 }
 
 func TestExport_Post_NoSession(t *testing.T) {
