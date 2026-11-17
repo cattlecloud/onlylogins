@@ -129,6 +129,7 @@ func (p *Processor) handleCheckoutCompleted(ctx scope.C, event stripe.Event) err
 			PriceID:          priceID,
 			Status:           string(sub.Status),
 			CurrentPeriodEnd: currentPeriodEnd(sub),
+			CancelAt:         sub.CancelAt,
 		},
 	}
 
@@ -207,6 +208,7 @@ func (p *Processor) handleSubscriptionUpsert(ctx scope.C, event stripe.Event) er
 			PriceID:          priceID,
 			Status:           string(sub.Status),
 			CurrentPeriodEnd: currentPeriodEnd(sub),
+			CancelAt:         sub.CancelAt,
 		},
 	}
 
@@ -278,6 +280,7 @@ func (p *Processor) handleSubscriptionDeleted(ctx scope.C, event stripe.Event) e
 			PriceID:          priceID,
 			Status:           "canceled",
 			CurrentPeriodEnd: 0,
+			CancelAt:         0,
 		},
 	}
 
@@ -359,6 +362,7 @@ func (p *Processor) handleInvoicePaid(ctx scope.C, event stripe.Event) error {
 			PriceID:          priceID,
 			Status:           string(fetched.Status),
 			CurrentPeriodEnd: currentPeriodEnd(fetched),
+			CancelAt:         fetched.CancelAt,
 		},
 	}
 

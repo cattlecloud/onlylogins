@@ -69,6 +69,27 @@ func setPatreonPlan(t *testing.T, store database.Store, uid users.Identity) {
 	must.NoError(t, err)
 }
 
+func scheduleCancel(t *testing.T, store database.Store, uid users.Identity) {
+	t.Helper()
+
+	ctx, cancel := scope.TTL(testwait)
+	defer cancel()
+
+	periodEnd := time.Now().Add(30 * 24 * time.Hour).Unix()
+	err := store.Stripe().UpsertSubscription(ctx, &payments.UpdateStripeSubscription{
+		User: uid,
+		Plan: records.PlansPatreon,
+		Sub: &payments.StripeSubscription{
+			SubscriptionID:   "sub_test123",
+			PriceID:          "price_patreon",
+			Status:           "active",
+			CurrentPeriodEnd: periodEnd,
+			CancelAt:         periodEnd,
+		},
+	})
+	must.NoError(t, err)
+}
+
 func newPatreonPageHarness(t *testing.T, client payments.Client) (database.Store, *mux.Router, *mocks.Sessions) {
 	t.Helper()
 
@@ -150,6 +171,30 @@ func TestPatreon_PatreonUser(t *testing.T) {
 	must.StrContains(t, body, "Manage subscription")
 	must.StrContains(t, body, "Renews")
 	must.StrNotContains(t, body, `action="/internal/patreon/checkout"`)
+}
+
+func TestPatreon_PatreonUserCancelling(t *testing.T) {
+	t.Parallel()
+
+	store, routes, scache := newPatreonPageHarness(t, &mocks.StripeClient{
+		MockPatreonProductID: "price_patreon",
+	})
+
+	uid := newTestUser(t, store, "cancelling-user")
+	setPatreonPlan(t, store, uid)
+	scheduleCancel(t, store, uid)
+	cookie := scache.Create(uid, time.Minute)
+
+	request := requestGet(t, "/patreon", cookie)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	body := w.Body.String()
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, body, "/ 8192 documents")
+	must.StrContains(t, body, `action="/internal/patreon/portal"`)
+	must.StrContains(t, body, "Cancels")
+	must.StrNotContains(t, body, "Renews")
 }
 
 func TestPatreon_PaymentsDisabled(t *testing.T) {

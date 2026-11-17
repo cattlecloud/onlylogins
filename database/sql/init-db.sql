@@ -372,6 +372,9 @@ create table if not exists stripe_subscriptions (
     current_period_end integer not null,
     -- timestamp of current period end
 
+    cancel_at integer not null default 0,
+    -- timestamp at which the subscription will be canceled; 0 when not scheduled
+
     creation integer default (unixepoch('now')) not null,
     -- creation timestamp
 

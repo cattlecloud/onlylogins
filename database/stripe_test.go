@@ -92,6 +92,7 @@ func TestStripe_GetSubscription(t *testing.T) {
 			PriceID:          "price_test",
 			Status:           "active",
 			CurrentPeriodEnd: 1735689600,
+			CancelAt:         1738281600,
 		}
 		update := &payments.UpdateStripeSubscription{
 			User: uid,
@@ -107,6 +108,7 @@ func TestStripe_GetSubscription(t *testing.T) {
 		must.Eq(t, sub.PriceID, got.PriceID)
 		must.Eq(t, sub.Status, got.Status)
 		must.Eq(t, sub.CurrentPeriodEnd, got.CurrentPeriodEnd)
+		must.Eq(t, sub.CancelAt, got.CancelAt)
 	})
 }
 

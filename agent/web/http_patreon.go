@@ -134,8 +134,10 @@ func (h *patreonHTTP) getSubscription(ctx scope.C, uid users.Identity, content *
 
 	if sub.CurrentPeriodEnd > 0 {
 		content.PeriodDate = format.DateTime(time.Unix(sub.CurrentPeriodEnd, 0))
-		switch sub.Status {
-		case "canceled", "unpaid":
+		switch {
+		case sub.CancelAt > 0:
+			content.PeriodLabel = "Cancels"
+		case sub.Status == "canceled" || sub.Status == "unpaid":
 			content.PeriodLabel = "Ends"
 		default:
 			content.PeriodLabel = "Renews"

@@ -121,6 +121,7 @@ func scanStripeSubscription(scan litesql.ScanFunc) (*payments.StripeSubscription
 		&s.PriceID,
 		&s.Status,
 		&s.CurrentPeriodEnd,
+		&s.CancelAt,
 	)
 	return s, err
 }
@@ -137,7 +138,8 @@ func (s *stripesql) GetSubscription(ctx scope.C, uid users.Identity) (*payments.
 		subscription_id,
 		price_id,
 		status,
-		current_period_end
+		current_period_end,
+		cancel_at
 	from 
 		stripe_subscriptions
 	where
@@ -155,13 +157,14 @@ func (s *stripesql) UpsertSubscription(ctx scope.C, update *payments.UpdateStrip
 
 	const subscriptionSQL = `
 	insert into stripe_subscriptions
-		(users_id, subscription_id, price_id, status, current_period_end)
-	values (?, ?, ?, ?, ?)
+		(users_id, subscription_id, price_id, status, current_period_end, cancel_at)
+	values (?, ?, ?, ?, ?, ?)
 	on conflict(users_id) do update set
 		subscription_id = excluded.subscription_id,
 		price_id = excluded.price_id,
 		status = excluded.status,
-		current_period_end = excluded.current_period_end`
+		current_period_end = excluded.current_period_end,
+		cancel_at = excluded.cancel_at`
 
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, subscriptionSQL,
 		update.User,
@@ -169,6 +172,7 @@ func (s *stripesql) UpsertSubscription(ctx scope.C, update *payments.UpdateStrip
 		update.Sub.PriceID,
 		update.Sub.Status,
 		update.Sub.CurrentPeriodEnd,
+		update.Sub.CancelAt,
 	); err != nil {
 		return fmt.Errorf("stripe subscriptions upsert: %w", err)
 	}
