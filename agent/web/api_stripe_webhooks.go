@@ -56,6 +56,7 @@ func (h *stripeWebhookAPI) post(ctx scope.C, w http.ResponseWriter, r *http.Requ
 
 	event, werr := h.client.ConstructWebhookEvent(payload, sig)
 	if werr != nil {
+		h.log.E.Fmt("stripe webhook signature verification FAILED (payload=%d bytes, sig-present=%t): %v", len(payload), sig != "", werr)
 		return abort(h.log, w, fmt.Errorf("unable to construct webhook event: %w", werr))
 	}
 
