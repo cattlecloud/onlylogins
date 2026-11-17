@@ -105,7 +105,7 @@ func (p *Processor) handleCheckoutCompleted(ctx scope.C, event stripe.Event) err
 
 	priceID := subscriptionPriceID(sub)
 	if priceID == "" {
-		priceID = session.Metadata["price_id"]
+		priceID = session.Metadata[MetadataPriceIDKey]
 	}
 	if priceID == "" {
 		priceID = extractPriceID(&session)
@@ -460,7 +460,7 @@ func eventData(event stripe.Event) (json.RawMessage, error) {
 }
 
 func metadataUserID(metadata map[string]string) (users.Identity, bool) {
-	raw, ok := metadata["user_id"]
+	raw, ok := metadata[MetadataUserIDKey]
 	if !ok || raw == "" {
 		return 0, false
 	}

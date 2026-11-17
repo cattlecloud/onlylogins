@@ -14,6 +14,14 @@ import (
 	"github.com/stripe/stripe-go/v85/webhook"
 )
 
+// Metadata keys used to associate Stripe objects with the onlylogins
+// application. They are scoped so that other applications sharing the same
+// Stripe account cannot collide with our user identifiers.
+const (
+	MetadataUserIDKey  = "onlylogins_user_id"
+	MetadataPriceIDKey = "onlylogins_price_id"
+)
+
 // Client represents the interactions we make with the upstream Stripe API.
 type Client interface {
 	PatreonProductID() string
@@ -57,7 +65,7 @@ func (c *client) PlanFromPriceID(priceID string) (records.PlansEnum, bool) {
 func (c *client) GetOrCreateCustomer(_ scope.C, email, userID string) (string, error) {
 	params := &stripe.CustomerSearchParams{
 		SearchParams: stripe.SearchParams{
-			Query: "metadata['user_id']:'" + userID + "'",
+			Query: "metadata['" + MetadataUserIDKey + "']:'" + userID + "'",
 		},
 	}
 	params.AddExpand("data")
@@ -70,7 +78,7 @@ func (c *client) GetOrCreateCustomer(_ scope.C, email, userID string) (string, e
 	newCustomerParams := &stripe.CustomerParams{
 		Email: stripe.String(email),
 		Metadata: map[string]string{
-			"user_id": userID,
+			MetadataUserIDKey: userID,
 		},
 	}
 	newCustomer, err := customer.New(newCustomerParams)
@@ -94,8 +102,13 @@ func (c *client) CreateCheckoutSession(_ scope.C, customerID, priceID, userID, s
 		SuccessURL: stripe.String(successURL),
 		CancelURL:  stripe.String(cancelURL),
 		Metadata: map[string]string{
-			"user_id":  userID,
-			"price_id": priceID,
+			MetadataUserIDKey:  userID,
+			MetadataPriceIDKey: priceID,
+		},
+		SubscriptionData: &stripe.CheckoutSessionSubscriptionDataParams{
+			Metadata: map[string]string{
+				MetadataUserIDKey: userID,
+			},
 		},
 	}
 	params.AddExpand("line_items.data.price")
