@@ -6,12 +6,12 @@ package payments
 import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/onlylogins/database/records"
-	"github.com/stripe/stripe-go/v85"
-	bs "github.com/stripe/stripe-go/v85/billingportal/session"
-	cs "github.com/stripe/stripe-go/v85/checkout/session"
-	"github.com/stripe/stripe-go/v85/customer"
-	"github.com/stripe/stripe-go/v85/subscription"
-	"github.com/stripe/stripe-go/v85/webhook"
+	"github.com/stripe/stripe-go/v87"
+	bs "github.com/stripe/stripe-go/v87/billingportal/session"
+	cs "github.com/stripe/stripe-go/v87/checkout/session"
+	"github.com/stripe/stripe-go/v87/customer"
+	"github.com/stripe/stripe-go/v87/subscription"
+	"github.com/stripe/stripe-go/v87/webhook"
 )
 
 // Metadata keys used to associate Stripe objects with the onlylogins
@@ -90,8 +90,7 @@ func (c *client) GetOrCreateCustomer(_ scope.C, email, userID string) (string, e
 
 func (c *client) CreateCheckoutSession(_ scope.C, customerID, priceID, userID, successURL, cancelURL string) (*stripe.CheckoutSession, error) {
 	params := &stripe.CheckoutSessionParams{
-		Customer:           stripe.String(customerID),
-		PaymentMethodTypes: stripe.StringSlice([]string{"card"}),
+		Customer: stripe.String(customerID),
 		LineItems: []*stripe.CheckoutSessionLineItemParams{
 			{
 				Price:    stripe.String(priceID),

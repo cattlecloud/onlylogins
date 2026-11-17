@@ -19,7 +19,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/shoenig/go-conceal"
 	"github.com/shoenig/test/must"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 // stripeTestTimeout is long enough for any reasonable testcase to complete;

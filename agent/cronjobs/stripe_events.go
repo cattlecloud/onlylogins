@@ -14,7 +14,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/crons"
 	"cattlecloud.net/onlylogins/pkg/payments"
 	"github.com/hashicorp/cronexpr"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 const (

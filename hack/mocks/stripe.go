@@ -6,7 +6,7 @@ package mocks
 import (
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/onlylogins/database/records"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 type StripeClient struct {
