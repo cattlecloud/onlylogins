@@ -383,6 +383,35 @@ func TestStripeWebhook_SubscriptionUpdated_KeepsPlan(t *testing.T) {
 	must.Eq(t, "past_due", sub.Status)
 }
 
+func TestStripeWebhook_SubscriptionUpdated_CancelAt(t *testing.T) {
+	t.Parallel()
+
+	store, handler := newWebhookHarness(t, &mocks.StripeClient{})
+	uid := newTestUser(t, store, "webhook-cancelling")
+	setPatreonPlan(t, store, uid)
+
+	periodEnd := time.Now().Add(30 * 24 * time.Hour).Unix()
+	sub := activeSubscription("sub_test123")
+	sub.CancelAt = periodEnd
+
+	setWebhookClient(handler, &mocks.StripeClient{
+		MockEvent: webhookEvent("customer.subscription.updated",
+			fmt.Sprintf(`{"id": "sub_test123", "status": "active", "cancel_at": %d}`, periodEnd),
+		),
+		MockPlanFromPriceIDEnum: records.PlansPatreon,
+		MockPlanFromPriceIDBool: true,
+		MockSubscription:        sub,
+	})
+
+	w := postWebhook(t, handler, "{}")
+	must.Eq(t, http.StatusOK, w.Code)
+
+	got, err := store.Stripe().GetSubscription(t.Context(), uid)
+	must.NoError(t, err)
+	must.Eq(t, "active", got.Status)
+	must.Eq(t, periodEnd, got.CancelAt)
+}
+
 func TestStripeWebhook_SubscriptionUpdated_UnknownPriceKeepsPlan(t *testing.T) {
 	t.Parallel()
 

@@ -40,6 +40,7 @@ type StripeSubscription struct {
 	PriceID          string
 	Status           string
 	CurrentPeriodEnd int64
+	CancelAt         int64
 }
 
 func (s *StripeSubscription) Validate() error {
