@@ -19,7 +19,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/users"
 	"github.com/gorilla/mux"
 	"github.com/shoenig/test/must"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 func newPortalHarness(t *testing.T, client payments.Client) (database.Store, *mux.Router, *mocks.Sessions) {

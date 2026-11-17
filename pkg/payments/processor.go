@@ -13,7 +13,7 @@ import (
 	"cattlecloud.net/go/ulog"
 	"cattlecloud.net/onlylogins/database/records"
 	"cattlecloud.net/onlylogins/pkg/users"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 // ProcessorStore is the portion of the database needed to apply stripe

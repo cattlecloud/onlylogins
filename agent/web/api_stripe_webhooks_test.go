@@ -20,7 +20,7 @@ import (
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
 	"cattlecloud.net/onlylogins/pkg/payments"
 	"github.com/shoenig/test/must"
-	"github.com/stripe/stripe-go/v85"
+	"github.com/stripe/stripe-go/v87"
 )
 
 func webhookEvent(kind, raw string) stripe.Event {
