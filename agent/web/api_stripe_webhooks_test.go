@@ -125,11 +125,11 @@ func TestStripeWebhook_CheckoutCompleted(t *testing.T) {
 	uid := newTestUser(t, store, "webhook-checkout")
 	raw := fmt.Sprintf(`{
 		"metadata": {
-			"user_id": "%d",
-			"price_id": "price_patreon"
+			"%s": "%d",
+			"%s": "price_patreon"
 		},
 		"subscription": "sub_checkout"
-	}`, uid)
+	}`, payments.MetadataUserIDKey, uid, payments.MetadataPriceIDKey)
 	setWebhookClient(handler, &mocks.StripeClient{
 		MockEvent:               webhookEvent("checkout.session.completed", raw),
 		MockPlanFromPriceIDEnum: records.PlansPatreon,
@@ -166,9 +166,9 @@ func TestStripeWebhook_SubscriptionCreated(t *testing.T) {
 		"id": "sub_created",
 		"status": "active",
 		"customer": "cus_created",
-		"metadata": {"user_id": "%d"},
+		"metadata": {"%s": "%d"},
 		"items": {"data": [{"current_period_end": %d, "price": {"id": "price_patreon"}}]}
-	}`, uid, periodEnd)
+	}`, payments.MetadataUserIDKey, uid, periodEnd)
 	setWebhookClient(handler, &mocks.StripeClient{
 		MockEvent:               webhookEvent("customer.subscription.created", raw),
 		MockPlanFromPriceIDEnum: records.PlansPatreon,
@@ -200,9 +200,9 @@ func TestStripeWebhook_SubscriptionCreated_IncompleteDoesNotGrant(t *testing.T) 
 		"id": "sub_incomplete",
 		"status": "incomplete",
 		"customer": "cus_incomplete",
-		"metadata": {"user_id": "%d"},
+		"metadata": {"%s": "%d"},
 		"items": {"data": [{"current_period_end": %d, "price": {"id": "price_patreon"}}]}
-	}`, uid, periodEnd)
+	}`, payments.MetadataUserIDKey, uid, periodEnd)
 	setWebhookClient(handler, &mocks.StripeClient{
 		MockEvent:               webhookEvent("customer.subscription.created", raw),
 		MockPlanFromPriceIDEnum: records.PlansPatreon,
@@ -228,7 +228,7 @@ func TestStripeWebhook_InvoicePaid_RecoversMissingLocalRecord(t *testing.T) {
 
 	uid := newTestUser(t, store, "webhook-invoice-recover")
 	sub := subscriptionWithPrice("sub_recovered", "price_patreon")
-	sub.Metadata = map[string]string{"user_id": fmt.Sprintf("%d", uid)}
+	sub.Metadata = map[string]string{payments.MetadataUserIDKey: fmt.Sprintf("%d", uid)}
 
 	setWebhookClient(handler, &mocks.StripeClient{
 		MockEvent: webhookEvent("invoice.paid",

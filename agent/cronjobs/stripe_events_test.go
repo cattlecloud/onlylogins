@@ -58,7 +58,7 @@ func TestRetryStripeEvents_RetriesFailedEvent(t *testing.T) {
 		ID:     "sub_retry",
 		Status: stripe.SubscriptionStatusActive,
 		Metadata: map[string]string{
-			"user_id": fmt.Sprintf("%d", uid),
+			payments.MetadataUserIDKey: fmt.Sprintf("%d", uid),
 		},
 		Items: &stripe.SubscriptionItemList{
 			Data: []*stripe.SubscriptionItem{
