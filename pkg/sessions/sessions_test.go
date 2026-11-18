@@ -17,18 +17,30 @@ import (
 type fakeMemcache struct {
 	sessions map[string]*memcache.Item[users.Identity]
 	err      error
+	now      func() time.Time
 }
 
 func newFakeMemcache() *fakeMemcache {
 	return &fakeMemcache{
 		sessions: make(map[string]*memcache.Item[users.Identity]),
+		now:      time.Now,
 	}
 }
 
 func (f *fakeMemcache) SessionPut(id users.Identity, token *conceal.Text, _ time.Duration) {
+	now := f.now()
 	f.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
 		Value:     id,
-		Insertion: time.Now(),
+		Created:   now,
+		Insertion: now,
+	}
+}
+
+func (f *fakeMemcache) SessionTouch(item *memcache.Item[users.Identity], token *conceal.Text, _ time.Duration) {
+	f.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
+		Value:     item.Value,
+		Created:   item.Created,
+		Insertion: f.now(),
 	}
 }
 
@@ -45,26 +57,126 @@ func (f *fakeMemcache) SessionDelete(token *conceal.Text) error {
 	return nil
 }
 
-func Test_remainingTTL(t *testing.T) {
+// newTestStore builds a Store whose clock is driven by the given mutable now
+// pointer, and whose memcache backend shares the same clock. The volatile cache
+// is left empty so Get always exercises the authoritative memcache path.
+func newTestStore(t *testing.T, fake *fakeMemcache, now *time.Time) *Store {
+	t.Helper()
+	s := New(fake)
+	s.now = func() time.Time { return *now }
+	fake.now = func() time.Time { return *now }
+	return s
+}
+
+func TestStore_Get_idle_expiration(t *testing.T) {
 	t.Parallel()
 
-	s := &Store{
-		now: func() time.Time {
-			return time.Date(2026, 2, 2, 9, 30, 0, 0, time.UTC)
-		},
+	start := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	now := start
+
+	fake := newFakeMemcache()
+	s := newTestStore(t, fake, &now)
+
+	token := conceal.UUIDv4()
+	fake.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
+		Value:     users.Identity(7),
+		Created:   start,
+		Insertion: start,
 	}
 
-	t.Run("normal", func(t *testing.T) {
-		insertion := time.Date(2026, 2, 2, 9, 29, 0, 0, time.UTC)
-		result := s.remainingTTL(insertion)
-		must.Eq(t, result, 9*time.Minute) // insert was 1 minute ago
-	})
+	// advance past the idle window
+	now = start.Add(IdleTimeout + time.Minute)
 
-	t.Run("grace", func(t *testing.T) {
-		insertion := time.Date(2025, 2, 2, 9, 30, 0, 0, time.UTC)
-		result := s.remainingTTL(insertion)
-		must.Eq(t, result, 1*time.Minute) // grace period
-	})
+	id, exists := s.Get(token)
+	must.False(t, exists)
+	must.Eq(t, users.Identity(0), id)
+
+	// the expired session must be purged from memcache
+	_, exists = fake.SessionGet(token)
+	must.False(t, exists)
+}
+
+func TestStore_Get_touch_refreshes_last_activity(t *testing.T) {
+	t.Parallel()
+
+	start := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	now := start
+
+	fake := newFakeMemcache()
+	s := newTestStore(t, fake, &now)
+
+	token := conceal.UUIDv4()
+	fake.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
+		Value:     users.Identity(7),
+		Created:   start,
+		Insertion: start,
+	}
+
+	// advance beyond the touch threshold but still within the idle window
+	now = start.Add(TouchThreshold + time.Minute)
+
+	id, exists := s.Get(token)
+	must.True(t, exists)
+	must.Eq(t, users.Identity(7), id)
+
+	// the last-activity timestamp must have been refreshed
+	item, exists := fake.SessionGet(token)
+	must.True(t, exists)
+	must.True(t, item.Insertion.Equal(now))
+}
+
+func TestStore_Get_within_threshold_does_not_touch(t *testing.T) {
+	t.Parallel()
+
+	start := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	now := start
+
+	fake := newFakeMemcache()
+	s := newTestStore(t, fake, &now)
+
+	token := conceal.UUIDv4()
+	fake.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
+		Value:     users.Identity(7),
+		Created:   start,
+		Insertion: start,
+	}
+
+	// advance but stay within the touch threshold
+	now = start.Add(TouchThreshold - time.Minute)
+
+	id, exists := s.Get(token)
+	must.True(t, exists)
+	must.Eq(t, users.Identity(7), id)
+
+	// the last-activity timestamp must be unchanged
+	item, exists := fake.SessionGet(token)
+	must.True(t, exists)
+	must.True(t, item.Insertion.Equal(start))
+}
+
+func TestStore_Get_hard_cap_expiration(t *testing.T) {
+	t.Parallel()
+
+	start := time.Date(2026, 2, 2, 9, 0, 0, 0, time.UTC)
+	now := start.Add(MaxLifetime + time.Minute)
+
+	fake := newFakeMemcache()
+	s := newTestStore(t, fake, &now)
+
+	token := conceal.UUIDv4()
+	fake.sessions[token.Unveil()] = &memcache.Item[users.Identity]{
+		Value:     users.Identity(7),
+		Created:   start,
+		Insertion: now.Add(-5 * time.Minute), // recent activity, so not idle-expired
+	}
+
+	id, exists := s.Get(token)
+	must.False(t, exists)
+	must.Eq(t, users.Identity(0), id)
+
+	// the expired session must be purged from memcache
+	_, exists = fake.SessionGet(token)
+	must.False(t, exists)
 }
 
 func TestStore_Delete(t *testing.T) {
@@ -75,7 +187,7 @@ func TestStore_Delete(t *testing.T) {
 		s := New(fake)
 
 		token := conceal.UUIDv4()
-		s.Put(token, users.Identity(7), TTL)
+		s.Put(token, users.Identity(7), IdleTimeout)
 
 		err := s.Delete(token)
 		must.NoError(t, err)
@@ -95,7 +207,7 @@ func TestStore_Delete(t *testing.T) {
 		s := New(fake)
 
 		token := conceal.UUIDv4()
-		s.Put(token, users.Identity(7), TTL)
+		s.Put(token, users.Identity(7), IdleTimeout)
 
 		err := s.Delete(token)
 		must.Error(t, err)

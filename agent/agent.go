@@ -76,7 +76,7 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	}
 
 	// create sessions cache with volatile + memcached backends
-	scache := oauth.NewSessions(
+	scache := sessions.NewCache(
 		cookies,
 		sessions.New(mcache), // our own shim between memcache and oauth
 	)

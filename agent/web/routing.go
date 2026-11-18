@@ -18,6 +18,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/memcache"
 	"cattlecloud.net/onlylogins/pkg/payments"
+	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/VictoriaMetrics/metrics"
@@ -31,7 +32,7 @@ type Application struct {
 	httpc       *http.Client
 	council     users.Council
 	store       database.Store
-	scache      middles.Sessions[users.Identity]
+	scache      *sessions.Cache
 	metrics     *metrics.Set
 	mcache      memcache.Client
 	mint        nonces.Mint
@@ -263,7 +264,7 @@ type Objects struct {
 	Environment runtime.Environment
 	Council     users.Council
 	Store       database.Store
-	Scache      middles.Sessions[users.Identity]
+	Scache      *sessions.Cache
 	HTTPC       *http.Client
 	Metrics     *metrics.Set
 	Mcache      memcache.Client
@@ -351,8 +352,8 @@ func (a *Application) handleStatics(router *mux.Router) {
 func (a *Application) handleNormal(router *mux.Router, h web) {
 	check(normal, h)
 
-	// multi-level session cache (volatile + memcache)
-	ss := session(h, a.scache)
+	// sliding session cookies + multi-level session cache (volatile + memcache)
+	ss := session(a.sliding(h), a.scache)
 
 	trace := &duration{
 		sum:  a.metrics.NewSummary("ol_web_" + h.Metric()),
@@ -371,14 +372,14 @@ func (a *Application) handleModerate(router *mux.Router, h api) {
 		log:     ulog.New("middle/moderation-gate"),
 	}
 
-	ss := session(gate, a.scache)
+	ss := session(a.sliding(gate), a.scache)
 
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
 func (a *Application) handleComponent(router *mux.Router, h api) {
 	check(component, h)
-	ss := session(h, a.scache)
+	ss := session(a.sliding(h), a.scache)
 	router.Handle(h.Path(), ss).Methods(h.Methods()...)
 }
 
