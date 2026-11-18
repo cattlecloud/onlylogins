@@ -418,3 +418,8 @@ create table if not exists stripe_events (
 ) strict;
 
 create index if not exists idx_stripe_events_status on stripe_events(status, received);
+
+-- 2026-11-18: list documents by slug (lowercased, unique per folder)
+-- instead of modification time; the unique(folders_id, slug) autoindex
+-- serves this sort, so the old listing index is dropped.
+drop index if exists idx_documents_folder_listing;

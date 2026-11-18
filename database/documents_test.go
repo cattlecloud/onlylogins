@@ -1082,11 +1082,6 @@ func TestDocuments_List(t *testing.T) {
 
 	t.Run("after inserts", func(t *testing.T) {
 		id1 := insertDocument(t, ctx, db, mocks.Nobody, "github")
-
-		// sleep before inserting second document
-		time.Sleep(time.Second)
-
-		// insert second document
 		id2 := insertDocument(t, ctx, db, mocks.Nobody, "gitlab")
 
 		list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
@@ -1096,14 +1091,39 @@ func TestDocuments_List(t *testing.T) {
 		must.NoError(t, err)
 		must.SliceLen(t, 2, list)
 
-		// most recent insert appears first
-		must.Eq(t, id2, list[0].ID)
-		must.Eq(t, "gitlab", list[0].Label)
+		// alphabetical: "github" sorts before "gitlab"
+		must.Eq(t, id1, list[0].ID)
+		must.Eq(t, "github", list[0].Label)
 
-		// first insert appears last
-		must.Eq(t, id1, list[1].ID)
-		must.Eq(t, "github", list[1].Label)
+		must.Eq(t, id2, list[1].ID)
+		must.Eq(t, "gitlab", list[1].Label)
 	})
+}
+
+func TestDocuments_List_CaseInsensitive(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
+
+	// create documents with mixed casing; ordering must be case-insensitive,
+	// so "apple" sorts before "Banana" and both sort before "Zebra"
+	for _, label := range []string{"Zebra", "apple", "Banana", "cherry"} {
+		insertDocument(t, ctx, db, mocks.Nobody, label)
+	}
+
+	list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
+		User:   mocks.Nobody,
+		Folder: folder,
+	})
+	must.NoError(t, err)
+	must.SliceLen(t, 4, list)
+
+	must.Eq(t, "apple", list[0].Label)
+	must.Eq(t, "Banana", list[1].Label)
+	must.Eq(t, "cherry", list[2].Label)
+	must.Eq(t, "Zebra", list[3].Label)
 }
 
 func TestDocuments_Delete(t *testing.T) {

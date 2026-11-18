@@ -281,7 +281,7 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 	where
 		f.users_id = ? and
 		f.slug = ?
-	order by d.modification desc`
+	order by d.slug asc`
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
 		listing := new(sitecontent.DocumentListing)
