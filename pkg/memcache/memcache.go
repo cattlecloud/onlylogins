@@ -14,16 +14,19 @@ import (
 	"github.com/shoenig/go-conceal"
 )
 
-// Item wraps something we put in the cache with the insertion timestamp.
+// Item wraps something we put in the cache with the timestamps needed to
+// enforce sliding (idle-based) session expiration.
 type Item[T any] struct {
 	Value     T
-	Insertion time.Time
+	Created   time.Time // session issuance time (hard lifetime cap anchor)
+	Insertion time.Time // last activity time (idle expiration anchor)
 }
 
 type Client interface {
 	// many more things to store ...
 
 	SessionPut(users.Identity, *conceal.Text, time.Duration)
+	SessionTouch(*Item[users.Identity], *conceal.Text, time.Duration)
 	SessionGet(*conceal.Text) (*Item[users.Identity], bool)
 	SessionDelete(*conceal.Text) error
 }
@@ -84,9 +87,11 @@ type client struct {
 }
 
 func wrap[T any](c *client, value T) *Item[T] {
+	now := c.now()
 	return &Item[T]{
 		Value:     value,
-		Insertion: c.now(),
+		Created:   now,
+		Insertion: now,
 	}
 }
 
@@ -103,6 +108,23 @@ func (c *client) SessionPut(id users.Identity, token *conceal.Text, ttl time.Dur
 
 	if err := c.cache.Set(key, item, memc.TTL(ttl)); err != nil {
 		c.log.W.Fmt("unable to put session: %v", err)
+	}
+}
+
+// SessionTouch refreshes the last-activity timestamp of an existing session
+// while preserving its original creation time so the hard lifetime cap still
+// applies.
+func (c *client) SessionTouch(item *Item[users.Identity], token *conceal.Text, ttl time.Duration) {
+	key := c.sessionKey(token)
+
+	touched := &Item[users.Identity]{
+		Value:     item.Value,
+		Created:   item.Created,
+		Insertion: c.now(),
+	}
+
+	if err := c.cache.Set(key, touched, memc.TTL(ttl)); err != nil {
+		c.log.W.Fmt("unable to touch session: %v", err)
 	}
 }
 

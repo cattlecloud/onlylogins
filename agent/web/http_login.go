@@ -157,7 +157,7 @@ func (h *loginHTTP) login(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
-	http.SetCookie(w, h.session.Create(id, sessions.TTL))
+	http.SetCookie(w, h.session.Create(id, sessions.IdleTimeout))
 
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
@@ -190,7 +190,7 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	http.SetCookie(w, h.cookie(key))
 
 	// set the session cookie
-	http.SetCookie(w, h.session.Create(userID, sessions.TTL))
+	http.SetCookie(w, h.session.Create(userID, sessions.IdleTimeout))
 
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
@@ -202,7 +202,7 @@ func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 		Value:    base64.StdEncoding.EncodeToString(key.Unveil()),
 		Path:     "/",
 		HttpOnly: true,
-		Expires:  time.Now().Add(sessions.TTL),
+		Expires:  time.Now().Add(sessions.IdleTimeout),
 		SameSite: http.SameSiteStrictMode,
 		Secure:   h.environment.NonLocal(),
 	}
