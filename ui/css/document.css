@@ -71,13 +71,14 @@
 }
 
 .middle.document .add-btn {
-  padding: 0.4rem 0.8rem;
+  height: 2rem;
+  padding: 0 0.9rem;
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--text);
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: 6px;
+  border-radius: var(--button-radius);
   cursor: pointer;
   transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
 }
@@ -88,6 +89,167 @@
   border-color: var(--primary);
   background: var(--surface-raised);
   outline: none;
+}
+
+/* Shared small form buttons. */
+.middle.document .submit {
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
+  border: none;
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.middle.document .submit:hover {
+  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
+}
+
+.middle.document .cancel {
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.middle.document .cancel:hover,
+.middle.document .cancel:focus-visible {
+  color: var(--text);
+  border-color: var(--text-muted);
+  outline: none;
+}
+
+/* Icon-only row actions (copy / show / hide / edit / delete). */
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .password-edit-btn, .password-delete-btn,
+  .weblink-copy-btn, .weblink-edit-btn, .weblink-delete-btn,
+  .username-copy-btn, .username-edit-btn, .username-delete-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn,
+  .keyval-edit-btn, .keyval-delete-btn,
+  .note-edit-btn, .note-delete-btn
+) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 1.75rem;
+  width: 1.75rem;
+  padding: 0;
+  line-height: 1;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--button-radius);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .password-edit-btn, .password-delete-btn,
+  .weblink-copy-btn, .weblink-edit-btn, .weblink-delete-btn,
+  .username-copy-btn, .username-edit-btn, .username-delete-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn,
+  .keyval-edit-btn, .keyval-delete-btn,
+  .note-edit-btn, .note-delete-btn
+) img {
+  width: 0.95rem;
+  height: 0.95rem;
+  display: block;
+  filter: invert(1) opacity(0.7);
+  transition: filter 0.15s ease;
+}
+
+/* Neutral actions (copy / show / hide). */
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .weblink-copy-btn, .username-copy-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn
+):hover,
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .weblink-copy-btn, .username-copy-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn
+):focus-visible {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .weblink-copy-btn, .username-copy-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn
+):hover img,
+.middle.document :is(
+  .password-copy-btn, .password-show-btn, .password-hide-btn,
+  .weblink-copy-btn, .username-copy-btn,
+  .keyval-copy-btn, .keyval-show-btn, .keyval-hide-btn
+):focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+/* Edit actions. */
+.middle.document :is(
+  .password-edit-btn, .weblink-edit-btn, .username-edit-btn,
+  .keyval-edit-btn, .note-edit-btn
+):hover,
+.middle.document :is(
+  .password-edit-btn, .weblink-edit-btn, .username-edit-btn,
+  .keyval-edit-btn, .note-edit-btn
+):focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document :is(
+  .password-edit-btn, .weblink-edit-btn, .username-edit-btn,
+  .keyval-edit-btn, .note-edit-btn
+):hover img,
+.middle.document :is(
+  .password-edit-btn, .weblink-edit-btn, .username-edit-btn,
+  .keyval-edit-btn, .note-edit-btn
+):focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
+}
+
+/* Delete actions. */
+.middle.document :is(
+  .password-delete-btn, .weblink-delete-btn, .username-delete-btn,
+  .keyval-delete-btn, .note-delete-btn
+):hover,
+.middle.document :is(
+  .password-delete-btn, .weblink-delete-btn, .username-delete-btn,
+  .keyval-delete-btn, .note-delete-btn
+):focus-visible {
+  color: var(--danger);
+  border-color: var(--danger);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.middle.document :is(
+  .password-delete-btn, .weblink-delete-btn, .username-delete-btn,
+  .keyval-delete-btn, .note-delete-btn
+):hover img,
+.middle.document :is(
+  .password-delete-btn, .weblink-delete-btn, .username-delete-btn,
+  .keyval-delete-btn, .note-delete-btn
+):focus-visible img {
+  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
 }
 
 .middle.document #weblinks-form-container {
@@ -127,41 +289,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .add-weblink-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .add-weblink-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .add-weblink-form .cancel {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.document .add-weblink-form .cancel:hover,
-.middle.document .add-weblink-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
 }
 
 .middle.document .add-weblink-form #error:empty {
@@ -214,41 +341,6 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
-.middle.document .add-username-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .add-username-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .add-username-form .cancel {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.document .add-username-form .cancel:hover,
-.middle.document .add-username-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
-}
-
 .middle.document .add-username-form #error:empty {
   display: none;
 }
@@ -297,41 +389,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .add-password-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .add-password-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .add-password-form .cancel {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.document .add-password-form .cancel:hover,
-.middle.document .add-password-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
 }
 
 .middle.document .add-password-form #error:empty {
@@ -384,81 +441,6 @@
   flex-shrink: 0;
 }
 
-.middle.document .fields .password-copy-btn,
-.middle.document .fields .password-show-btn,
-.middle.document .fields .password-hide-btn,
-.middle.document .fields .password-edit-btn,
-.middle.document .fields .password-delete-btn {
-  font-size: 0.85rem;
-  line-height: 1;
-  padding: 0.3rem 0.3rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .fields .password-copy-btn:hover,
-.middle.document .fields .password-copy-btn:focus-visible,
-.middle.document .fields .password-show-btn:hover,
-.middle.document .fields .password-show-btn:focus-visible,
-.middle.document .fields .password-hide-btn:hover,
-.middle.document .fields .password-hide-btn:focus-visible {
-  color: var(--text);
-  border-color: var(--border);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .password-copy-btn img,
-.middle.document .fields .password-show-btn img,
-.middle.document .fields .password-hide-btn img,
-.middle.document .fields .password-edit-btn img,
-.middle.document .fields .password-delete-btn img {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  filter: invert(1) opacity(0.7);
-  transition: filter 0.15s ease;
-}
-
-.middle.document .fields .password-copy-btn:hover img,
-.middle.document .fields .password-copy-btn:focus-visible img,
-.middle.document .fields .password-show-btn:hover img,
-.middle.document .fields .password-show-btn:focus-visible img,
-.middle.document .fields .password-hide-btn:hover img,
-.middle.document .fields .password-hide-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .password-edit-btn:hover img,
-.middle.document .fields .password-edit-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .password-delete-btn:hover img,
-.middle.document .fields .password-delete-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
-}
-
-.middle.document .fields .password-edit-btn:hover,
-.middle.document .fields .password-edit-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .password-delete-btn:hover,
-.middle.document .fields .password-delete-btn:focus-visible {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  outline: none;
-}
-
 .middle.document .fields .password-row.editing {
   display: block;
   padding-top: 0.5rem;
@@ -495,22 +477,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .fields .password-row.editing .password-edit-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .fields .password-row.editing .password-edit-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
 }
 
 .middle.document .fields .password-row.editing .password-edit-form #error:empty {
@@ -599,69 +565,6 @@
   flex-shrink: 0;
 }
 
-.middle.document .fields .weblink-copy-btn,
-.middle.document .fields .weblink-edit-btn,
-.middle.document .fields .weblink-delete-btn {
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0.3rem 0.3rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .fields .weblink-copy-btn img,
-.middle.document .fields .weblink-edit-btn img,
-.middle.document .fields .weblink-delete-btn img {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  filter: invert(1) opacity(0.7);
-  transition: filter 0.15s ease;
-}
-
-.middle.document .fields .weblink-edit-btn:hover img,
-.middle.document .fields .weblink-edit-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .weblink-delete-btn:hover img,
-.middle.document .fields .weblink-delete-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
-}
-
-.middle.document .fields .weblink-edit-btn:hover,
-.middle.document .fields .weblink-edit-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .weblink-delete-btn:hover,
-.middle.document .fields .weblink-delete-btn:focus-visible {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .weblink-copy-btn:hover img,
-.middle.document .fields .weblink-copy-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .weblink-copy-btn:hover,
-.middle.document .fields .weblink-copy-btn:focus-visible {
-  color: var(--text);
-  border-color: var(--border);
-  background: var(--surface-raised);
-  outline: none;
-}
-
 .middle.document .fields .weblink-row.editing {
   display: block;
   padding-top: 0.5rem;
@@ -699,22 +602,6 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
-.middle.document .fields .weblink-row.editing .weblink-edit-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .fields .weblink-row.editing .weblink-edit-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
 .middle.document .fields .weblink-row.editing .weblink-edit-form #error:empty {
   display: none;
 }
@@ -745,69 +632,6 @@
   flex-flow: row nowrap;
   gap: 0.125rem;
   flex-shrink: 0;
-}
-
-.middle.document .fields .username-copy-btn,
-.middle.document .fields .username-edit-btn,
-.middle.document .fields .username-delete-btn {
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0.3rem 0.3rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .fields .username-copy-btn img,
-.middle.document .fields .username-edit-btn img,
-.middle.document .fields .username-delete-btn img {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  filter: invert(1) opacity(0.7);
-  transition: filter 0.15s ease;
-}
-
-.middle.document .fields .username-edit-btn:hover img,
-.middle.document .fields .username-edit-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .username-delete-btn:hover img,
-.middle.document .fields .username-delete-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
-}
-
-.middle.document .fields .username-edit-btn:hover,
-.middle.document .fields .username-edit-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .username-delete-btn:hover,
-.middle.document .fields .username-delete-btn:focus-visible {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .username-copy-btn:hover img,
-.middle.document .fields .username-copy-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .username-copy-btn:hover,
-.middle.document .fields .username-copy-btn:focus-visible {
-  color: var(--text);
-  border-color: var(--border);
-  background: var(--surface-raised);
-  outline: none;
 }
 
 .middle.document .fields .username-row.editing {
@@ -846,22 +670,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .fields .username-row.editing .username-edit-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .fields .username-row.editing .username-edit-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
 }
 
 .middle.document .fields .username-row.editing .username-edit-form #error:empty {
@@ -917,6 +725,7 @@
 
 .middle.document .note-panel .note-reveal-btn {
   width: auto;
+  height: auto;
   padding: 0.3rem 0.55rem;
   font-size: 0.85rem;
   line-height: 1;
@@ -924,7 +733,7 @@
   color: var(--text-muted);
   background: transparent;
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: var(--button-radius);
   cursor: pointer;
   transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
 }
@@ -951,54 +760,6 @@
 
 .middle.document .note-area .note-actions[hidden] {
   display: none;
-}
-
-.middle.document .note-area .note-edit-btn,
-.middle.document .note-area .note-delete-btn {
-  font-size: 1rem;
-  line-height: 1;
-  padding: 0.3rem 0.3rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .note-area .note-edit-btn img,
-.middle.document .note-area .note-delete-btn img {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  filter: invert(1) opacity(0.7);
-  transition: filter 0.15s ease;
-}
-
-.middle.document .note-area .note-edit-btn:hover img,
-.middle.document .note-area .note-edit-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .note-area .note-delete-btn:hover img,
-.middle.document .note-area .note-delete-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
-}
-
-.middle.document .note-area .note-edit-btn:hover,
-.middle.document .note-area .note-edit-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .note-area .note-delete-btn:hover,
-.middle.document .note-area .note-delete-btn:focus-visible {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  outline: none;
 }
 
 /* Add-note form mirrors the password/username form styling */
@@ -1042,41 +803,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .add-note-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .add-note-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .add-note-form .cancel {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.document .add-note-form .cancel:hover,
-.middle.document .add-note-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
 }
 
 .middle.document .add-note-form #error:empty {
@@ -1133,37 +859,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .note-panel.editing .note-edit-form .submit,
-.middle.document .note-panel.editing .note-edit-form .cancel {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .note-panel.editing .note-edit-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .note-panel.editing .note-edit-form .cancel {
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  font-weight: 500;
-}
-
-.middle.document .note-panel.editing .note-edit-form .cancel:hover,
-.middle.document .note-panel.editing .note-edit-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
 }
 
 .middle.document .note-panel.editing .note-edit-form #error:empty {
@@ -1230,41 +925,6 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
-.middle.document .add-keyval-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .add-keyval-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-}
-
-.middle.document .add-keyval-form .cancel {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.85rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.document .add-keyval-form .cancel:hover,
-.middle.document .add-keyval-form .cancel:focus-visible {
-  color: var(--text);
-  border-color: var(--text-muted);
-  outline: none;
-}
-
 .middle.document .add-keyval-form #error:empty {
   display: none;
 }
@@ -1314,81 +974,6 @@
   flex-shrink: 0;
 }
 
-.middle.document .fields .keyval-copy-btn,
-.middle.document .fields .keyval-show-btn,
-.middle.document .fields .keyval-hide-btn,
-.middle.document .fields .keyval-edit-btn,
-.middle.document .fields .keyval-delete-btn {
-  font-size: 0.85rem;
-  line-height: 1;
-  padding: 0.3rem 0.3rem;
-  color: var(--text-muted);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .fields .keyval-copy-btn:hover,
-.middle.document .fields .keyval-copy-btn:focus-visible,
-.middle.document .fields .keyval-show-btn:hover,
-.middle.document .fields .keyval-show-btn:focus-visible,
-.middle.document .fields .keyval-hide-btn:hover,
-.middle.document .fields .keyval-hide-btn:focus-visible {
-  color: var(--text);
-  border-color: var(--border);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .keyval-copy-btn img,
-.middle.document .fields .keyval-show-btn img,
-.middle.document .fields .keyval-hide-btn img,
-.middle.document .fields .keyval-edit-btn img,
-.middle.document .fields .keyval-delete-btn img {
-  width: 0.95rem;
-  height: 0.95rem;
-  display: block;
-  filter: invert(1) opacity(0.7);
-  transition: filter 0.15s ease;
-}
-
-.middle.document .fields .keyval-copy-btn:hover img,
-.middle.document .fields .keyval-copy-btn:focus-visible img,
-.middle.document .fields .keyval-show-btn:hover img,
-.middle.document .fields .keyval-show-btn:focus-visible img,
-.middle.document .fields .keyval-hide-btn:hover img,
-.middle.document .fields .keyval-hide-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .keyval-edit-btn:hover img,
-.middle.document .fields .keyval-edit-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--primary)) opacity(1);
-}
-
-.middle.document .fields .keyval-delete-btn:hover img,
-.middle.document .fields .keyval-delete-btn:focus-visible img {
-  filter: invert(1) drop-shadow(0 0 1px var(--danger)) opacity(1);
-}
-
-.middle.document .fields .keyval-edit-btn:hover,
-.middle.document .fields .keyval-edit-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
-.middle.document .fields .keyval-delete-btn:hover,
-.middle.document .fields .keyval-delete-btn:focus-visible {
-  color: var(--danger);
-  border-color: var(--danger);
-  background: var(--surface-raised);
-  outline: none;
-}
-
 /* Inline edit form: same shape as the add form, swapped into a
    .keyval-row slot when the user clicks Edit. */
 .middle.document .fields .keyval-row.editing {
@@ -1430,22 +1015,6 @@
   outline: none;
   border-color: var(--primary);
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.document .fields .keyval-row.editing .keyval-edit-form .submit {
-  padding: 0.4rem 0.9rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-}
-
-.middle.document .fields .keyval-row.editing .keyval-edit-form .submit:hover {
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
 }
 
 .middle.document .fields .keyval-row.editing .keyval-edit-form #error:empty {
@@ -1534,27 +1103,6 @@
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
 }
 
-.middle.document .document-rename-form .danger-zone-rename-btn {
-  align-self: flex-start;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
-}
-
-.middle.document .document-rename-form .danger-zone-rename-btn:hover,
-.middle.document .document-rename-form .danger-zone-rename-btn:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-  outline: none;
-}
-
 .middle.document .document-rename-form #error:empty {
   display: none;
 }
@@ -1563,25 +1111,6 @@
   display: block;
   font-size: 0.85rem;
   color: var(--danger);
-}
-
-.middle.document .danger-zone-delete-btn {
-  align-self: flex-start;
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: #fff;
-  background: var(--danger);
-  border: 1px solid var(--danger);
-  border-radius: 6px;
-  cursor: pointer;
-  transition: filter 0.15s ease;
-}
-
-.middle.document .danger-zone-delete-btn:hover,
-.middle.document .danger-zone-delete-btn:focus-visible {
-  filter: brightness(1.1);
-  outline: none;
 }
 
 @media (max-width: 640px) {

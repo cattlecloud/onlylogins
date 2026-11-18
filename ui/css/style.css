@@ -10,6 +10,7 @@
   --primary-deep: #b45309;
   --border: #3a3226;
   --danger: #e07a5f;
+  --button-radius: 4px;
 }
 
 * {
@@ -46,26 +47,82 @@ body {
 }
 
 /* Buttons */
-button {
-  padding: 0.7rem 1rem;
+button,
+.button-cta,
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 2.5rem;
+  padding: 0 1.25rem;
   font-size: 1rem;
   font-weight: 600;
+  line-height: 1;
   color: #ffffff;
   background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--button-radius);
   cursor: pointer;
+  text-decoration: none;
   transition: background 0.15s ease;
 }
 
-button:hover {
+button:hover,
+.button-cta:hover,
+.button-link:hover {
+  color: #ffffff;
+  text-decoration: none;
   background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
 }
 
-button:focus-visible {
+button:focus-visible,
+.button-cta:focus-visible,
+.button-link:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
+}
+
+/* Danger-zone actions, shared by the document and folder pages. */
+.danger-zone-rename-btn {
+  align-self: flex-start;
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.danger-zone-rename-btn:hover,
+.danger-zone-rename-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
+.danger-zone-delete-btn {
+  align-self: flex-start;
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff;
+  background: var(--danger);
+  border: 1px solid var(--danger);
+  border-radius: var(--button-radius);
+  transition: filter 0.15s ease;
+}
+
+.danger-zone-delete-btn:hover,
+.danger-zone-delete-btn:focus-visible {
+  background: var(--danger);
+  filter: brightness(1.1);
+  outline: none;
 }
 
 /* Links */

@@ -143,28 +143,7 @@ body {
 }
 
 .middle.index .button-cta {
-  display: inline-block;
   margin-top: 0.5rem;
-  padding: 0.85rem 2rem;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-mid) 50%, var(--primary-deep) 100%);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-  border-radius: 8px;
-  text-decoration: none;
-  transition: background 0.15s ease;
-}
-
-.middle.index .button-cta:hover {
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--primary-hover) 0%, var(--primary) 50%, var(--primary-mid) 100%);
-  text-decoration: none;
-}
-
-.middle.index .button-cta:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.4);
 }
 
 .middle.index section > h2 {
