@@ -450,3 +450,29 @@ begin
     insert into emailupdates (users_id, old_email, new_email)
     values (new.id, old.email, new.email);
 end;
+
+-- audit log of passphrase changes. each row records a single successful
+-- passphrase change; only the user and timestamp are retained.
+create table if not exists passphraseupdates (
+    id integer primary key autoincrement,
+    -- auto
+
+    users_id integer not null,
+    -- foreign key into users; the user whose passphrase changed
+
+    creation integer default (unixepoch('now')) not null,
+    -- creation timestamp
+
+    foreign key (users_id) references users(id) on delete cascade
+) strict;
+
+create index if not exists idx_passphraseupdates_users_id on passphraseupdates(users_id);
+
+-- automatically record a passphrase change whenever the verifier is rotated
+create trigger if not exists passphraseupdates_after_authorize_update
+after update of verifier on authorize
+for each row
+begin
+    insert into passphraseupdates (users_id)
+    values (new.users_id);
+end;

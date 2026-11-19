@@ -37,6 +37,7 @@ type Users interface {
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
 	Delete(scope.C, users.Identity) error
 	SetEmail(scope.C, users.Identity, string) error
+	ChangePassphrase(scope.C, users.Identity, *users.ChangePassphraseRequest) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
 	Profile(scope.C, users.Identity) (*sitecontent.Profile, error)
 	Moderate(scope.C, users.Identity) (*sitecontent.UserModeration, error)
