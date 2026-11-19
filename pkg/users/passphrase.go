@@ -27,6 +27,10 @@ func ValidateEmail(s string) error {
 		return errors.New("email is too short")
 	}
 
+	if len(s) >= 128 {
+		return errors.New("email is too long")
+	}
+
 	if !strings.Contains(s, "@") {
 		return errors.New("email must contain @ symbol")
 	}

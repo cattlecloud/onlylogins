@@ -4,6 +4,7 @@
 package users
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/shoenig/test/must"
@@ -35,5 +36,26 @@ func TestAllowUsername(t *testing.T) {
 	t.Run("abc4", func(t *testing.T) {
 		ok := AllowUsername("abc4")
 		must.True(t, ok)
+	})
+}
+
+func TestValidateEmail(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid", func(t *testing.T) {
+		must.NoError(t, ValidateEmail("alice@example.com"))
+	})
+
+	t.Run("too short", func(t *testing.T) {
+		must.Error(t, ValidateEmail("a@"))
+	})
+
+	t.Run("missing at", func(t *testing.T) {
+		must.Error(t, ValidateEmail("alice.example.com"))
+	})
+
+	t.Run("too long", func(t *testing.T) {
+		long := strings.Repeat("a", 128)
+		must.Error(t, ValidateEmail(long))
 	})
 }

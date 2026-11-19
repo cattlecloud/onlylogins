@@ -423,3 +423,36 @@ create index if not exists idx_stripe_events_status on stripe_events(status, rec
 -- instead of modification time; the unique(folders_id, slug) autoindex
 -- serves this sort, so the old listing index is dropped.
 drop index if exists idx_documents_folder_listing;
+
+-- 2026-11-19: audit log of email address changes. each row records a single
+-- email update, preserving the previous and new values for later review.
+create table if not exists emailupdates (
+    id integer primary key autoincrement,
+    -- auto
+
+    users_id integer not null,
+    -- foreign key into users; the user whose email changed
+
+    old_email text check(length(old_email) >= 3 and length(old_email) < 128) not null,
+    -- the email address before the change
+
+    new_email text check(length(new_email) >= 3 and length(new_email) < 128) not null,
+    -- the email address after the change
+
+    creation integer default (unixepoch('now')) not null,
+    -- creation timestamp
+
+    foreign key (users_id) references users(id) on delete cascade
+) strict;
+
+create index if not exists idx_emailupdates_users_id on emailupdates(users_id);
+
+-- automatically record updates to email addresses; skip no-ops
+create trigger if not exists emailupdates_after_user_email_update
+after update of email on users
+for each row
+when old.email != new.email
+begin
+    insert into emailupdates (users_id, old_email, new_email)
+    values (new.id, old.email, new.email);
+end;

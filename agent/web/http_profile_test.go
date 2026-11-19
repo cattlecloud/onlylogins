@@ -61,6 +61,10 @@ func TestProfile_ServeHTTP_GET_logged_in(t *testing.T) {
 	must.StrContains(t, w.Body.String(), `<div class="value plan">free</div>`)
 	must.StrContains(t, w.Body.String(), `0 / 256`)
 
+	// the email address is displayed with an inline edit action
+	must.StrContains(t, w.Body.String(), `nobody@onlylogins.invalid`)
+	must.StrContains(t, w.Body.String(), `hx-get="/internal/email/edit"`)
+
 	// a user without a paid subscription may delete their account
 	must.StrContains(t, w.Body.String(), `hx-delete="/internal/logout"`)
 	must.StrContains(t, w.Body.String(), `>delete</a>`)
