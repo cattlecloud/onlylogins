@@ -20,13 +20,6 @@
       </div>
     </div>
 
-    <div class="row passphrase">
-      <span class="key">passphrase</span>
-      <div class="value">
-        <a class="change-passphrase" href="/profile/passphrase">change</a>
-      </div>
-    </div>
-
     <div class="row email" id="edit-email">
       <span class="key">email</span>
       <div class="value">{{.Section.Email}}</div>
@@ -35,6 +28,13 @@
         hx-get="/internal/email/edit"
         hx-target="#edit-email"
         hx-swap="outerHTML">edit</button>
+    </div>
+
+    <div class="row passphrase">
+      <span class="key">passphrase</span>
+      <div class="value">
+        <a class="change-passphrase" href="/profile/passphrase">change</a>
+      </div>
     </div>
 
     {{if .Section.CanDelete}}
