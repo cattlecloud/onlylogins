@@ -173,9 +173,6 @@ create table if not exists documents (
     foreign key (folders_id) references folders(id) on delete cascade
 ) strict;
 
-create index if not exists idx_documents_folder_listing
-    on documents(folders_id, modification desc, label, slug);
-
 create table if not exists weblinks (
     id integer primary key autoincrement,
     -- auto
@@ -419,13 +416,10 @@ create table if not exists stripe_events (
 
 create index if not exists idx_stripe_events_status on stripe_events(status, received);
 
--- 2026-11-18: list documents by slug (lowercased, unique per folder)
--- instead of modification time; the unique(folders_id, slug) autoindex
--- serves this sort, so the old listing index is dropped.
-drop index if exists idx_documents_folder_listing;
+-- before 2026-11-19
 
--- 2026-11-19: audit log of email address changes. each row records a single
--- email update, preserving the previous and new values for later review.
+-- audit log of email address changes. each row records a single email update,
+-- preserving the previous and new values for later review.
 create table if not exists emailupdates (
     id integer primary key autoincrement,
     -- auto
