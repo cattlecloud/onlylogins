@@ -21,11 +21,9 @@ import (
 )
 
 type profileContent struct {
-	Profile *sitecontent.Profile
-
-	// CanDelete indicates the user is allowed to delete their account;
-	// a user with a paid subscription must cancel it first
-	CanDelete bool
+	Profile   *sitecontent.Profile
+	Email     string // user's current email address
+	CanDelete bool   // account is delete-able (no active subscription)
 }
 
 type profileHTTP struct {
@@ -89,6 +87,7 @@ func (h *profileHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 	middle := &profileContent{
 		Profile:   content,
+		Email:     profile.Email,
 		CanDelete: content.Usage.Plan.ID != records.PlansPatreon,
 	}
 

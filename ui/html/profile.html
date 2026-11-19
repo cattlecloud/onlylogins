@@ -20,6 +20,16 @@
       </div>
     </div>
 
+    <div class="row email" id="edit-email">
+      <span class="key">email</span>
+      <div class="value">{{.Section.Email}}</div>
+      <button
+        class="edit-email"
+        hx-get="/internal/email/edit"
+        hx-target="#edit-email"
+        hx-swap="outerHTML">edit</button>
+    </div>
+
     {{if .Section.CanDelete}}
     <div class="row account">
       <span class="key">account</span>

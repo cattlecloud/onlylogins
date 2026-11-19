@@ -53,3 +53,68 @@
 .middle.profile > .user #error:empty {
   display: none;
 }
+
+/* the email edit row */
+.middle.profile > .user > .row.email > button.edit-email,
+.middle.profile > .user > .row.email button.inline-button {
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  text-shadow: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.middle.profile > .user > .row.email > button.edit-email:hover,
+.middle.profile > .user > .row.email > button.edit-email:focus-visible,
+.middle.profile > .user > .row.email button.inline-button:hover,
+.middle.profile > .user > .row.email button.inline-button:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  outline: none;
+}
+
+.middle.profile > .user > .row.email > form.email-edit-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.middle.profile > .user > .row.email > form.email-edit-form > .email-controls {
+  display: flex;
+  flex-flow: row nowrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.middle.profile > .user > .row.email .email-input {
+  flex: 1;
+  min-width: 0;
+  height: 1.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  padding: 0.2rem 0.5rem;
+  line-height: 1.4;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.middle.profile > .user > .row.email .email-input:focus {
+  border-color: var(--primary);
+}
+
+.middle.profile > .user > .row.email .cancel-link {
+  font-size: 0.8rem;
+}

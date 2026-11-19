@@ -106,6 +106,33 @@ func TestUsers_Lookup(t *testing.T) {
 	})
 }
 
+func TestUsers_SetEmail(t *testing.T) {
+	t.Parallel()
+
+	db, _ := openTestDB(t)
+
+	// argon will burn a lot of time on these tests because we are minting
+	// and verifying a user; give the test a long time to accommodate
+	ctx, cancel := scope.WithTTL(t.Context(), 1*time.Minute)
+	t.Cleanup(cancel)
+
+	alice := insertUser(t, ctx, db, "alice")
+
+	t.Run("happy path", func(t *testing.T) {
+		err := db.Users().SetEmail(ctx, alice, "alice.new@example.com")
+		must.NoError(t, err)
+
+		u, lerr := db.Users().Lookup(ctx, alice)
+		must.NoError(t, lerr)
+		must.Eq(t, "alice.new@example.com", u.Email)
+	})
+
+	t.Run("not found", func(t *testing.T) {
+		err := db.Users().SetEmail(ctx, users.Identity(999), "ghost@example.com")
+		must.Error(t, err)
+	})
+}
+
 func TestUsers_Profile(t *testing.T) {
 	t.Parallel()
 

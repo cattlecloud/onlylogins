@@ -36,6 +36,7 @@ type Users interface {
 	// user management
 	Create(scope.C, *users.CreateUserRequest, *conceal.Bytes) (users.Identity, error)
 	Delete(scope.C, users.Identity) error
+	SetEmail(scope.C, users.Identity, string) error
 	Lookup(scope.C, users.Identity) (*users.Profile, error)
 	Profile(scope.C, users.Identity) (*sitecontent.Profile, error)
 	Moderate(scope.C, users.Identity) (*sitecontent.UserModeration, error)
@@ -249,6 +250,27 @@ func (s *usersql) Delete(ctx scope.C, user users.Identity) error {
 	const statement = `delete from users where id = ?`
 	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement, user); err != nil {
 		return fmt.Errorf("unable to delete user: %w", err)
+	}
+
+	return tx.Commit()
+}
+
+func (s *usersql) SetEmail(ctx scope.C, id users.Identity, email string) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to set email: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	update users set
+		email = ?,
+		modification = unixepoch('now')
+	where
+		id = ?`
+
+	if err := s.ldb.Exec(ctx, tx, litesql.ExpectOne, statement, email, id); err != nil {
+		return fmt.Errorf("unable to set email: %w", err)
 	}
 
 	return tx.Commit()

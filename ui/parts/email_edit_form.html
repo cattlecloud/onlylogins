@@ -1,0 +1,20 @@
+{{define "email_edit_form"}}
+<div class="row email editing" id="edit-email">
+  <span class="key">email</span>
+  <form class="email-edit-form" hx-put="/internal/email/edit" hx-swap="outerHTML">
+    <span class="email-controls">
+      <input
+        type="email" name="email"
+        class="email-input"
+        value="{{.}}"
+        maxlength="127"
+        autocomplete="off"
+        required
+        autofocus>
+      <button class="inline-button" type="submit">update</button>
+      <a class="cancel-link" href="/profile">cancel</a>
+    </span>
+    <span id="error"></span>
+  </form>
+</div>
+{{end}}
