@@ -47,17 +47,9 @@ func (s *SyncSubscriptions) Start() *crons.RunMetric {
 	downgraded, err := s.store.Stripe().DowngradeExpired(ctx)
 	if err != nil {
 		s.log.E.Fmt("failed to downgrade expired subscriptions: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
 	s.log.D.Fmt("downgraded %d expired subscriptions", downgraded)
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	return crons.Success(start)
 }

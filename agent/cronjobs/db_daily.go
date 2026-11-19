@@ -52,22 +52,14 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	shares, serr := c.store.Shares(nil).Prune(ctx, expireShares)
 	if serr != nil {
 		c.log.E.Fmt("failed to prune shares: %v", serr)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	c.log.I.Fmt("pruned %d old shares", shares)
 
 	// expire login data from over a week ago
 	if err := c.store.Audit().Prune(ctx, expireLogins); err != nil {
 		c.log.E.Fmt("failed to prune audit records: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	c.log.I.Fmt("pruned old login and bogus attempts")
 
@@ -75,28 +67,17 @@ func (c *DailyDBM) Start() *crons.RunMetric {
 	events, eerr := c.store.Stripe().PruneEvents(ctx, expireStripe)
 	if eerr != nil {
 		c.log.E.Fmt("failed to prune stripe events: %v", eerr)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	c.log.I.Fmt("pruned %d old stripe events", events)
 
 	// run the database optimize pragma
 	if err := c.store.Maint().Optimize(ctx); err != nil {
 		c.log.E.Fmt("failed to optimize: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	c.log.I.Fmt("database has been optimized")
 
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	// we are done
+	return crons.Success(start)
 }

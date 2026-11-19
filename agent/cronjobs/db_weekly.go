@@ -46,25 +46,13 @@ func (c *WeeklyDBM) Start() *crons.RunMetric {
 
 	if err := c.store.Maint().Analyze(ctx); err != nil {
 		c.log.E.Fmt("failed to analyze: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
 	if err := c.store.Maint().Compact(ctx); err != nil {
 		c.log.E.Fmt("failed to compact: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	return crons.Success(start)
 }

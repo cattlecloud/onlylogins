@@ -76,11 +76,7 @@ func (c *RetryStripeEvents) Start() *crons.RunMetric {
 	expired, xerr := c.store.Stripe().ExpireEvents(ctx, cutoff)
 	if xerr != nil {
 		c.log.E.Fmt("failed to expire stripe events: %v", xerr)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	if expired > 0 {
 		c.log.W.Fmt("marked %d stripe events dead after %v", expired, stripeRetryGrace)
@@ -89,11 +85,7 @@ func (c *RetryStripeEvents) Start() *crons.RunMetric {
 	events, rerr := c.store.Stripe().RetryableEvents(ctx, cutoff, stripeRetryBatch)
 	if rerr != nil {
 		c.log.E.Fmt("failed to list stripe events for retry: %v", rerr)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
 	var succeeded, failed int
@@ -128,11 +120,7 @@ func (c *RetryStripeEvents) Start() *crons.RunMetric {
 
 	c.log.I.Fmt("processed %d stripe events: %d succeeded, %d failed", len(events), succeeded, failed)
 
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	return crons.Success(start)
 }
 
 func (c *RetryStripeEvents) markFailed(ctx scope.C, eventID, reason string) {
