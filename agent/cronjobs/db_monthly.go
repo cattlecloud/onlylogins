@@ -48,26 +48,14 @@ func (c *MonthlyDBM) Start() *crons.RunMetric {
 	cronruns, crerr := c.store.Crons().Prune(ctx, expiration)
 	if crerr != nil {
 		c.log.E.Fmt("failed to prune cron runs: %v", crerr)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 	c.log.I.Fmt("pruned %d old cron runs", cronruns)
 
 	if err := c.store.Maint().Vacuum(ctx); err != nil {
 		c.log.E.Fmt("failed to vacuum: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	return crons.Success(start)
 }

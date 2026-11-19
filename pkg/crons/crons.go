@@ -45,3 +45,19 @@ type ExitCode int
 
 const ExitSuccess = 0
 const ExitFailure = 1
+
+func Success(start time.Time) *RunMetric {
+	return &RunMetric{
+		Code:  ExitSuccess,
+		Start: start,
+		Stop:  time.Now(),
+	}
+}
+
+func Failure(start time.Time) *RunMetric {
+	return &RunMetric{
+		Code:  ExitFailure,
+		Start: start,
+		Stop:  time.Now(),
+	}
+}

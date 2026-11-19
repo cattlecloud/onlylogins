@@ -47,18 +47,10 @@ func (s *Snapshots) Start() *crons.RunMetric {
 
 	if err := s.create(); err != nil {
 		s.log.E.Fmt("stopping with failure: %v", err)
-		return &crons.RunMetric{
-			Code:  crons.ExitFailure,
-			Start: start,
-			Stop:  time.Now(),
-		}
+		return crons.Failure(start)
 	}
 
-	return &crons.RunMetric{
-		Code:  crons.ExitSuccess,
-		Start: start,
-		Stop:  time.Now(),
-	}
+	return crons.Success(start)
 }
 
 func (s *Snapshots) create() error {
