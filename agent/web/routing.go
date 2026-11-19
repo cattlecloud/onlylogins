@@ -177,6 +177,13 @@ func (a *Application) createRoutes(router *mux.Router) {
 		html:  ui.Load("profile.html"),
 	})
 
+	a.handleNormal(router, &passphraseHTTP{
+		log:     ulog.New("http/profile/passphrase"),
+		store:   a.store,
+		session: a.scache,
+		html:    ui.Load("passphrase.html"),
+	})
+
 	a.handleNormal(router, &aboutHTTP{
 		log:         ulog.New("http/about"),
 		store:       a.store,

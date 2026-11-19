@@ -42,6 +42,18 @@
   text-decoration: underline;
 }
 
+/* the change passphrase action looks like a simple link */
+.middle.profile > .user > .row > .value > a.change-passphrase {
+  color: var(--primary);
+  font-weight: normal;
+  text-decoration: none;
+}
+
+.middle.profile > .user > .row > .value > a.change-passphrase:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
+}
+
 .middle.profile > .user > .row > .value > .delete-notice {
   color: var(--text-muted);
 }

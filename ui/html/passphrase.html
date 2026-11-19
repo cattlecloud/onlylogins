@@ -1,0 +1,48 @@
+{{define "middle"}}
+<div class="middle passphrase">
+  <section class="passphrase" id="passphrase">
+    <h1>Change passphrase</h1>
+
+    <form hx-post="/profile/passphrase" hx-target="#passphrase" hx-swap="outerHTML">
+      <div class="field">
+        <label for="previous">Current passphrase</label>
+        <input
+          type="password"
+          id="previous"
+          name="previous"
+          placeholder="Enter your current passphrase"
+          autocomplete="off"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="passphrase">New passphrase</label>
+        <input
+          type="password"
+          id="passphrase"
+          name="passphrase"
+          placeholder="At least 24 characters"
+          minlength="24"
+          autocomplete="off"
+          required>
+      </div>
+
+      <div class="field">
+        <label for="confirm">Confirm new passphrase</label>
+        <input
+          type="password"
+          id="confirm"
+          name="confirm"
+          placeholder="Enter new passphrase again"
+          minlength="24"
+          autocomplete="off"
+          required>
+      </div>
+
+      <button type="submit">Update passphrase</button>
+    </form>
+
+    <span id="error"></span>
+  </section>
+</div>
+{{end}}

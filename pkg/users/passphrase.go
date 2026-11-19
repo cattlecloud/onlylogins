@@ -69,3 +69,32 @@ func ValidatePassphrase(text *conceal.Text) error {
 
 	return nil
 }
+
+// ChangePassphraseRequest captures the values needed to change a user's
+// passphrase: the existing passphrase (verified before anything changes) and
+// the new passphrase entered twice for confirmation.
+type ChangePassphraseRequest struct {
+	Previous   *conceal.Text
+	Passphrase *conceal.Text
+	Confirm    *conceal.Text
+}
+
+func (r *ChangePassphraseRequest) Validate() error {
+	if r == nil {
+		return errors.New("must not be nil")
+	}
+
+	if r.Previous.IsZero() {
+		return errors.New("old passphrase must be set")
+	}
+
+	if err := ValidatePassphrase(r.Passphrase); err != nil {
+		return err
+	}
+
+	if !r.Passphrase.Equal(r.Confirm) {
+		return errors.New("passphrases do not match")
+	}
+
+	return nil
+}

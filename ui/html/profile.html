@@ -1,7 +1,7 @@
 {{define "middle"}}
 <div class="middle profile">
   <section class="user">
-    <h1>profile</h1>
+    <h1>Profile</h1>
 
     <div class="row">
       <span class="key">username</span>
@@ -17,6 +17,13 @@
       <span class="key">documents</span>
       <div class="value">
         {{.Section.Profile.Usage.Documents}} / {{.Section.Profile.Usage.Plan.DocumentsLimit}}
+      </div>
+    </div>
+
+    <div class="row passphrase">
+      <span class="key">passphrase</span>
+      <div class="value">
+        <a class="change-passphrase" href="/profile/passphrase">change</a>
       </div>
     </div>
 
