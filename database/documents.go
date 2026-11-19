@@ -30,6 +30,7 @@ type Documents interface {
 	Get(scope.C, *sitecontent.GetDocumentRequest) (*sitecontent.Document, error)
 	Resolve(scope.C, *sitecontent.GetDocumentRequest) (records.DocumentsAuto, error)
 	Rename(scope.C, *sitecontent.RenameDocumentRequest) error
+	Migrate(scope.C, *sitecontent.MigrateDocumentRequest) error
 	Delete(scope.C, *sitecontent.DeleteDocumentRequest) error
 
 	// document > weblinks
@@ -231,6 +232,111 @@ func (s *documentsql) Rename(ctx scope.C, request *sitecontent.RenameDocumentReq
 	); rerr != nil {
 		s.log.E.Fmt("unable to rename document: %v", rerr)
 		return fmt.Errorf("unable to rename document: %w", rerr)
+	}
+
+	return tx.Commit()
+}
+
+func (s *documentsql) Migrate(ctx scope.C, request *sitecontent.MigrateDocumentRequest) error {
+	tx, done, xerr := s.ldb.StartWrite(ctx)
+	if xerr != nil {
+		return fmt.Errorf("unable to migrate document: %w", xerr)
+	}
+	defer done()
+
+	// locate the document to migrate, enforcing ownership and the source
+	// folder slug by doing a join
+	const locateSQL = `
+	select
+		documents.id,
+		documents.label,
+		documents.slug
+	from documents
+	join folders on folders.id = documents.folders_id
+	where
+		folders.users_id = ? and
+		folders.slug = ? and
+		documents.slug = ?
+	limit 1`
+
+	type doc struct {
+		ID    records.DocumentsAuto
+		Label string
+		Slug  string
+	}
+
+	find := func(scan litesql.ScanFunc) (doc, error) {
+		var loc doc
+		err := scan(&loc.ID, &loc.Label, &loc.Slug)
+		return loc, err
+	}
+
+	loc, ferr := litesql.QueryRow(ctx, tx, find, locateSQL,
+		request.User, request.Folder, request.Document,
+	)
+	if ferr != nil {
+		s.log.E.Fmt("unable to migrate document: %v", ferr)
+		return fmt.Errorf("unable to migrate document: %w", ferr)
+	}
+
+	// resolve the target folder, enforcing ownership and the target slug
+	const targetSQL = `
+	select id
+	from folders
+	where
+		users_id = ? and
+		slug = ?
+	limit 1`
+
+	targetID := func(scan litesql.ScanFunc) (records.FoldersAuto, error) {
+		var id records.FoldersAuto
+		err := scan(&id)
+		return id, err
+	}
+
+	target, terr := litesql.QueryRow(ctx, tx, targetID, targetSQL,
+		request.User, request.Target,
+	)
+	if terr != nil {
+		s.log.E.Fmt("unable to migrate document: %v", terr)
+		return fmt.Errorf("unable to migrate document: %w", terr)
+	}
+
+	// refuse to migrate onto an existing document; a document with the same
+	// label or slug within the target folder means the name is already taken
+	const conflictSQL = `
+	select count(id)
+	from documents
+	where
+		folders_id = ? and
+		(label = ? or slug = ?) and
+		id != ?`
+
+	count, cerr := litesql.QueryRow(ctx, tx, scanCount, conflictSQL,
+		target, loc.Label, loc.Slug, loc.ID,
+	)
+	if cerr != nil {
+		s.log.E.Fmt("unable to migrate document: %v", cerr)
+		return fmt.Errorf("unable to migrate document: %w", cerr)
+	}
+
+	if count > 0 {
+		return fmt.Errorf("unable to migrate document: %w", ErrDocumentExists)
+	}
+
+	const updateSQL = `
+	update documents
+	set
+		folders_id = ?,
+		modification = unixepoch('now')
+	where id = ?`
+
+	if rerr := s.ldb.Exec(ctx, tx, litesql.ExpectOne, updateSQL,
+		target,
+		loc.ID,
+	); rerr != nil {
+		s.log.E.Fmt("unable to migrate document: %v", rerr)
+		return fmt.Errorf("unable to migrate document: %w", rerr)
 	}
 
 	return tx.Commit()

@@ -140,6 +140,11 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store: a.store,
 	})
 
+	a.handleComponent(router, &migrateDocumentHTMX{
+		log:   ulog.New("htmx/document/migrate"),
+		store: a.store,
+	})
+
 	a.handleComponent(router, &emailHTMX{
 		log:   ulog.New("htmx/email"),
 		store: a.store,

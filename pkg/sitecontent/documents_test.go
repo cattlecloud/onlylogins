@@ -174,6 +174,46 @@ func TestRenameDocumentRequest_Validate(t *testing.T) {
 	})
 }
 
+func TestMigrateDocumentRequest_Validate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("missing user is rejected", func(t *testing.T) {
+		r := &MigrateDocumentRequest{Folder: "f", Document: "d", Target: "t"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing folder is rejected", func(t *testing.T) {
+		r := &MigrateDocumentRequest{User: 1, Document: "d", Target: "t"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing document is rejected", func(t *testing.T) {
+		r := &MigrateDocumentRequest{User: 1, Folder: "f", Target: "t"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("missing target is rejected", func(t *testing.T) {
+		r := &MigrateDocumentRequest{User: 1, Folder: "f", Document: "d"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("same-folder target is rejected", func(t *testing.T) {
+		r := &MigrateDocumentRequest{User: 1, Folder: "f", Document: "d", Target: "f"}
+		err := r.Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("happy path", func(t *testing.T) {
+		r := &MigrateDocumentRequest{User: 1, Folder: "f", Document: "d", Target: "t"}
+		err := r.Validate()
+		must.NoError(t, err)
+	})
+}
+
 func TestCreateKeyvalRequest_Validate(t *testing.T) {
 	t.Parallel()
 

@@ -8,6 +8,7 @@ import (
 	"html/template"
 	"net/http"
 	"path"
+	"slices"
 
 	"cattlecloud.net/go/scope"
 	"cattlecloud.net/go/ulog"
@@ -27,6 +28,7 @@ import (
 type documentContent struct {
 	Document *sitecontent.Document
 	Vault    encrypt.Vault
+	Folders  []*sitecontent.Folder
 }
 
 type documentHTTP struct {
@@ -93,6 +95,11 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 		return login(h.log, w, r)
 	}
 
+	folders, ferr := h.store.Folders().List(ctx, session.Identity())
+	if ferr != nil {
+		return abort(h.log, w, ferr)
+	}
+
 	head := &pages.Head{
 		Title:       format.PageTitle(document.Label),
 		Styles:      []string{"document.css"},
@@ -103,6 +110,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	middle := &documentContent{
 		Document: document,
 		Vault:    vault,
+		Folders:  excludeFolder(folders, document.FolderSlug),
 	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
@@ -166,4 +174,12 @@ func (h *documentHTTP) description() string {
 	const text = `
 	Mange contents of a document`
 	return format.PageDescription(text)
+}
+
+// excludeFolder returns folders with the given slug removed, used to populate
+// the document migration dropdown with every folder except the current one.
+func excludeFolder(folders []*sitecontent.Folder, slug string) []*sitecontent.Folder {
+	return slices.DeleteFunc(folders, func(f *sitecontent.Folder) bool {
+		return f.Slug == slug
+	})
 }
