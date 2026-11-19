@@ -105,6 +105,27 @@ button:focus-visible,
   outline: none;
 }
 
+.danger-zone-migrate-btn {
+  align-self: flex-start;
+  height: 2rem;
+  padding: 0 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+}
+
+.danger-zone-migrate-btn:hover,
+.danger-zone-migrate-btn:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  background: var(--surface-raised);
+  outline: none;
+}
+
 .danger-zone-delete-btn {
   align-self: flex-start;
   height: 2rem;

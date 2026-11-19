@@ -1113,6 +1113,44 @@
   color: var(--danger);
 }
 
+.middle.document .document-migrate-form {
+  display: flex;
+  flex-flow: column nowrap;
+  gap: 0.6rem;
+}
+
+.middle.document .document-migrate-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.middle.document .document-migrate-form select {
+  width: 100%;
+  padding: 0.5rem 0.65rem;
+  font-size: 0.95rem;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.middle.document .document-migrate-form select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+}
+
+.middle.document .document-migrate-form #error:empty {
+  display: none;
+}
+
+.middle.document .document-migrate-form #error {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--danger);
+}
+
 @media (max-width: 640px) {
   .middle.document > section {
     padding: 1.25rem;

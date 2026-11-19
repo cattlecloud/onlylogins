@@ -817,3 +817,34 @@ func (r *DeleteDocumentRequest) Validate() error {
 
 	return nil
 }
+
+type MigrateDocumentRequest struct {
+	User     users.Identity
+	Folder   string
+	Document string
+	Target   string
+}
+
+func (r *MigrateDocumentRequest) Validate() error {
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+
+	if !ValidateSlug(r.Folder) {
+		return errors.New("folder must be set")
+	}
+
+	if !ValidateSlug(r.Document) {
+		return errors.New("document must be set")
+	}
+
+	if !ValidateSlug(r.Target) {
+		return errors.New("target folder must be set")
+	}
+
+	if r.Folder == r.Target {
+		return errors.New("document is already in the target folder")
+	}
+
+	return nil
+}

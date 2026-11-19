@@ -4,6 +4,7 @@
 package web
 
 import (
+	"encoding/base64"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
+	"cattlecloud.net/onlylogins/pkg/sessions/cookies"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/gorilla/mux"
@@ -98,4 +100,84 @@ func TestDocumentHTTP_Delete_NotFound(t *testing.T) {
 
 	// abort() translates to 500
 	must.Eq(t, http.StatusInternalServerError, w.Code)
+}
+
+// vaultCookie returns a valid encryption key cookie (32 bytes, base64) so the
+// document page can be rendered in tests.
+func vaultCookie() *http.Cookie {
+	return &http.Cookie{
+		Name:  cookies.Encryption,
+		Value: base64.StdEncoding.EncodeToString(make([]byte, 32)),
+	}
+}
+
+func TestDocumentHTTP_Get_RendersMigrationDropdown(t *testing.T) {
+	t.Parallel()
+
+	store, routes, cookie := newDocumentTestHarness(t)
+
+	// seed a document plus an additional target folder
+	_, err := store.Documents().Create(t.Context(), &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+		Slug:   "github",
+	})
+	must.NoError(t, err)
+	must.NoError(t, store.Folders().Create(t.Context(), &sitecontent.CreateFolderRequest{
+		User:  mocks.Nobody,
+		Label: "Work",
+		Slug:  "work",
+		Icon:  sitecontent.Icon(0),
+	}))
+
+	request := requestGet(t, "/folders/miscellaneous/github", cookie)
+	request.AddCookie(vaultCookie())
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `id="document-migrate-target"`)
+	must.StrContains(t, body, `value="work"`)
+	must.StrNotContains(t, body, `value="miscellaneous"`)
+}
+
+func TestDocumentHTTP_Get_HidesMigrationWhenNoOtherFolders(t *testing.T) {
+	t.Parallel()
+
+	store, routes, cookie := newDocumentTestHarness(t)
+
+	// only the default "miscellaneous" folder exists, so there is nowhere to
+	// migrate the document to
+	_, err := store.Documents().Create(t.Context(), &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+		Slug:   "github",
+	})
+	must.NoError(t, err)
+
+	request := requestGet(t, "/folders/miscellaneous/github", cookie)
+	request.AddCookie(vaultCookie())
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrNotContains(t, w.Body.String(), `id="document-migrate-target"`)
+}
+
+func TestExcludeFolder(t *testing.T) {
+	t.Parallel()
+
+	folders := []*sitecontent.Folder{
+		{Slug: "miscellaneous", Label: "miscellaneous"},
+		{Slug: "work", Label: "Work"},
+		{Slug: "personal", Label: "Personal"},
+	}
+
+	result := excludeFolder(folders, "work")
+	must.SliceLen(t, 2, result)
+	must.Eq(t, "miscellaneous", result[0].Slug)
+	must.Eq(t, "personal", result[1].Slug)
 }

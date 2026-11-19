@@ -226,6 +226,22 @@
           <span id="error"></span>
         </form>
 
+        {{if .Section.Folders}}
+        <form
+          class="document-migrate-form"
+          hx-post="/internal/document/migrate/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+        >
+          <label for="document-migrate-target">Migrate document</label>
+          <select id="document-migrate-target" name="target" required>
+            {{range .Section.Folders}}
+            <option value="{{.Slug}}">{{.Label}}</option>
+            {{end}}
+          </select>
+          <button type="submit" class="danger-zone-migrate-btn">Migrate</button>
+          <span id="error"></span>
+        </form>
+        {{end}}
+
         <p>
           Deleting <strong>{{.Section.Document.Label}}</strong> will permanently
           remove this document and every username, password, key/value, web

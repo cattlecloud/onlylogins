@@ -1335,3 +1335,174 @@ func TestDocuments_Rename(t *testing.T) {
 		must.Error(t, err)
 	})
 }
+
+func TestDocuments_Migrate(t *testing.T) {
+	t.Parallel()
+
+	t.Run("happy path", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+
+		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  mocks.Nobody,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		before, err := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+
+		// ensure the modification timestamp advances by a full second
+		time.Sleep(time.Second)
+
+		merr := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Target:   "work",
+		})
+		must.NoError(t, merr)
+
+		// the document now resolves under the new folder with a bumped timestamp
+		after, gerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "work", Document: "github",
+		})
+		must.NoError(t, gerr)
+		must.Eq(t, "Work", after.Folder)
+		must.Eq(t, "work", after.FolderSlug)
+		must.True(t, after.Modification.After(before.Modification))
+
+		// the child row survived the migration (keyed by document id, not folder)
+		must.SliceLen(t, 1, after.Usernames)
+
+		// the old folder path no longer resolves
+		_, oerr := d.Get(ctx, &sitecontent.GetDocumentRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.Error(t, oerr)
+	})
+
+	t.Run("duplicate label", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  mocks.Nobody,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+		_, cerr := d.Create(ctx, &sitecontent.CreateDocumentRequest{
+			User:   mocks.Nobody,
+			Folder: "work",
+			Label:  "github",
+			Slug:   "github",
+		})
+		must.NoError(t, cerr)
+
+		err := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Target:   "work",
+		})
+		must.ErrorIs(t, err, ErrDocumentExists)
+	})
+
+	t.Run("duplicate slug", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "Git Hub") // slug "git-hub"
+
+		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  mocks.Nobody,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+		_, cerr := d.Create(ctx, &sitecontent.CreateDocumentRequest{
+			User:   mocks.Nobody,
+			Folder: "work",
+			Label:  "git-hub",
+			Slug:   "git-hub",
+		})
+		must.NoError(t, cerr)
+
+		err := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "git-hub",
+			Target:   "work",
+		})
+		must.ErrorIs(t, err, ErrDocumentExists)
+	})
+
+	t.Run("unknown document", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  mocks.Nobody,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		err := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "nope",
+			Target:   "work",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("unknown target folder", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		err := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     mocks.Nobody,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Target:   "no-such-folder",
+		})
+		must.Error(t, err)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		d := db.Documents()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		bob := insertUser(t, ctx, db, "bob")
+
+		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
+			User:  bob,
+			Label: "Work",
+			Slug:  "work",
+			Icon:  sitecontent.Icon(0),
+		}))
+
+		// bob cannot migrate nobody's document
+		err := d.Migrate(ctx, &sitecontent.MigrateDocumentRequest{
+			User:     bob,
+			Folder:   "miscellaneous",
+			Document: "github",
+			Target:   "work",
+		})
+		must.Error(t, err)
+	})
+}
