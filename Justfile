@@ -62,7 +62,7 @@ generate:
 # locally install build tools
 [group('build')]
 init:
-    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
+    go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.15.0
     go install github.com/pelletier/go-toml/v2/cmd/tomljson@v2.2.4
 
 # start memcached instance for local development
