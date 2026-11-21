@@ -7,9 +7,25 @@
 </div>
 
 <div class="content">
-  <p>Plan is {{.User.Plan.Label}}</p>
-  <p>Usage is {{.User.Usage.Documents}} / {{.User.Plan.DocumentsLimit}}</p>
+  <div class="stat plan">
+    <span class="stat-key">plan</span>
+    <span class="stat-value">{{.User.Plan.Label}}</span>
+  </div>
+  <div class="stat usage">
+    <span class="stat-key">usage</span>
+    <div class="stat-value">
+      <span class="usage-count">{{.User.Usage.Documents}} / {{.User.Plan.DocumentsLimit}}</span>
+      <div class="usage-bar">
+        <div class="usage-fill {{.User.Usage.Level}}" style="width: {{.User.Usage.Percent}}%"></div>
+      </div>
+    </div>
+  </div>
 </div>
+
+<div id="history-panel"
+     hx-get="/moderate/users/{{.User.Profile.ID}}/history"
+     hx-trigger="load"
+     hx-swap="innerHTML"></div>
 
 </div>
 {{end}}

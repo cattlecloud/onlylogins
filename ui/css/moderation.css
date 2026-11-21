@@ -142,3 +142,117 @@ body > .contains {
   font-family: monospace;
   color: var(--font-color-light);
 }
+
+/* user summary card (plan + usage) */
+.modpage.user > .content {
+  display: flex;
+  flex-flow: column;
+  gap: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+}
+
+.modpage.user > .content > .stat {
+  display: flex;
+  flex-flow: row;
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.modpage.user > .content > .stat > .stat-key {
+  min-width: 4rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--font-color-light);
+}
+
+.modpage.user > .content > .stat > .stat-value {
+  color: var(--font-color);
+  font-weight: 600;
+}
+
+.modpage.user > .content > .stat.plan > .stat-value {
+  text-transform: capitalize;
+}
+
+.modpage.user > .content > .stat.usage > .stat-value {
+  flex: 1;
+  display: flex;
+  flex-flow: column;
+  gap: 0.35rem;
+}
+
+.modpage.user > .content .usage-count {
+  color: var(--font-color);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.modpage.user > .content .usage-bar {
+  height: 0.5rem;
+  background-color: #e9ecef;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.modpage.user > .content .usage-fill {
+  height: 100%;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+.modpage.user > .content .usage-fill.normal   { background-color: #2e7d32; }
+.modpage.user > .content .usage-fill.high     { background-color: #ed8936; }
+.modpage.user > .content .usage-fill.veryhigh { background-color: #e67700; }
+.modpage.user > .content .usage-fill.redline  { background-color: var(--primary-color); }
+.modpage.user > .content .usage-fill.overage  { background-color: #9b1c1c; }
+
+/* login history panel */
+.modpage.user .history {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.modpage.user .history-row {
+  display: flex;
+  flex-flow: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modpage.user .history-row:last-child {
+  border-bottom: none;
+}
+
+.modpage.user .history-line {
+  font-size: 0.85rem;
+  color: var(--font-color-light);
+}
+
+.modpage.user .history-line:first-child {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.modpage.user .history-outcome.success {
+  color: #2e7d32;
+}
+
+.modpage.user .history-outcome.failure {
+  color: var(--primary-color);
+}
+
+.modpage.user .history-empty {
+  color: var(--font-color-light);
+  font-size: 0.85rem;
+}
