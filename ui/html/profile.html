@@ -30,6 +30,17 @@
         hx-swap="outerHTML">edit</button>
     </div>
 
+    <div class="row history">
+      <span class="key">history</span>
+      <div class="value">
+        <button
+          class="show-history"
+          hx-get="/internal/profile/history"
+          hx-target="#history-panel"
+          hx-swap="innerHTML">show</button>
+      </div>
+    </div>
+
     <div class="row passphrase">
       <span class="key">passphrase</span>
       <div class="value">
@@ -57,6 +68,9 @@
       </div>
     </div>
     {{end}}
+
   </section>
+
+  <div id="history-panel"></div>
 </div>
 {{end}}

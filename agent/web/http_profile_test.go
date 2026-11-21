@@ -68,6 +68,10 @@ func TestProfile_ServeHTTP_GET_logged_in(t *testing.T) {
 	// a user without a paid subscription may delete their account
 	must.StrContains(t, w.Body.String(), `hx-delete="/internal/logout"`)
 	must.StrContains(t, w.Body.String(), `>delete</a>`)
+
+	// the login history action and target panel are present
+	must.StrContains(t, w.Body.String(), `hx-get="/internal/profile/history"`)
+	must.StrContains(t, w.Body.String(), `id="history-panel"`)
 }
 
 func TestProfile_ServeHTTP_GET_logged_in_with_documents(t *testing.T) {
