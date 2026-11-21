@@ -8,27 +8,16 @@ backup codes simple and secure. Your data is encrypted using your own secret
 passphrase and cannot be decrypted without it. No 2FA codes, USB dongles,
 or email account is required to access your data. Just your passphrase.
 
-Check out [OnlyLogins](https://onlylogins.net) to store your passwords for free.
+Check out [onlylogins.net](https://onlylogins.net) to store your passwords for free.
 
-## Contents
-
-- [Features](#features)
-- [Contributing](#contributing)
-- [Security](#security)
-- [Bug Reports](#bug-reports)
-- [Development](#development)
-- [Architecture](#architecture)
-- [Self-Hosting](#self-hosting)
-- [License](#license)
-
-## Features
+### Features
 
 - Manage passwords, website login credentials, API tokens, and 2FA backup codes.
-- Encrypt everything with your own secret passphrase — nothing can be decrypted without it.
-- Access your data with just your passphrase — no 2FA codes, USB dongles, or email account required.
-- Store your passwords for free at [OnlyLogins](https://onlylogins.net), or [self-host](#self-hosting) your own instance.
+- Encrypt everything with your own secret passphrase. Nothing gets decrypted without it.
+- No 2FA codes, USB dongles, or email accounts required. Your data is yours.
+- Store your passwords for free [online](https://onlylogins.net), or self-host your own instance.
 
-## Contributing
+### Contributing
 
 We welcome contributions from the OnlyLogins user base. Before you start coding,
 please open an issue with the following information:
@@ -45,7 +34,7 @@ you need to implement and test your enhancement.
 If you'd like to contribute to an existing issue, you should post in the issue
 before starting. Let us know you'd like to work on it and your proposed solution.
 
-### AI Policy
+#### AI Policy
 
 Please do not submit pure AI-generated pull requests. Using agents for
 assistance in code exploration and development is permissible, but do
@@ -53,7 +42,7 @@ be courteous and avoid submitting code that you yourself haven't reviewed.
 If you can't be bothered to think critically about your changes, why
 should we?
 
-## Security
+### Security
 
 If you find a security vulnerability please exercise responsible disclosure
 by privately emailing a repository maintainer before going public with your
@@ -62,14 +51,14 @@ SaaS product website.
 
 - seth@cattlecloud.net
 
-## Bug Reports
+### Bug Reports
 
 Find a bug? Report it! Use the [issues](https://github.com/cattlecloud/onlylogins/issues)
 page to report functional problems.
 
-## Development
+### Development
 
-### Running Locally
+#### Running Locally
 
 Assuming you have a working Go toolchain, getting started is as easy as running
 a few [Justfile](https://just.systems/man/en/) targets.
@@ -84,7 +73,7 @@ just init lint tests
 just run ./hack/dev.toml
 ```
 
-### Accessing the Database
+#### Accessing the Database
 
 ```shell
 # Open the SQLite file
@@ -94,7 +83,7 @@ just db-open ./hack/dev.toml
 just db-reset ./hack/dev.toml
 ```
 
-### Using Memcached
+#### Using Memcached
 
 A [memcached](https://www.memcached.org) instance is expected to be available
 and is used for storing session state. For local development a Justfile target
@@ -105,11 +94,10 @@ exists for convenience, and works with the `hack/dev.toml` configuration.
 just mc-run
 
 # Show stats output of the local memcached
-# tip: STAT curr_items is the interesting metric
 just mc-stats
 ```
 
-### Stripe Integration
+#### Stripe Integration
 
 Note: it is not necessary to integrate with Stripe for local development or for
 running your own instance. If the stripe configuration is left unset, `onlylogins`
@@ -131,7 +119,7 @@ stripe listen --all-snapshot --forward-to localhost:3000/api/stripe/webhooks
 
 4. be sure to use the "Test" environment for development and "Sandbox" for QA
 
-### Releasing
+#### Releasing
 
 You'll need a few Go tools not included with `just init`.
 
@@ -151,7 +139,7 @@ Use the `deploy.sh` script to SCP and restart the service.
 just deploy <host>
 ```
 
-## Architecture
+### Architecture
 
 When working on OnlyLogins, there are a few key packages that you should be
 familiar with before making changes. Understanding these will help you get
@@ -167,13 +155,29 @@ started.
   - `pkg/sitecontent/` - Models that bridge storage and web layers
 - `ui/` - Defines HTML templates and CSS, Javascript files
 
-## Self-Hosting
+#### Technologies
+
+The OnlyLogins project makes use of specific "boring" technologies that
+help make the code simple to reason about, which is important for the
+security guarantees necessary in something like a password manager. The
+bar for introducing additional complex technologies is extremely high.
+
+We like to think of this as the "GoSH" stack.
+
+- Go Programming Language (https://go.dev)
+- SQLite database (https://sqlite.org/index.html)
+- Memcached (https://www.memcached.org)
+- HTMX (https://htmx.org)
+
+### Self-Hosting
 
 New versions of OnlyLogins are made available on the [releases](https://github.com/cattlecloud/onlylogins/releases)
 page. At the moment pre-compiled binaries are distributed only for
 Linux on AMD64. See the development section above for instructions on
 compiling custom versions. Use the [hack/dev.toml](https://github.com/cattlecloud/onlylogins/blob/main/hack/dev.toml)
-as a reference for setting up configuration.
+as a reference for setting up configuration. Before you host on an
+ARM64 instance, note that the [argon2](https://cs.opensource.google/go/x/crypto/+/refs/tags/v0.59.0:argon2/)
+crypto package is optimized only for AMD64.
 
 Launch the agent specifying the `agent` subcommand with the path
 to your configuration file.
@@ -182,7 +186,7 @@ to your configuration file.
 onlylogins agent -c ./hack/dev.toml
 ```
 
-## License
+### License
 
 OnlyLogins is made available under the [AGPL-3.0](LICENSE) license.
 
