@@ -6,6 +6,7 @@ package users
 import (
 	"errors"
 	"strings"
+	"unicode/utf8"
 
 	"cattlecloud.net/onlylogins/pkg/entropy"
 	"github.com/shoenig/go-conceal"
@@ -17,7 +18,7 @@ const (
 	//
 	// Some casual reading on the subject:
 	// https://pages.nist.gov/800-63-4/sp800-63b.html
-	minimumPasskeyLength  = 24 // NIST is 15
+	minimumPasskeyLength  = 16 // NIST SP 800-63B
 	minimumPasskeyEntropy = 80 // NIST is 64
 	saltLength            = 16 // custom
 )
@@ -55,8 +56,8 @@ func ValidatePassphrase(text *conceal.Text) error {
 		return errors.New("passphrase must not be nil")
 	}
 
-	if len(text.Unveil()) < minimumPasskeyLength {
-		return errors.New("passphrase must be at least 24 characters long")
+	if utf8.RuneCountInString(text.Unveil()) < minimumPasskeyLength {
+		return errors.New("passphrase must be at least 16 characters long")
 	}
 
 	if entropy.Sequence(text.Unveil()) {
