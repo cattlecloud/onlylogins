@@ -1,5 +1,10 @@
 # OnlyLogins
 
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](LICENSE)
+[![CI](https://github.com/cattlecloud/onlylogins/actions/workflows/ci.yaml/badge.svg)](https://github.com/cattlecloud/onlylogins/actions/workflows/ci.yaml)
+[![GitHub release](https://img.shields.io/github/v/release/cattlecloud/onlylogins)](https://github.com/cattlecloud/onlylogins/releases)
+[![Go](https://img.shields.io/github/go-mod/go-version/cattlecloud/onlylogins.svg)](https://go.dev)
+
 <img align="right" height="420" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
 
 OnlyLogins is an open source password manager that makes managing your secret
