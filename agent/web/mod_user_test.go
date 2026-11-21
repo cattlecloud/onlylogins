@@ -31,4 +31,6 @@ func TestModUser_ServeHTTP(t *testing.T) {
 
 	body := w.Body.String()
 	must.StrContains(t, body, `<div class="modpage user">`)
+	must.StrContains(t, body, `hx-get="/moderate/users/1/history"`)
+	must.StrContains(t, body, `id="history-panel"`)
 }

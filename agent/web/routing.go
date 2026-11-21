@@ -173,6 +173,11 @@ func (a *Application) createRoutes(router *mux.Router) {
 		html:  ui.Mod("mod_user.html"),
 	})
 
+	a.handleModerate(router, &modHistoryHTMX{
+		log:   ulog.New("htmx/mod/history"),
+		store: a.store,
+	})
+
 	a.handleNormal(router, &loginHTTP{
 		log:         ulog.New("http/login"),
 		environment: a.environment,
