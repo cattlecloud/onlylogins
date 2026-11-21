@@ -1,6 +1,9 @@
 # OnlyLogins
 
+<img align="right" width="240" height="244" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
+
 This application powers [onlylogins](https://onlylogins.net).
+
 
 ### Development
 
