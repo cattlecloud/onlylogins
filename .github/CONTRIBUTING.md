@@ -41,67 +41,6 @@ assistance in code exploration and development is permissible, but do be
 courteous and avoid submitting code that you yourself haven't reviewed. If you
 can't be bothered to think critically about your changes, why should we?
 
-## Development Setup
-
-Assuming you have a working Go toolchain, getting started is as easy as running
-a few [Justfile](https://just.systems/man/en/) targets.
-
-```shell
-# Install local tooling, run linters and tests
-just init lint tests
-```
-
-```shell
-# Run the instance and listen on localhost:3000
-just run ./hack/dev.toml
-```
-
-### Accessing the database
-
-```shell
-# Open the SQLite file
-just db-open ./hack/dev.toml
-
-# Completely delete the SQLite file
-just db-reset ./hack/dev.toml
-```
-
-### Using memcached
-
-A [memcached](https://www.memcached.org) instance is expected to be available
-and is used for storing session state. For local development a Justfile target
-exists for convenience, and works with the `hack/dev.toml` configuration.
-
-```shell
-# Start a local memcached listening on /tmp/mc.sock
-just mc-run
-
-# Show stats output of the local memcached
-# tip: STAT curr_items is the interesting metric
-just mc-stats
-```
-
-### Stripe integration
-
-Note: it is not necessary to integrate with Stripe for local development or for
-running your own instance. If the Stripe configuration is left unset,
-`onlylogins` will automatically exclude the subscription features.
-
-## Architecture
-
-When working on OnlyLogins, there are a few key packages you should be familiar
-with before making changes:
-
-- `agent/` - The main entrypoint of the long-lived web service
-  - `agent/cronjobs/` - Creates background tasks that run periodically
-  - `agent/web/` - Creates the HTTP, HTMX, and API web handlers
-- `database/` - Storage layer backed by SQLite
-- `hack/` - Contains example configuration and mock packages
-- `pkg/` - Contains numerous helper packages
-  - `pkg/encrypt/` - Where the security happens
-  - `pkg/sitecontent/` - Models that bridge storage and web layers
-- `ui/` - Defines HTML templates and CSS, Javascript files
-
 ## License
 
 OnlyLogins is made available under the [AGPL-3.0](LICENSE) license. By
