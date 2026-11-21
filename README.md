@@ -1,9 +1,52 @@
 # OnlyLogins
 
-<img align="right" width="240" height="244" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
+<img align="right" width="240" height="420" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
 
-This application powers [onlylogins](https://onlylogins.net).
+OnlyLogins is an open source password manager that makes managing your secret
+information like passwords, website login credentials, API tokens, and 2FA
+backup codes simple and secure. Your data is encrypted using your own secret
+passphrase and cannot be decrypted without it. No 2FA codes, USB dongles,
+or email account is required to access your data. Just your passphrase.
 
+Check out https://onlylogins.net to store your passwords for free.
+
+### Contributing
+
+We welcome contributions from the OnlyLogins user base. Before you start coding,
+please open an issue with the following information:
+
+- Details on the feature you'd like to see and the problem you hope to solve, including how you envision using the feature.
+- Your wish to contribute the code, your proposed solution, and the test plan.
+
+Creating the issue opens a discussion with us so that we can collect feedback,
+help with design, track the feature request, and better review your code PR.
+This initial discussion and collaboration ensures that you have the support
+you need to implement and test your enhancement.
+
+If you'd like to contribute to an existing issue, you should post in the issue
+before starting. Let us know you'd like to work on it and your proposed solution.
+
+#### Security policy
+
+If you find a security vulnerability please exercise responsible disclosure
+by privately emailing a repository maintainer before going public with your
+findings. This includes issues with the source code or in the hosting of our
+SaaS product website.
+
+- seth@cattlecloud.net
+
+#### AI policy
+
+Please do not submit pure AI-generated pull requests. Using agents for
+assistance in code exploration and development is permissible, but do
+be courteous and avoid submitting code that you yourself haven't reviewed.
+If you can't be bothered to think critically about your changes, why
+should we?
+
+#### Bug reports
+
+Find a bug? Report it! Use the [issues](https://github.com/cattlecloud/onlylogins/issues)
+page to report functional problems.
 
 ### Development
 
@@ -39,7 +82,12 @@ and is used for storing session state. For local development a Justfile target
 exists for convenience, and works with the `hack/dev.toml` configuration.
 
 ```shell
+# Start a local memcached listening on /tmp/mc.sock
 just mc-run
+
+# Show stats output of the local memcached
+# tip: STAT curr_items is the interesting metric
+just mc-stats
 ```
 
 #### Stripe integration
@@ -62,7 +110,23 @@ stripe login
 stripe listen --all-snapshot --forward-to localhost:3000/api/stripe/webhooks
 ```
 
-4. Be sure to use the "-Sandbox" in stripe for managing test environments.
+4. Be sure to use the "Test" environment for development and "Sandbox" for QA.
+
+### Architecture
+
+When working on OnlyLogins, there are a few key packages that you should be
+familiar with before making changes. Understanding these will help you get
+started.
+
+- `agent/` - The main entrypoint of the long-lived web service
+  - `agent/cronjobs/` - Creates background tasks that run periodically
+  - `agent/web/` - Creates the HTTP, HTMX, an API web handlers
+- `database/` - Storage layer backed by SQLite
+- `hack/` - Contains example configuration and mock packages
+- `pkg/` - Contains numerous helper packages
+  - `pkg/encrypt/` - Where the security happens
+  - `pkg/sitecontent/` - Models that bridge storage and web layers
+- `ui/` - Defines HTML templates and CSS, Javascript files
 
 ### Publish
 
@@ -84,6 +148,20 @@ Use the `deploy.sh` script to SCP and restart service.
 just deploy <host>
 ```
 
+### Self Hosting
+
+New versions of OnlyLogins are made available on the [releases](https://github.com/cattlecloud/onlylogins/releases)
+page. At the moment pre-compiled binaries are distributed only for
+Linux on AMD64. See the development section above for instructions on
+compiling custom versions. Use the [hack/dev.toml](https://github.com/cattlecloud/onlylogins/blob/main/hack/dev.toml)
+as a reference for setting up configuration.
+
+Launch the agent specifying the `agent` subcommand with the path
+to your configuration file.
+
+```shell
+onlylogins agent -c ./hack/dev.toml
+```
 
 ### License
 
