@@ -11,13 +11,24 @@
       easy to remember.
     </p>
     <p>
-      OnlyLogins requires a passphrase of at least 24 characters. Long
+      OnlyLogins requires a passphrase of at least 16 characters. Long
       passphrases made from several unrelated words are easier to remember and
       much harder to guess than short passwords with lots of symbols. The
       classic XKCD comic <a href="https://xkcd.com/936/">correct horse battery staple</a>
       example is a good model to follow. Avoid common phrases, song lyrics,
       quotes, and long runs of repeated or sequential characters such as
       <code>aaaaa</code> or <code>12345</code>.
+    </p>
+    <p>
+      The 16-character minimum comes from the United States National Institute
+      of Standards and Technology (NIST). Their digital identity guidelines,
+      <a href="https://pages.nist.gov/800-63-4/sp800-63b.html">SP 800-63B</a>,
+      recommend a minimum of 15 characters for a passphrase that is the only
+      factor protecting an account. OnlyLogins follows that recommendation and
+      adds one more character for good measure. On top of the length
+      requirement, your passphrase must also contain at least 80 bits of
+      entropy, which ensures a long passphrase is not just padded with repeated
+      or predictable characters.
     </p>
     <p>
       Use a passphrase that is unique to OnlyLogins. Do not reuse a passphrase

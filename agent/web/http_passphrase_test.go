@@ -262,7 +262,7 @@ func TestPassphrase_POST_short_passphrase(t *testing.T) {
 
 	must.Eq(t, http.StatusOK, w.Code)
 	must.StrContains(t, w.Body.String(), `<span id="error" hx-swap-oob="true">`)
-	must.StrContains(t, w.Body.String(), "passphrase must be at least 24 characters long")
+	must.StrContains(t, w.Body.String(), "passphrase must be at least 16 characters long")
 }
 
 func TestPassphrase_POST_not_logged_in(t *testing.T) {
