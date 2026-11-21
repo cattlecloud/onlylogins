@@ -1,6 +1,6 @@
 # OnlyLogins
 
-<img align="right" width="240" height="420" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
+<img align="right" height="420" src="https://cattlecloudcdn.nyc3.cdn.digitaloceanspaces.com/onlylogins/basics/onlylogins.jpeg">
 
 OnlyLogins is an open source password manager that makes managing your secret
 information like passwords, website login credentials, API tokens, and 2FA
@@ -8,14 +8,33 @@ backup codes simple and secure. Your data is encrypted using your own secret
 passphrase and cannot be decrypted without it. No 2FA codes, USB dongles,
 or email account is required to access your data. Just your passphrase.
 
-Check out https://onlylogins.net to store your passwords for free.
+Check out [OnlyLogins](https://onlylogins.net) to store your passwords for free.
 
-### Contributing
+## Contents
+
+- [Features](#features)
+- [Contributing](#contributing)
+- [Security](#security)
+- [Bug Reports](#bug-reports)
+- [Development](#development)
+- [Architecture](#architecture)
+- [Self-Hosting](#self-hosting)
+- [License](#license)
+
+## Features
+
+- Manage passwords, website login credentials, API tokens, and 2FA backup codes.
+- Encrypt everything with your own secret passphrase — nothing can be decrypted without it.
+- Access your data with just your passphrase — no 2FA codes, USB dongles, or email account required.
+- Store your passwords for free at [OnlyLogins](https://onlylogins.net), or [self-host](#self-hosting) your own instance.
+
+## Contributing
 
 We welcome contributions from the OnlyLogins user base. Before you start coding,
 please open an issue with the following information:
 
-- Details on the feature you'd like to see and the problem you hope to solve, including how you envision using the feature.
+- Details on the feature you'd like to see and the problem you hope to solve,
+  including how you envision using the feature.
 - Your wish to contribute the code, your proposed solution, and the test plan.
 
 Creating the issue opens a discussion with us so that we can collect feedback,
@@ -26,7 +45,15 @@ you need to implement and test your enhancement.
 If you'd like to contribute to an existing issue, you should post in the issue
 before starting. Let us know you'd like to work on it and your proposed solution.
 
-#### Security policy
+### AI Policy
+
+Please do not submit pure AI-generated pull requests. Using agents for
+assistance in code exploration and development is permissible, but do
+be courteous and avoid submitting code that you yourself haven't reviewed.
+If you can't be bothered to think critically about your changes, why
+should we?
+
+## Security
 
 If you find a security vulnerability please exercise responsible disclosure
 by privately emailing a repository maintainer before going public with your
@@ -35,22 +62,14 @@ SaaS product website.
 
 - seth@cattlecloud.net
 
-#### AI policy
-
-Please do not submit pure AI-generated pull requests. Using agents for
-assistance in code exploration and development is permissible, but do
-be courteous and avoid submitting code that you yourself haven't reviewed.
-If you can't be bothered to think critically about your changes, why
-should we?
-
-#### Bug reports
+## Bug Reports
 
 Find a bug? Report it! Use the [issues](https://github.com/cattlecloud/onlylogins/issues)
 page to report functional problems.
 
-### Development
+## Development
 
-#### Running locally
+### Running Locally
 
 Assuming you have a working Go toolchain, getting started is as easy as running
 a few [Justfile](https://just.systems/man/en/) targets.
@@ -61,11 +80,11 @@ just init lint tests
 ```
 
 ```shell
-# Run the instance and listen on localhost:3000
+# Run the instance, which listens on localhost:3000
 just run ./hack/dev.toml
 ```
 
-#### Accessing the database
+### Accessing the Database
 
 ```shell
 # Open the SQLite file
@@ -75,7 +94,7 @@ just db-open ./hack/dev.toml
 just db-reset ./hack/dev.toml
 ```
 
-#### Using memcached
+### Using Memcached
 
 A [memcached](https://www.memcached.org) instance is expected to be available
 and is used for storing session state. For local development a Justfile target
@@ -90,7 +109,7 @@ just mc-run
 just mc-stats
 ```
 
-#### Stripe integration
+### Stripe Integration
 
 Note: it is not necessary to integrate with Stripe for local development or for
 running your own instance. If the stripe configuration is left unset, `onlylogins`
@@ -110,25 +129,9 @@ stripe login
 stripe listen --all-snapshot --forward-to localhost:3000/api/stripe/webhooks
 ```
 
-4. Be sure to use the "Test" environment for development and "Sandbox" for QA.
+4. be sure to use the "Test" environment for development and "Sandbox" for QA
 
-### Architecture
-
-When working on OnlyLogins, there are a few key packages that you should be
-familiar with before making changes. Understanding these will help you get
-started.
-
-- `agent/` - The main entrypoint of the long-lived web service
-  - `agent/cronjobs/` - Creates background tasks that run periodically
-  - `agent/web/` - Creates the HTTP, HTMX, an API web handlers
-- `database/` - Storage layer backed by SQLite
-- `hack/` - Contains example configuration and mock packages
-- `pkg/` - Contains numerous helper packages
-  - `pkg/encrypt/` - Where the security happens
-  - `pkg/sitecontent/` - Models that bridge storage and web layers
-- `ui/` - Defines HTML templates and CSS, Javascript files
-
-### Publish
+### Releasing
 
 You'll need a few Go tools not included with `just init`.
 
@@ -142,13 +145,29 @@ Create a new artifact, supplying the version tag.
 just artifact $(taggit patch --dry | fields -- -1)
 ```
 
-Use the `deploy.sh` script to SCP and restart service.
+Use the `deploy.sh` script to SCP and restart the service.
 
 ```shell
 just deploy <host>
 ```
 
-### Self Hosting
+## Architecture
+
+When working on OnlyLogins, there are a few key packages that you should be
+familiar with before making changes. Understanding these will help you get
+started.
+
+- `agent/` - The main entrypoint of the long-lived web service
+  - `agent/cronjobs/` - Creates background tasks that run periodically
+  - `agent/web/` - Creates the HTTP, HTMX, and API web handlers
+- `database/` - Storage layer backed by SQLite
+- `hack/` - Contains example configuration and mock packages
+- `pkg/` - Contains numerous helper packages
+  - `pkg/encrypt/` - Where the security happens
+  - `pkg/sitecontent/` - Models that bridge storage and web layers
+- `ui/` - Defines HTML templates and CSS, Javascript files
+
+## Self-Hosting
 
 New versions of OnlyLogins are made available on the [releases](https://github.com/cattlecloud/onlylogins/releases)
 page. At the moment pre-compiled binaries are distributed only for
@@ -163,7 +182,7 @@ to your configuration file.
 onlylogins agent -c ./hack/dev.toml
 ```
 
-### License
+## License
 
 OnlyLogins is made available under the [AGPL-3.0](LICENSE) license.
 
