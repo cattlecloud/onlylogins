@@ -1,0 +1,16 @@
+{{define "history"}}
+<div class="history">
+  {{range .Rows}}
+  <div class="history-row">
+    <div class="history-line">
+      <span class="history-ip">{{.IP}}</span>
+      <span class="history-when">{{.When}}</span>
+      <span class="history-outcome {{.Class}}">{{.Outcome}}</span>
+    </div>
+    <div class="history-line">{{.Detail}}</div>
+  </div>
+  {{else}}
+  <div class="history-empty">No login activity.</div>
+  {{end}}
+</div>
+{{end}}

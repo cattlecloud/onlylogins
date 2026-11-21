@@ -18,6 +18,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/cronexpr v1.1.3
 	github.com/hashicorp/go-set/v3 v3.0.1
+	github.com/mileusna/useragent v1.3.5
 	github.com/shoenig/go-conceal v0.5.7
 	github.com/shoenig/ignore v0.4.0
 	github.com/shoenig/lang v0.0.8
@@ -31,7 +32,6 @@ require (
 	cattlecloud.net/go/stacks v1.1.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.53 // indirect
-	github.com/mileusna/useragent v1.3.5 // indirect
 	github.com/shopspring/decimal v1.6.0 // indirect
 	github.com/stretchr/testify v1.12.1 // indirect
 	github.com/valyala/fastrand v1.1.0 // indirect

@@ -22,8 +22,20 @@ type Audits interface {
 	Record(scope.C, *users.LoginRequest, bool) error
 	RecordBogus(scope.C, *users.LoginRequest) error
 
+	// recent login activity for a user
+	History(scope.C, users.Identity, int) ([]LoginEntry, error)
+
 	// prune old login attempts
 	Prune(scope.C, time.Duration) error
+}
+
+// LoginEntry is a single login attempt record for a user, as read from the
+// logins table for display in the account history view.
+type LoginEntry struct {
+	IP        string
+	UserAgent string
+	Success   bool
+	Creation  time.Time
 }
 
 type auditsql struct {
@@ -110,6 +122,38 @@ func (s *auditsql) RecordBogus(ctx scope.C, request *users.LoginRequest) error {
 	}
 
 	return tx.Commit()
+}
+
+func (s *auditsql) History(ctx scope.C, id users.Identity, limit int) ([]LoginEntry, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to read login history: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select
+		ip,
+		ua,
+		success,
+		creation
+	from logins
+	where
+		users_id = ?
+	order by id desc
+	limit ?`
+
+	f := func(scan litesql.ScanFunc) (LoginEntry, error) {
+		var entry LoginEntry
+		var success int
+		var creation int64
+		err := scan(&entry.IP, &entry.UserAgent, &success, &creation)
+		entry.Success = success == 1
+		entry.Creation = time.Unix(creation, 0)
+		return entry, err
+	}
+
+	return litesql.QueryRows(ctx, tx, f, statement, id, limit)
 }
 
 func (s *auditsql) Prune(ctx scope.C, threshold time.Duration) error {

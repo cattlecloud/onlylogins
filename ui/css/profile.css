@@ -1,3 +1,10 @@
+.middle.profile {
+  display: flex;
+  flex-flow: column;
+  align-items: stretch;
+  gap: 1rem;
+}
+
 .middle.profile > .user {
   display: flex; flex-flow: column; gap: 1rem;
 }
@@ -129,4 +136,71 @@
 
 .middle.profile > .user > .row.email .cancel-link {
   font-size: 0.8rem;
+}
+
+/* the show history action looks like a simple inline button */
+.middle.profile > .user > .row > .value > button.show-history {
+  height: 1.75rem;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--button-radius);
+  text-shadow: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.middle.profile > .user > .row > .value > button.show-history:hover,
+.middle.profile > .user > .row > .value > button.show-history:focus-visible {
+  color: var(--primary);
+  border-color: var(--primary);
+  outline: none;
+}
+
+/* login history panel */
+.middle.profile .history {
+  display: flex;
+  flex-flow: column;
+  gap: 0.75rem;
+}
+
+.middle.profile .history-row {
+  display: flex;
+  flex-flow: column;
+  gap: 0.15rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.middle.profile .history-row:last-child {
+  border-bottom: none;
+}
+
+.middle.profile .history-line {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.middle.profile .history-line:first-child {
+  display: flex;
+  flex-flow: row wrap;
+  gap: 0.5rem;
+  align-items: baseline;
+}
+
+.middle.profile .history-outcome.success {
+  color: #4ade80;
+}
+
+.middle.profile .history-outcome.failure {
+  color: var(--danger);
+}
+
+.middle.profile .history-empty {
+  color: var(--text-muted);
+  font-size: 0.85rem;
 }
