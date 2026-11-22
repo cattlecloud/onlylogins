@@ -23,6 +23,7 @@ or a homelab.
 	https://onlylogins.net`,
 			Components: babycli.Components{
 				agentCmd(),
+				tpmCmd(),
 			},
 		},
 	}).Run()
