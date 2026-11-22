@@ -15,6 +15,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/VictoriaMetrics/metrics v1.45.0
 	github.com/dustin/go-humanize v1.1.0
+	github.com/google/go-tpm v0.9.8
 	github.com/gorilla/mux v1.8.1
 	github.com/hashicorp/cronexpr v1.1.3
 	github.com/hashicorp/go-set/v3 v3.0.1
