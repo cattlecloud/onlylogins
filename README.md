@@ -77,6 +77,19 @@ just init lint tests
 just run ./hack/dev.toml
 ```
 
+#### Running Without a TPM
+
+When running locally a TPM is not required. Set `vault.passphrase` to a
+plaintext passphrase (in the quasi-uuid4 format) instead of sealing it to a
+TPM:
+
+```toml
+[vault]
+passphrase = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+```
+
+See [TPM Operations](#tpm-operations) for the production path.
+
 #### Accessing the Database
 
 ```shell
@@ -173,6 +186,58 @@ We like to think of this as the "GoSH" stack.
 - Memcached (https://www.memcached.org)
 - HTMX (https://htmx.org)
 
+### TPM Operations
+
+In staging and production the global vault passphrase is unsealed from a
+Trusted Platform Module (TPM) at startup, binding the secret to the hardware of
+a specific machine. The `tpm` subcommands walk through preparing a sealed blob,
+in the order they are used to bring up a production agent.
+
+Note: the `tpm` subcommands access the TPM device directly, so run them as
+root (or as a user that belongs to the `tpm` group) to list devices, seal, and
+verify.
+
+#### 1. Discover devices
+
+List the TPM 2.0 devices available on the system to identify the device path.
+
+```shell
+onlylogins tpm devices
+```
+
+#### 2. Seal the passphrase
+
+Seal a passphrase to the TPM, read from standard input. The passphrase must be
+in the quasi-uuid4 format expected by the vault (36 hexadecimal digits and
+hyphens). By default the blob is sealed to PCRs 0, 1, and 2; override with
+`--pcrs`.
+
+```shell
+printf 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' | \
+    onlylogins tpm seal --device /dev/tpmrm0 --output /etc/onlylogins/sealed
+```
+
+Store a paper copy of the passphrase in a secure location.
+
+#### 3. Verify the sealed blob
+
+Confirm the blob unseals on this machine and that the decrypted passphrase
+matches the expected format.
+
+```shell
+onlylogins tpm verify --device /dev/tpmrm0 --input /etc/onlylogins/sealed
+```
+
+#### 4. Configure the vault
+
+Point the agent at the sealed blob and the TPM device.
+
+```toml
+[vault]
+sealed = "/etc/onlylogins/sealed"
+device = "/dev/tpmrm0"
+```
+
 ### Self-Hosting
 
 New versions of OnlyLogins are made available on the [releases](https://github.com/cattlecloud/onlylogins/releases)
@@ -188,6 +253,16 @@ to your configuration file.
 
 ```shell
 onlylogins agent -c ./hack/dev.toml
+```
+
+Note: run the agent as a dedicated service user that belongs to the `tpm`
+group. On a typical Linux host the TPM device nodes (`/dev/tpm0` and
+`/dev/tpmrm0`) are owned by the `tpm` group, which the agent needs to unseal
+the vault passphrase.
+
+```shell
+useradd --system --no-create-home --shell /usr/sbin/nologin onlylogins
+usermod --append --groups tpm onlylogins
 ```
 
 ### License
