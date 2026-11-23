@@ -63,9 +63,22 @@ func TestVault_ConfigValidate(t *testing.T) {
 		must.Error(t, err)
 	})
 
-	t.Run("empty passphrase", func(t *testing.T) {
+	t.Run("neither passphrase nor sealed", func(t *testing.T) {
 		err := (&Config{}).Validate()
 		must.Error(t, err)
+	})
+
+	t.Run("both passphrase and sealed", func(t *testing.T) {
+		err := (&Config{
+			Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee",
+			Sealed:     "/etc/onlylogins/sealed",
+		}).Validate()
+		must.Error(t, err)
+	})
+
+	t.Run("sealed only", func(t *testing.T) {
+		err := (&Config{Sealed: "/etc/onlylogins/sealed"}).Validate()
+		must.NoError(t, err)
 	})
 
 	t.Run("not quasi-uuid4", func(t *testing.T) {
@@ -86,5 +99,21 @@ func TestVault_ConfigValidate(t *testing.T) {
 	t.Run("valid", func(t *testing.T) {
 		err := (&Config{Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"}).Validate()
 		must.NoError(t, err)
+	})
+}
+
+func TestValidatePassphrase(t *testing.T) {
+	t.Parallel()
+
+	t.Run("valid", func(t *testing.T) {
+		must.NoError(t, ValidatePassphrase("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"))
+	})
+
+	t.Run("invalid", func(t *testing.T) {
+		must.Error(t, ValidatePassphrase("anything"))
+	})
+
+	t.Run("empty", func(t *testing.T) {
+		must.Error(t, ValidatePassphrase(""))
 	})
 }

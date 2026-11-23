@@ -71,5 +71,21 @@ func (c *Config) Validate() error {
 	if err := c.Stripe.Validate(); err != nil {
 		return err
 	}
+	return c.validateEnvironment()
+}
+
+// validateEnvironment ensures a non-local deployment is secure
+//
+// - sources vault passphrase from a TPM sealed blob
+func (c *Config) validateEnvironment() error {
+	if !runtime.Setup(c.Runtime).NonLocal() {
+		return nil
+	}
+	if c.Vault.Passphrase != "" {
+		return errors.New("vault passphrase must not be set in staging or production")
+	}
+	if c.Vault.Sealed == "" {
+		return errors.New("vault sealed must be set in staging or production")
+	}
 	return nil
 }
