@@ -76,9 +76,17 @@ func TestVault_ConfigValidate(t *testing.T) {
 		must.Error(t, err)
 	})
 
-	t.Run("sealed only", func(t *testing.T) {
-		err := (&Config{Sealed: "/etc/onlylogins/sealed"}).Validate()
+	t.Run("sealed with device", func(t *testing.T) {
+		err := (&Config{
+			Sealed: "/etc/onlylogins/sealed",
+			Device: "/dev/tpmrm0",
+		}).Validate()
 		must.NoError(t, err)
+	})
+
+	t.Run("sealed without device", func(t *testing.T) {
+		err := (&Config{Sealed: "/etc/onlylogins/sealed"}).Validate()
+		must.Error(t, err)
 	})
 
 	t.Run("not quasi-uuid4", func(t *testing.T) {
