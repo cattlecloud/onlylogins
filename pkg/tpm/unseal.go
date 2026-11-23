@@ -69,11 +69,12 @@ func Unseal(conn transport.TPM, sealed *Sealed) ([]byte, error) {
 	}
 
 	unsealed, err := (tpm2.Unseal{
-		ItemHandle: tpm2.NamedHandle{
+		ItemHandle: tpm2.AuthHandle{
 			Handle: loaded.ObjectHandle,
 			Name:   loaded.Name,
+			Auth:   session,
 		},
-	}).Execute(conn, session)
+	}).Execute(conn)
 	if err != nil {
 		return nil, fmt.Errorf("unable to unseal data: %w", err)
 	}
