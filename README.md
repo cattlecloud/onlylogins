@@ -213,8 +213,7 @@ hyphens). By default the blob is sealed to PCRs 0, 1, and 2; override with
 `--pcrs`.
 
 ```shell
-printf 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' | \
-    onlylogins tpm seal --device /dev/tpmrm0 --output /etc/onlylogins/sealed
+onlylogins tpm seal --device /dev/tpmrm0 --output /etc/onlylogins/sealed <<< $(uuid-tool)
 ```
 
 Store a paper copy of the passphrase in a secure location.
