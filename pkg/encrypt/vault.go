@@ -10,8 +10,12 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"io"
+	"os"
+	"strings"
 
+	"cattlecloud.net/onlylogins/pkg/tpm"
 	"github.com/shoenig/go-conceal"
+	"github.com/shoenig/ignore"
 )
 
 type Vault interface {
@@ -38,20 +42,69 @@ func New(key *conceal.Bytes) Vault {
 	return &vault{key: k}
 }
 
-// NewFromConfig derives a Vault from a server-wide passphrase.
+// NewFromConfig derives a Vault from the server-wide passphrase held in c.
 //
-// The 32-byte AES-GCM key is the SHA-256 of a fixed domain-separation
-// string concatenated with the passphrase. This intentionally avoids
-// Argon2id (which is used for per-user keys via DeriveKey) because the
-// passphrase is held in a config file and not subject to slow brute force
-// from the operator.
+// When c.Passphrase is set (local development) it is used directly. Otherwise
+// the passphrase is unsealed from the TPM at c.Device using the blob at
+// c.Sealed. The 32-byte AES-GCM key is the SHA-256 of a fixed
+// domain-separation string concatenated with the passphrase. This
+// intentionally avoids Argon2id (which is used for per-user keys via
+// DeriveKey) because the passphrase is not subject to slow brute force from
+// the operator.
 //
-// The passphrase must already have been validated via Config.Validate.
+// If the passphrase cannot be resolved, the process exits with a non-zero
+// code.
 func NewFromConfig(c *Config) Vault {
-	sum := sha256.Sum256([]byte("onlylogins-vault-salt+" + c.Passphrase))
+	passphrase, err := resolvePassphrase(c)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to load vault: %v\n", err)
+		os.Exit(1)
+	}
+	return newFromPassphrase(passphrase)
+}
+
+// newFromPassphrase derives the vault key from passphrase.
+func newFromPassphrase(passphrase string) Vault {
+	sum := sha256.Sum256([]byte("onlylogins-vault-salt+" + passphrase))
 	var key [32]byte
 	copy(key[:], sum[:])
 	return &vault{key: key}
+}
+
+// resolvePassphrase returns the vault passphrase from c, either directly or by
+// unsealing it from the TPM.
+func resolvePassphrase(c *Config) (string, error) {
+	if c.Passphrase != "" {
+		return c.Passphrase, nil
+	}
+
+	data, err := os.ReadFile(c.Sealed)
+	if err != nil {
+		return "", fmt.Errorf("unable to read sealed blob: %w", err)
+	}
+
+	sealed, err := tpm.DecodeSealed(data)
+	if err != nil {
+		return "", err
+	}
+
+	conn, err := tpm.Open(c.Device)
+	if err != nil {
+		return "", err
+	}
+	defer ignore.Close(conn)
+
+	unsealed, err := tpm.Unseal(conn, sealed)
+	if err != nil {
+		return "", err
+	}
+
+	passphrase := strings.TrimRight(string(unsealed), "\r\n")
+	if err := ValidatePassphrase(passphrase); err != nil {
+		return "", err
+	}
+
+	return passphrase, nil
 }
 
 func (v *vault) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {

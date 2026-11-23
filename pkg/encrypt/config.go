@@ -25,6 +25,10 @@ type Config struct {
 	// Sealed is the path to a passphrase sealed to a TPM. It is mutually
 	// exclusive with Passphrase and required in production.
 	Sealed string `toml:"sealed"`
+
+	// Device is the path to the TPM device used to unseal the passphrase.
+	// It is required when Sealed is set.
+	Device string `toml:"device"`
 }
 
 // ValidatePassphrase reports whether passphrase matches the required format.
@@ -45,6 +49,8 @@ func (c *Config) Validate() error {
 		return errors.New("vault passphrase or sealed must be set")
 	case c.Passphrase != "":
 		return ValidatePassphrase(c.Passphrase)
+	case c.Passphrase == "" && c.Device == "":
+		return errors.New("vault device must be set when sealed is set")
 	default:
 		return nil
 	}
