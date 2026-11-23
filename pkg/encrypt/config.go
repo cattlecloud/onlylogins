@@ -18,17 +18,33 @@ var globalPassphraseRe = regexp.MustCompile(`^[[:xdigit:]-]{36}$`)
 // The Passphrase is hashed (with a fixed domain-separation string) to derive
 // the 32-byte AES-GCM key stored in the Vault.
 type Config struct {
+	// Passphrase is the plaintext passphrase, suitable only for local
+	// development. It is mutually exclusive with Sealed.
 	Passphrase string `toml:"passphrase"`
+
+	// Sealed is the path to a passphrase sealed to a TPM. It is mutually
+	// exclusive with Passphrase and required in production.
+	Sealed string `toml:"sealed"`
+}
+
+// ValidatePassphrase reports whether passphrase matches the required format.
+func ValidatePassphrase(passphrase string) error {
+	if !globalPassphraseRe.MatchString(passphrase) {
+		return errors.New("vault passphrase must be in quasi-uuid4 format")
+	}
+	return nil
 }
 
 func (c *Config) Validate() error {
 	switch {
 	case c == nil:
 		return errors.New("vault config must be set")
-	case c.Passphrase == "":
-		return errors.New("vault passphrase must be set")
-	case !globalPassphraseRe.MatchString(c.Passphrase):
-		return errors.New("vault passphrase must be in quasi-uuid4 format")
+	case c.Passphrase != "" && c.Sealed != "":
+		return errors.New("vault passphrase and sealed are mutually exclusive")
+	case c.Passphrase == "" && c.Sealed == "":
+		return errors.New("vault passphrase or sealed must be set")
+	case c.Passphrase != "":
+		return ValidatePassphrase(c.Passphrase)
 	default:
 		return nil
 	}

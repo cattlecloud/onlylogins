@@ -4,10 +4,15 @@
 package commands
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"os"
 
 	"cattlecloud.net/go/babycli"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/tpm"
+	"github.com/shoenig/ignore"
 )
 
 func tpmCmd() *babycli.Component {
@@ -22,6 +27,7 @@ keys, allowing secrets to be bound to the hardware of
 a specific machine.`,
 		Components: babycli.Components{
 			tpmDevicesCmd(),
+			tpmSealCmd(),
 		},
 	}
 }
@@ -57,6 +63,107 @@ missing permissions, is listed along with the reason.`,
 					fmt.Println(describe(device))
 				}
 			}
+			return babycli.Success
+		},
+	}
+}
+
+func tpmSealCmd() *babycli.Component {
+	return &babycli.Component{
+		Name: "seal",
+		Help: "seal a passphrase to the tpm",
+		Description: `
+Read a passphrase from standard input and seal it to the
+TPM, bound to the given set of PCRs. The resulting blob
+is written to the file given with --output. Keep a paper
+copy of the plaintext passphrase in a secure location so
+it can be restored in an emergency, for example total
+loss of the server, or if PCR values change.`,
+		Flags: babycli.Flags{
+			{
+				Type:  babycli.StringFlag,
+				Long:  "output",
+				Short: "o",
+				Help:  "path to write the sealed blob",
+			},
+			{
+				Type:    babycli.StringFlag,
+				Long:    "pcrs",
+				Short:   "p",
+				Help:    "comma-separated PCR indices to seal to",
+				Default: &babycli.Default{Value: tpm.DefaultPCRs, Show: true},
+			},
+			{
+				Type:  babycli.StringFlag,
+				Long:  "device",
+				Short: "d",
+				Help:  "TPM device path to seal against",
+			},
+		},
+		Function: func(c *babycli.Component) babycli.Code {
+			// TODO: babycli's Require only panics at GetString, so we check
+			// manually here for a clean error. Fix babycli to surface required
+			// flags before running the command.
+			output := c.GetString("output")
+			if output == "" {
+				fmt.Fprintln(os.Stderr, "tpm seal: --output is required")
+				return babycli.Failure
+			}
+
+			device := c.GetString("device")
+			if device == "" {
+				fmt.Fprintln(os.Stderr, "tpm seal: --device is required")
+				return babycli.Failure
+			}
+
+			pcrs, err := tpm.ParsePCRs(c.GetString("pcrs"))
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: %v\n", err)
+				return babycli.Failure
+			}
+
+			raw, err := io.ReadAll(os.Stdin)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: unable to read passphrase: %v\n", err)
+				return babycli.Failure
+			}
+
+			passphrase := bytes.TrimRight(raw, "\r\n")
+			if len(passphrase) == 0 {
+				fmt.Fprintln(os.Stderr, "tpm seal: no passphrase read from standard input")
+				return babycli.Failure
+			}
+			if err := encrypt.ValidatePassphrase(string(passphrase)); err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: %v\n", err)
+				return babycli.Failure
+			}
+
+			conn, err := tpm.Open(device)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: %v\n", err)
+				return babycli.Failure
+			}
+			defer ignore.Close(conn)
+
+			sealed, err := tpm.Seal(conn, pcrs, passphrase)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: %v\n", err)
+				return babycli.Failure
+			}
+
+			blob, err := sealed.Encode()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: unable to encode sealed blob: %v\n", err)
+				return babycli.Failure
+			}
+
+			if err := os.WriteFile(output, blob, 0600); err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: unable to write sealed blob: %v\n", err)
+				return babycli.Failure
+			}
+
+			fmt.Printf("sealed passphrase to %s (pcrs %s)\n", output, tpm.FormatPCRs(pcrs))
+			fmt.Println("store the plaintext passphrase on paper in a secure location")
 			return babycli.Success
 		},
 	}

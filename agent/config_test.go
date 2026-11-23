@@ -6,6 +6,8 @@ package agent
 import (
 	"testing"
 
+	"cattlecloud.net/go/webtools/runtime"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"github.com/shoenig/test/must"
 )
 
@@ -15,4 +17,68 @@ func TestConfigFrom(t *testing.T) {
 	result, err := ConfigFrom("../hack/dev.toml")
 	must.NoError(t, err)
 	must.NotNil(t, result)
+}
+
+func TestValidateVaultEnvironment(t *testing.T) {
+	t.Parallel()
+
+	local := &runtime.Config{Environment: "local"}
+	staging := &runtime.Config{Environment: "staging"}
+	prod := &runtime.Config{Environment: "production"}
+
+	t.Run("local with passphrase", func(t *testing.T) {
+		c := &Config{
+			Runtime: local,
+			Vault:   &encrypt.Config{Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"},
+		}
+		must.NoError(t, c.validateEnvironment())
+	})
+
+	t.Run("local with sealed", func(t *testing.T) {
+		c := &Config{
+			Runtime: local,
+			Vault:   &encrypt.Config{Sealed: "/etc/onlylogins/sealed"},
+		}
+		must.NoError(t, c.validateEnvironment())
+	})
+
+	t.Run("staging with passphrase", func(t *testing.T) {
+		c := &Config{
+			Runtime: staging,
+			Vault:   &encrypt.Config{Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"},
+		}
+		must.Error(t, c.validateEnvironment())
+	})
+
+	t.Run("staging with sealed", func(t *testing.T) {
+		c := &Config{
+			Runtime: staging,
+			Vault:   &encrypt.Config{Sealed: "/etc/onlylogins/sealed"},
+		}
+		must.NoError(t, c.validateEnvironment())
+	})
+
+	t.Run("production with passphrase", func(t *testing.T) {
+		c := &Config{
+			Runtime: prod,
+			Vault:   &encrypt.Config{Passphrase: "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"},
+		}
+		must.Error(t, c.validateEnvironment())
+	})
+
+	t.Run("production with sealed", func(t *testing.T) {
+		c := &Config{
+			Runtime: prod,
+			Vault:   &encrypt.Config{Sealed: "/etc/onlylogins/sealed"},
+		}
+		must.NoError(t, c.validateEnvironment())
+	})
+
+	t.Run("production with neither", func(t *testing.T) {
+		c := &Config{
+			Runtime: prod,
+			Vault:   &encrypt.Config{},
+		}
+		must.Error(t, c.validateEnvironment())
+	})
 }
