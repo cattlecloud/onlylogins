@@ -28,6 +28,7 @@ a specific machine.`,
 		Components: babycli.Components{
 			tpmDevicesCmd(),
 			tpmSealCmd(),
+			tpmVerifyCmd(),
 		},
 	}
 }
@@ -164,6 +165,77 @@ loss of the server, or if PCR values change.`,
 
 			fmt.Printf("sealed passphrase to %s (pcrs %s)\n", output, tpm.FormatPCRs(pcrs))
 			fmt.Println("store the plaintext passphrase on paper in a secure location")
+			return babycli.Success
+		},
+	}
+}
+
+func tpmVerifyCmd() *babycli.Component {
+	return &babycli.Component{
+		Name: "verify",
+		Help: "verify a sealed passphrase",
+		Description: `
+Unseal the passphrase held in the blob given with --input
+and confirm it matches the expected passphrase format.`,
+		Flags: babycli.Flags{
+			{
+				Type:  babycli.StringFlag,
+				Long:  "input",
+				Short: "i",
+				Help:  "path to the sealed blob",
+			},
+			{
+				Type:  babycli.StringFlag,
+				Long:  "device",
+				Short: "d",
+				Help:  "TPM device path to unseal against",
+			},
+		},
+		Function: func(c *babycli.Component) babycli.Code {
+			input := c.GetString("input")
+			if input == "" {
+				fmt.Fprintln(os.Stderr, "tpm verify: --input is required")
+				return babycli.Failure
+			}
+
+			device := c.GetString("device")
+			if device == "" {
+				fmt.Fprintln(os.Stderr, "tpm verify: --device is required")
+				return babycli.Failure
+			}
+
+			data, err := os.ReadFile(input)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm verify: unable to read sealed blob: %v\n", err)
+				return babycli.Failure
+			}
+
+			sealed, err := tpm.DecodeSealed(data)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm verify: %v\n", err)
+				return babycli.Failure
+			}
+
+			conn, err := tpm.Open(device)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm verify: %v\n", err)
+				return babycli.Failure
+			}
+			defer ignore.Close(conn)
+
+			passphrase, err := tpm.Unseal(conn, sealed)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "tpm verify: %v\n", err)
+				return babycli.Failure
+			}
+
+			passphrase = bytes.TrimRight(passphrase, "\r\n")
+			if err := encrypt.ValidatePassphrase(string(passphrase)); err != nil {
+				fmt.Fprintf(os.Stderr, "tpm verify: %v\n", err)
+				return babycli.Failure
+			}
+
+			fmt.Printf("verified sealed passphrase (pcrs %s)\n", tpm.FormatPCRs(sealed.PCRs))
 			return babycli.Success
 		},
 	}
