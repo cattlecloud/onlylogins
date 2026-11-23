@@ -230,7 +230,9 @@ onlylogins tpm verify --device /dev/tpmrm0 --input /etc/onlylogins/sealed
 
 #### 4. Configure the vault
 
-Point the agent at the sealed blob and the TPM device.
+Point the agent at the sealed blob and the TPM device. Ensure the agent runs
+as a user with sufficient permission to read the sealed file, and access the
+tpm device.
 
 ```toml
 [vault]
@@ -255,14 +257,17 @@ to your configuration file.
 onlylogins agent -c ./hack/dev.toml
 ```
 
-Note: run the agent as a dedicated service user that belongs to the `tpm`
-group. On a typical Linux host the TPM device nodes (`/dev/tpm0` and
-`/dev/tpmrm0`) are owned by the `tpm` group, which the agent needs to unseal
-the vault passphrase.
+Note: run the agent as a dedicated service user that belongs to the `tss` group.
+`tss` stands for "tpm software stack". On a typical Linux host the TPM device
+nodes (`/dev/tpm0` and `/dev/tpmrm0`) are owned by the `tss` group, which the
+agent needs to unseal the vault passphrase.
 
 ```shell
+# create an onlylogins service user
 useradd --system --no-create-home --shell /usr/sbin/nologin onlylogins
-usermod --append --groups tpm onlylogins
+
+# make onlylogins belong to tss group
+usermod --append --groups tss onlylogins
 ```
 
 ### License
