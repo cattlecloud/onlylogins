@@ -17,6 +17,7 @@ type Store interface {
 	Init(scope.C) error
 	Close() error
 	Users() Users
+	Admin() Admin
 	Audit() Audits
 	Crons() Crons
 	Maint() Maint
