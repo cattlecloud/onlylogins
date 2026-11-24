@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 
+	"cattlecloud.net/go/atomicfs"
 	"cattlecloud.net/go/babycli"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/tpm"
@@ -158,7 +160,11 @@ loss of the server, or if PCR values change.`,
 				return babycli.Failure
 			}
 
-			if err := os.WriteFile(output, blob, 0600); err != nil {
+			// safely write blob to disk (sync + rename)
+			if err := atomicfs.New(atomicfs.Options{
+				TmpDirectory: filepath.Dir(output),
+				Mode:         0600,
+			}).WriteFile(output, bytes.NewReader(blob)); err != nil {
 				fmt.Fprintf(os.Stderr, "tpm seal: unable to write sealed blob: %v\n", err)
 				return babycli.Failure
 			}
