@@ -82,7 +82,8 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	)
 
 	// administration council
-	council := users.NewCouncil(l.config.Users.Administrators)
+	council := users.NewCouncil(l.config.Users.Administrators, db.Admin())
+	council.Sync(parent) // setup administrators
 
 	// shared shares vault
 	vault := encrypt.NewFromConfig(l.config.Vault)
