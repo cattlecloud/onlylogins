@@ -211,6 +211,7 @@
   flex: 0 0 auto;
   width: 0.45rem;
   height: 0.45rem;
+  margin-right: 0.5rem;
   border-right: 2px solid var(--border-strong);
   border-bottom: 2px solid var(--border-strong);
   transform: rotate(-45deg);
