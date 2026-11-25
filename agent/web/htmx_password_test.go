@@ -141,7 +141,29 @@ func TestPasswordHTMX_Get_RendersForm(t *testing.T) {
 	body := w.Body.String()
 	must.StrContains(t, body, `hx-post="/internal/password/create/`)
 	must.StrContains(t, body, `name="password"`)
-	must.StrContains(t, body, `type="password"`)
+	must.StrContains(t, body, `class="password-input secret-input"`)
+	must.StrContains(t, body, `autocomplete="off"`)
+	must.StrContains(t, body, `class="secret-generate-btn"`)
+	must.StrContains(t, body, `class="secret-toggle-btn"`)
+}
+
+// The document page must never contain a password field. Browsers treat any
+// form with a password field as a credential form and offer to store the
+// value in their password manager, which is not wanted for the secrets held
+// in a document.
+func TestPasswordHTMX_Get_NoCredentialField(t *testing.T) {
+	t.Parallel()
+
+	router, scache := newPasswordRouter(t, mockdb.Open(t))
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/password/add/miscellaneous/github", cookie)
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrNotContains(t, w.Body.String(), `type="password"`)
 }
 
 func TestPasswordHTMX_Get_NoSession_Redirects(t *testing.T) {
@@ -403,6 +425,8 @@ func TestPasswordEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	must.StrContains(t, body, `hx-put="/internal/password/update/`)
 	must.StrContains(t, body, `value="s3cret!"`)
 	must.StrContains(t, body, `<span id="error">`)
+	must.StrContains(t, body, `class="password-input secret-input"`)
+	must.StrNotContains(t, body, `type="password"`)
 }
 
 func TestPasswordEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {

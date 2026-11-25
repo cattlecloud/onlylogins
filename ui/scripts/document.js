@@ -15,20 +15,33 @@
 //
 //   Note: reveals a note's content in place. This is intentionally one-way
 //         (no Hide, no Copy).
+//
+//   Secret input: password fields are masked with CSS instead of using
+//         type="password", so that the browser never treats the value as a
+//         credential for this site. The toggle reveals what was typed, and
+//         the generate button fills the field with a random password.
 (function () {
   'use strict';
 
-  var COPY_FEEDBACK_MS = 1500;
-  var COPY_ICON = '/ui/images/copy.svg';
-  var CHECK_ICON = '/ui/images/check.svg';
-  var SHOW_ICON = '/ui/images/show.svg';
-  var HIDE_ICON = '/ui/images/hide.svg';
-  var MASK_MAX = 16;
+  const COPY_FEEDBACK_MS = 1500;
+  const COPY_ICON = '/ui/images/copy.svg';
+  const CHECK_ICON = '/ui/images/check.svg';
+  const SHOW_ICON = '/ui/images/show.svg';
+  const HIDE_ICON = '/ui/images/hide.svg';
+  const MASK_MAX = 16;
+
+  // Password generation. Ambiguous characters (l, I, O, 0, 1) are left out
+  // so a generated password is easy to read back and type somewhere else.
+  const PASSWORD_LENGTH = 20;
+  const PASSWORD_LOWER = 'abcdefghijkmnopqrstuvwxyz';
+  const PASSWORD_UPPER = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+  const PASSWORD_DIGITS = '23456789';
+  const PASSWORD_SYMBOLS = '!@#$%^&*-_=+?';
 
   // Secret fields support Copy / Show / Hide. Passwords and keyvals share the
   // same structure, so each is described by the class names and data attribute
   // that differ between them.
-  var SECRET_FIELDS = [
+  const SECRET_FIELDS = [
     {
       row: 'password-row',
       value: 'password-value',
@@ -47,92 +60,92 @@
     }
   ];
 
-  function maskFor(plaintext) {
-    var count = Array.from(plaintext).length;
+  const maskFor = (plaintext) => {
+    let count = [...plaintext].length;
     if (count > MASK_MAX) {
       count = MASK_MAX;
     }
     return '\u2022'.repeat(count);
-  }
+  };
 
-  function setImg(button, src, alt) {
-    var img = button.querySelector('img');
+  const setImg = (button, src, alt) => {
+    const img = button.querySelector('img');
     if (img) {
       img.src = src;
       img.alt = alt;
     }
-  }
+  };
 
-  function withRevert(button, newTitle, ms) {
-    var previous = button.title;
+  const withRevert = (button, newTitle, ms) => {
+    const previous = button.title;
     button.title = newTitle;
-    setTimeout(function () {
+    setTimeout(() => {
       button.title = previous;
     }, ms);
-  }
+  };
 
-  function setIcon(button, src, alt, title) {
+  const setIcon = (button, src, alt, title) => {
     setImg(button, src, alt);
     button.title = title;
-  }
+  };
 
-  function flashCheck(button, ms) {
+  const flashCheck = (button, ms) => {
     setImg(button, CHECK_ICON, 'Copied!');
-    setTimeout(function () {
+    setTimeout(() => {
       setImg(button, COPY_ICON, 'Copy');
     }, ms);
-  }
+  };
 
-  function copyToClipboard(button, value, ms) {
+  const copyToClipboard = (button, value, ms) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(value).then(
-        function () { flashCheck(button, ms); },
-        function () { withRevert(button, 'Copy failed', ms); }
+        () => flashCheck(button, ms),
+        () => withRevert(button, 'Copy failed', ms)
       );
     } else {
       withRevert(button, 'Copy unsupported', ms);
     }
-  }
+  };
 
   // Weblinks and usernames only support Copy, and their rows share the same
   // data-value attribute, so they are handled together.
-  function handleCopyOnly(target) {
+  const handleCopyOnly = (target) => {
     // Clicks land on the icon, so resolve the owning button.
-    var copyBtn = target.closest('.weblink-copy-btn, .username-copy-btn');
+    const copyBtn = target.closest('.weblink-copy-btn, .username-copy-btn');
     if (!copyBtn) {
       return false;
     }
 
-    var row = copyBtn.closest('.weblink-row, .username-row');
+    const row = copyBtn.closest('.weblink-row, .username-row');
     if (!row) {
       return false;
     }
 
-    var value = row.getAttribute('data-value') || '';
+    const value = row.getAttribute('data-value') || '';
     if (!value) {
       return false;
     }
 
     copyToClipboard(copyBtn, value, COPY_FEEDBACK_MS);
     return true;
-  }
+  };
 
-  function handleSecret(field, target) {
-    var row = target.closest('.' + field.row);
+  const handleSecret = (field, target) => {
+    const row = target.closest('.' + field.row);
     if (!row) {
       return false;
     }
 
-    var valueEl = row.querySelector('.' + field.value);
+    const valueEl = row.querySelector('.' + field.value);
     if (!valueEl) {
       return false;
     }
-    var plaintext = row.getAttribute(field.data) || '';
+    const plaintext = row.getAttribute(field.data) || '';
 
     // Clicks land on the icon, so resolve the owning button.
-    var copyBtn = target.closest('.' + field.copy);
-    var showBtn = target.closest('.' + field.show);
-    var hideBtn = target.closest('.' + field.hide);
+    const copyBtn = target.closest('.' + field.copy);
+    const showBtn = target.closest('.' + field.show);
+    const hideBtn = target.closest('.' + field.hide);
 
     // Copy: write plaintext to clipboard, then flash a checkmark.
     if (copyBtn) {
@@ -159,51 +172,132 @@
     }
 
     return false;
-  }
+  };
 
-  function handleNoteReveal(target) {
+  // Returns a random integer in [0, max). Values are drawn from the
+  // cryptographic random source and rejected when they would introduce a
+  // modulo bias.
+  const randomInt = (max) => {
+    const buffer = new Uint32Array(1);
+    const limit = Math.floor(0x100000000 / max) * max;
+    let value;
+    do {
+      window.crypto.getRandomValues(buffer);
+      value = buffer[0];
+    } while (value >= limit);
+    return value % max;
+  };
+
+  const randomChar = (charset) => charset[randomInt(charset.length)];
+
+  const shuffle = (chars) => {
+    for (let i = chars.length - 1; i > 0; i--) {
+      const j = randomInt(i + 1);
+      const swap = chars[i];
+      chars[i] = chars[j];
+      chars[j] = swap;
+    }
+    return chars;
+  };
+
+  // generatePassword builds a random password that always contains at least
+  // one lowercase letter, one uppercase letter, one digit, and one symbol.
+  const generatePassword = () => {
+    const classes = [PASSWORD_LOWER, PASSWORD_UPPER, PASSWORD_DIGITS, PASSWORD_SYMBOLS];
+    const required = classes.map(randomChar);
+    const all = classes.join('');
+    const rest = Array.from({ length: PASSWORD_LENGTH - required.length }, () => randomChar(all));
+    return shuffle([...required, ...rest]).join('');
+  };
+
+  // secretInputFor finds the masked input belonging to the button's form.
+  const secretInputFor = (button) => button.closest('form')?.querySelector('.secret-input') ?? null;
+
+  // Toggle: show or hide the contents of a masked secret input.
+  const handleSecretToggle = (target) => {
+    const toggle = target.closest('.secret-toggle-btn');
+    if (!toggle) {
+      return false;
+    }
+
+    const input = secretInputFor(toggle);
+    if (!input) {
+      return false;
+    }
+
+    const revealed = input.classList.toggle('revealed');
+    setIcon(toggle, revealed ? HIDE_ICON : SHOW_ICON, revealed ? 'Hide' : 'Show', revealed ? 'Hide' : 'Show');
+    toggle.setAttribute('aria-label', revealed ? 'Hide password' : 'Show password');
+    return true;
+  };
+
+  // Generate: fill the masked secret input with a random password.
+  const handleSecretGenerate = (target) => {
+    const button = target.closest('.secret-generate-btn');
+    if (!button) {
+      return false;
+    }
+
+    const input = secretInputFor(button);
+    if (!input) {
+      return false;
+    }
+
+    input.value = generatePassword();
+    input.focus();
+    input.select();
+    return true;
+  };
+
+  const handleNoteReveal = (target) => {
     if (!target.matches('.note-reveal-btn')) {
       return false;
     }
 
-    var area = target.closest('.note-area');
+    const area = target.closest('.note-area');
     if (!area) {
       return false;
     }
 
-    var panel = area.querySelector('.note-panel');
+    const panel = area.querySelector('.note-panel');
     if (!panel) {
       return false;
     }
 
-    var content = panel.querySelector('.note-content');
+    const content = panel.querySelector('.note-content');
     if (!content) {
       return false;
     }
 
-    var plaintext = panel.getAttribute('data-note') || '';
+    const plaintext = panel.getAttribute('data-note') || '';
     content.textContent = plaintext;
     content.hidden = false;
     target.hidden = true;
 
-    var actions = area.querySelector('.note-actions');
+    const actions = area.querySelector('.note-actions');
     if (actions) {
       actions.hidden = false;
     }
     return true;
-  }
+  };
 
-  document.addEventListener('click', function (event) {
-    var target = event.target;
+  document.addEventListener('click', (event) => {
+    const target = event.target;
     if (!(target instanceof Element)) {
       return;
     }
 
+    if (handleSecretToggle(target)) {
+      return;
+    }
+    if (handleSecretGenerate(target)) {
+      return;
+    }
     if (handleCopyOnly(target)) {
       return;
     }
-    for (var i = 0; i < SECRET_FIELDS.length; i++) {
-      if (handleSecret(SECRET_FIELDS[i], target)) {
+    for (const field of SECRET_FIELDS) {
+      if (handleSecret(field, target)) {
         return;
       }
     }

@@ -167,6 +167,31 @@ func TestDocumentHTTP_Get_HidesMigrationWhenNoOtherFolders(t *testing.T) {
 	must.StrNotContains(t, w.Body.String(), `id="document-migrate-target"`)
 }
 
+// A document holds secrets, but they are not credentials for this site. A
+// password field anywhere on the page would make the browser offer to store
+// the value in its password manager.
+func TestDocumentHTTP_Get_NoCredentialFields(t *testing.T) {
+	t.Parallel()
+
+	store, routes, cookie := newDocumentTestHarness(t)
+
+	_, err := store.Documents().Create(t.Context(), &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+		Slug:   "github",
+	})
+	must.NoError(t, err)
+
+	request := requestGet(t, "/folders/miscellaneous/github", cookie)
+	request.AddCookie(vaultCookie())
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrNotContains(t, w.Body.String(), `type="password"`)
+}
+
 func TestExcludeFolder(t *testing.T) {
 	t.Parallel()
 

@@ -55,6 +55,26 @@ func newSignupRouter(t *testing.T) (*mux.Router, database.Store) {
 	return routes, store
 }
 
+// The login form is the one place the browser is meant to hold a credential:
+// the master passphrase for the onlylogins account. Marking the fields
+// explicitly keeps the browser (and other password managers) focused on
+// this one credential.
+func TestLoginPage_CredentialAutocomplete(t *testing.T) {
+	t.Parallel()
+
+	routes, _ := newSignupRouter(t)
+
+	r := requestGet(t, "/login", nil)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `autocomplete="username"`)
+	must.StrContains(t, body, `autocomplete="current-password"`)
+	must.StrContains(t, body, `autocomplete="new-password"`)
+}
+
 func TestSignupFields(t *testing.T) {
 	t.Parallel()
 
