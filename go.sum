@@ -1,5 +1,5 @@
-cattlecloud.net/go/atomicfs v1.1.2 h1:Wo6BwWm9QZuYl4eFTaFMGKD0Ai/gXZb3swCwsbUWiI8=
-cattlecloud.net/go/atomicfs v1.1.2/go.mod h1:QwZSzPIIS5uLbAQ22cn0LidQoJLRyjcgMse3DpZGH+8=
+cattlecloud.net/go/atomicfs/v2 v2.0.0 h1:SXGSV9AHQwnoExHcwiRdTiMMZh7adEaym9bdJh3SxzI=
+cattlecloud.net/go/atomicfs/v2 v2.0.0/go.mod h1:NU/JZA51QiRE1p9ybcQfnJEQ8tkk58RYq2of3AoU+jM=
 cattlecloud.net/go/babycli v0.2.2 h1:svdBTAL7eTWipk3Fa4cVP6CTxbIaqYMhHUlAA0FWeW0=
 cattlecloud.net/go/babycli v0.2.2/go.mod h1:3LABFGN1bV6T6LHSF9SnuFf3Xupb5lYwUf1vYd/oHJc=
 cattlecloud.net/go/forms v1.1.0 h1:ZTIyg4AMG9IY87tfNHmRnRgy8X4ZPiui1JYwNT3562s=
