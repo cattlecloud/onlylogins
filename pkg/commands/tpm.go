@@ -10,7 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"cattlecloud.net/go/atomicfs"
+	"cattlecloud.net/go/atomicfs/v2"
 	"cattlecloud.net/go/babycli"
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/tpm"
@@ -154,23 +154,24 @@ loss of the server, or if PCR values change.`,
 				return babycli.Failure
 			}
 
-			blob, err := sealed.Encode()
+			js, err := sealed.Encode()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "tpm seal: unable to encode sealed blob: %v\n", err)
+				fmt.Fprintf(os.Stderr, "tpm seal: unable to json encode sealed data: %v\n", err)
 				return babycli.Failure
 			}
 
 			// safely write blob to disk (sync + rename)
-			if err := atomicfs.New(atomicfs.Options{
-				TmpDirectory: filepath.Dir(output),
-				Mode:         0600,
-			}).WriteFile(output, bytes.NewReader(blob)); err != nil {
-				fmt.Fprintf(os.Stderr, "tpm seal: unable to write sealed blob: %v\n", err)
+			if err := atomicfs.New(
+				atomicfs.WithTempDir(filepath.Dir(output)),
+				atomicfs.WithMode(0600),
+			).WriteFile(output, bytes.NewReader(js)); err != nil {
+				fmt.Fprintf(os.Stderr, "tpm seal: unable to write sealed json: %v\n", err)
 				return babycli.Failure
 			}
 
-			fmt.Printf("sealed passphrase to %s (pcrs %s)\n", output, tpm.FormatPCRs(pcrs))
-			fmt.Println("store the plaintext passphrase on paper in a secure location")
+			fmt.Printf("complete: sealed passphrase to %s (pcrs %s)\n", output, tpm.FormatPCRs(pcrs))
+			fmt.Println("reminder: store the plaintext passphrase on paper in a secure location")
+			fmt.Println("done.")
 			return babycli.Success
 		},
 	}
