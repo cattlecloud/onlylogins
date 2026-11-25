@@ -5,6 +5,7 @@ package users
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 	"unicode/utf8"
 
@@ -13,14 +14,20 @@ import (
 )
 
 const (
-	// NIST SP 800-63 lays out guidelines for password authenticators, which we abide by and
-	// exceed by a wide margin.
+	// NIST SP 800-63 lays out guidelines for password authenticators.
+	//
+	// NIST requires verifiers to demand at least 15 characters of a password
+	// used as a single authentication factor; we require one more. NIST sets
+	// no entropy floor for user-chosen passwords.
+	// Appendix A of the publication deliberately works from length instead,
+	// since the entropy of a chosen passphrase is difficult to measure, so the
+	// entropy requirement below is a house rule of our own.
 	//
 	// Some casual reading on the subject:
 	// https://pages.nist.gov/800-63-4/sp800-63b.html
-	minimumPasskeyLength  = 16 // NIST SP 800-63B
-	minimumPasskeyEntropy = 80 // NIST is 64
-	saltLength            = 16 // custom
+	minimumPassphraseLength  = 16 // NIST SP 800-63B requires 15
+	minimumPassphraseEntropy = 72 // house rule; see above
+	saltLength               = 16 // house rule
 )
 
 func ValidateEmail(s string) error {
@@ -56,16 +63,16 @@ func ValidatePassphrase(text *conceal.Text) error {
 		return errors.New("passphrase must not be nil")
 	}
 
-	if utf8.RuneCountInString(text.Unveil()) < minimumPasskeyLength {
-		return errors.New("passphrase must be at least 16 characters long")
+	if utf8.RuneCountInString(text.Unveil()) < minimumPassphraseLength {
+		return fmt.Errorf("passphrase must be at least %d characters long", minimumPassphraseLength)
 	}
 
 	if entropy.Sequence(text.Unveil()) {
 		return errors.New("passphrase contains 5 or more repeating or sequential characters")
 	}
 
-	if entropy.Bits(text.Unveil()) < minimumPasskeyEntropy {
-		return errors.New("passphrase does not contain enough entropy")
+	if entropy.Bits(text.Unveil()) < minimumPassphraseEntropy {
+		return errors.New("passphrase is not random enough")
 	}
 
 	return nil

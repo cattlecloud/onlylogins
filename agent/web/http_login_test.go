@@ -123,12 +123,12 @@ func TestSignupFields(t *testing.T) {
 
 	t.Run("extra fields ignored", func(t *testing.T) {
 		request := makeLoginRequest(t, url.Values{
-			"signup-email":      {"you@example.com"},
-			"signup-username":   {"alice"},
-			"signup-passphrase": {"correct horse battery staple"},
-			"signup-confirm":    {"correct horse battery staple"},
-			"unique":            {"true"},
-			"no-recovery":       {"true"},
+			"signup-email":       {"you@example.com"},
+			"signup-username":    {"alice"},
+			"signup-passphrase":  {"correct horse battery staple"},
+			"signup-confirm":     {"correct horse battery staple"},
+			"not-used-elsewhere": {"true"},
+			"no-recovery":        {"true"},
 		})
 
 		got := (&loginHTTP{}).signupFields(request)

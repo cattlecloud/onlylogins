@@ -15,7 +15,7 @@ func TestValidatePassphrase(t *testing.T) {
 
 	t.Run("ValidRandom", func(t *testing.T) {
 		// 24 distinct code points, no adjacent deltas in {-1, 0, 1},
-		// H = log2(24) * 24 ~= 110 bits of entropy (well above the 80 floor).
+		// H = log2(24) * 24 ~= 110 bits of entropy (well above the 72 floor).
 		p := conceal.New("aB3!cD4#eF5$gH6&iJ7*kL8@")
 		err := ValidatePassphrase(p)
 		must.NoError(t, err)
@@ -29,7 +29,7 @@ func TestValidatePassphrase(t *testing.T) {
 
 	t.Run("LowEntropy", func(t *testing.T) {
 		// 24 runes, only 4 distinct alphabet letters (A, ~, q, 1) repeating;
-		// deltas are large so no sequence run, but Bits = 48 (below 80).
+		// deltas are large so no sequence run, but Bits = 48 (below 72).
 		p := conceal.New("A~q1A~q1A~q1A~q1A~q1A~q1")
 		err := ValidatePassphrase(p)
 		must.Error(t, err)
