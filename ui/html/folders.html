@@ -1,10 +1,18 @@
 {{define "middle"}}
 <div class="middle folders">
-  <section>
-    <h1>Add a new folder</h1>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">All folders</a>
+  </nav>
+
+  <section class="panel">
+    <header class="page-head">
+      <h1>New folder</h1>
+      <p>Group related documents together.</p>
+    </header>
+
     <form hx-post="/folders">
       <div class="field">
-        <label for="folder-label">Put a label on it</label>
+        <label for="folder-label">Folder name</label>
         <input
           type="text"
           id="folder-label"
@@ -13,11 +21,13 @@
           pattern="[\p{L}\p{M}0-9-]+"
           title="letters (including accented), numbers, and dashes"
           autocomplete="off"
+          aria-describedby="folder-label-help"
           required>
+        <p id="folder-label-help" class="field-help">Letters, numbers, and dashes.</p>
       </div>
 
       <fieldset class="icon-picker">
-        <legend>Choose an icon</legend>
+        <legend>Icon</legend>
         {{range $k, $v := .Section.Icons}}
         <label class="icon-option">
           <input
@@ -31,7 +41,9 @@
         {{end}}
       </fieldset>
 
-      <button type="submit">Create</button>
+      <div class="form-actions">
+        <button type="submit">Create folder</button>
+      </div>
       <span id="error"></span>
     </form>
   </section>

@@ -1,339 +1,271 @@
-body {
-  min-height: 100vh;
-}
+/* Home page: signed-out introduction and signed-in folder grid. */
 
 .middle.index {
   width: 100%;
-  max-width: 880px;
-  margin-left: auto;
-  margin-right: auto;
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 2.5rem;
-  padding: 1rem 1rem 1rem;
+  max-width: 840px;
+  margin-inline: auto;
 }
 
+/* Signed-in folder grid */
+.middle.index .logged-in {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.middle.index .folders-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.85rem;
+}
+
+.middle.index .folder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-height: 8.5rem;
+  padding: 1.1rem 0.85rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  text-decoration: none;
+  transition: background-color 140ms ease, border-color 140ms ease,
+    color 140ms ease;
+}
+
+.middle.index .folder-icon {
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 2.75rem;
+  filter: invert(1);
+  opacity: 0.7;
+  transition: opacity 140ms ease;
+}
+
+.middle.index .folder-label {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: center;
+}
+
+.middle.index .folder:hover {
+  color: var(--text);
+  background: var(--surface-raised);
+  border-color: var(--border-strong);
+}
+
+.middle.index .folder:hover .folder-icon {
+  opacity: 0.95;
+}
+
+.middle.index .folder-create {
+  border-style: dashed;
+  border-color: var(--border-strong);
+}
+
+.middle.index .folder-create-glyph {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  color: var(--primary);
+  font-size: 2.25rem;
+  font-weight: 400;
+  line-height: 1;
+}
+
+.middle.index .folder-create .folder-label {
+  color: var(--primary);
+}
+
+.middle.index .folder-create:hover .folder-label {
+  color: var(--primary-hover);
+}
+
+/* Signed-out introduction */
 .middle.index .logged-out {
   display: flex;
-  flex-flow: column nowrap;
-  gap: 2.5rem;
-}
-
-.middle.index section {
-  width: 100%;
+  flex-direction: column;
+  gap: 3rem;
 }
 
 .middle.index .hero {
-  text-align: center;
   display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  gap: 1rem;
-  padding: 0;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.15rem;
+  max-width: 700px;
+  padding: 1rem 0 0.5rem;
 }
 
 .middle.index .hero h1 {
-  margin: 0;
-  font-size: 2.4rem;
+  font-size: clamp(2.1rem, 5vw, 3.15rem);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.15;
-  color: var(--text);
-  max-width: 720px;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
 }
 
 .middle.index .hero h1 .accent {
   color: var(--primary);
 }
 
-.middle.index .hero p {
+.middle.index .hero .lede {
+  max-width: 58ch;
   margin: 0;
-  font-size: 1.05rem;
   color: var(--text-muted);
-  line-height: 1.6;
-  max-width: 620px;
+  font-size: 1.08rem;
+  line-height: 1.65;
 }
 
-.middle.index .folders-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 1rem;
-}
-
-.middle.index .folder {
+.middle.index .hero-actions {
   display: flex;
-  flex-flow: column nowrap;
+  flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
-  aspect-ratio: 1 / 1;
-  padding: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: transform 0.15s ease, border-color 0.15s ease,
-    background 0.15s ease;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.35rem;
 }
 
-.middle.index .folder:hover {
-  transform: translateY(-2px);
-  border-color: var(--primary);
-  background: var(--surface-raised);
-}
-
-.middle.index .folder-icon {
-  flex: 0 0 auto;
-  width: 4rem;
-  height: 4rem;
-  filter: invert(1);
-  opacity: 0.85;
-  transition: opacity 0.15s ease;
-}
-
-.middle.index .folder:hover .folder-icon {
-  opacity: 1;
-}
-
-.middle.index .folder-label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-align: center;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  transition: color 0.15s ease;
-}
-
-.middle.index .folder:hover .folder-label {
-  color: var(--text);
-}
-
-.middle.index .folder-create {
-  color: var(--text-muted);
-  text-decoration: none;
-}
-
-.middle.index .folder-create:hover {
-  color: var(--text);
-  text-decoration: none;
-}
-
-.middle.index .folder-create-glyph {
-  flex: 0 0 auto;
-  width: 4rem;
-  height: 4rem;
-  display: flex;
+.middle.index .quiet-link {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  font-size: 2.75rem;
-  font-weight: 700;
-  letter-spacing: -0.05em;
+  min-height: 2.5rem;
+  padding: 0 0.25rem;
   color: var(--primary);
-  opacity: 0.85;
-  transition: opacity 0.15s ease;
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-decoration: none;
 }
 
-.middle.index .folder-create:hover .folder-create-glyph {
-  opacity: 1;
-}
-
-.middle.index .button-cta {
-  margin-top: 0.5rem;
+.middle.index .quiet-link:hover {
+  color: var(--primary-hover);
+  text-decoration: underline;
 }
 
 .middle.index section > h2 {
   margin: 0 0 1rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text);
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
-.middle.index .use-cases > h2 {
-  margin-top: 0;
+/* Store list */
+.middle.index .ledger-defs {
+  margin: 0;
 }
 
-.middle.index .feature-grid {
+.middle.index .def {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
+  grid-template-columns: minmax(9rem, 14rem) 1fr;
+  gap: 0.5rem 2rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.middle.index .feature-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.5rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+.middle.index .def:last-child {
+  border-bottom: none;
 }
 
-.middle.index .feature-card h3 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--primary);
-}
-
-.middle.index .feature-card p {
-  margin: 0;
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-}
-
-.middle.index .use-case-list {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-}
-
-.middle.index .use-case {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.middle.index .use-case h4 {
-  margin: 0 0 0.4rem;
-  font-size: 1rem;
-  font-weight: 700;
+.middle.index .def dt {
   color: var(--text);
+  font-weight: 600;
 }
 
-.middle.index .use-case p {
+.middle.index .def dd {
   margin: 0;
-  font-size: 0.92rem;
-  color: var(--text-muted);
-  line-height: 1.55;
-}
-
-.middle.index .trust {
-  display: flex;
-  flex-flow: row wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  padding: 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.middle.index .trust-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.middle.index .trust-item::before {
-  content: "\2713";
-  color: var(--primary);
-  font-weight: 700;
-  font-size: 1rem;
-}
-
-.middle.index .cta-footer {
-  text-align: center;
-  display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  gap: 1rem;
-  margin-top: -1rem;
-  padding: 0;
-}
-
-.middle.index .cta-footer p {
-  margin: 0;
-  max-width: 540px;
-  font-size: 0.95rem;
+  max-width: 62ch;
   color: var(--text-muted);
   line-height: 1.6;
 }
 
-@media (max-width: 1023px) {
-  .middle.index .feature-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* Principles */
+.middle.index .principles > h2 {
+  margin-bottom: 1.25rem;
+  padding-bottom: 0;
+  border-bottom: none;
+}
 
-  .middle.index .feature-grid > .feature-card:last-child {
-    grid-column: 1 / -1;
+.middle.index .principles-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.5rem 2rem;
+}
+
+.middle.index .principle {
+  padding-left: 0.9rem;
+  border-left: 2px solid var(--primary);
+}
+
+.middle.index .principle h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.middle.index .principle p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.6;
+}
+
+/* Closing line */
+.middle.index .closing {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+}
+
+.middle.index .closing p {
+  margin: 0;
+  max-width: 52ch;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+@media (hover: hover) {
+  .middle.index .folder:hover {
+    background: var(--surface-raised);
   }
 }
 
-@media (max-width: 720px) {
-  .middle.index {
-    padding: 0.75rem 0 1rem;
-  }
-
-  .middle.index .logged-out {
-    gap: 2rem;
-  }
-
-  .middle.index .feature-card,
-  .middle.index .use-case {
-    padding: 1.25rem;
-  }
-
-  .middle.index .hero h1 {
-    font-size: 1.85rem;
-  }
-
-  .middle.index .trust {
-    flex-flow: column nowrap;
-    gap: 0.6rem;
-  }
-}
-
-@media (max-width: 640px) {
-  .middle.index .feature-grid {
+@media (max-width: 760px) {
+  .middle.index .principles-list {
     grid-template-columns: 1fr;
+    gap: 1.15rem;
   }
 
-  .middle.index .feature-grid > .feature-card:last-child {
-    grid-column: auto;
-  }
-
-  .middle.index .use-case-list {
+  .middle.index .def {
     grid-template-columns: 1fr;
+    gap: 0.25rem;
   }
 }
 
 @media (max-width: 480px) {
   .middle.index .hero h1 {
-    font-size: 1.6rem;
-  }
-
-  .middle.index .hero p {
-    font-size: 0.95rem;
+    font-size: 1.95rem;
   }
 
   .middle.index .folders-list {
-    grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fill, minmax(7.5rem, 1fr));
+    gap: 0.65rem;
   }
 
-  .middle.index .folder-icon {
-    width: 3rem;
-    height: 3rem;
+  .middle.index .folder {
+    min-height: 7.25rem;
+    padding: 0.9rem 0.6rem;
   }
-
-  .middle.index .folder-create-glyph {
-    width: 3rem;
-    height: 3rem;
-    font-size: 2.1rem;
-  }
-}
-
-body > main:has(.middle.index) + footer {
-  margin-top: 1rem;
 }

@@ -1,178 +1,233 @@
+/* Profile page: account details, usage, security, and account actions. */
+
 .middle.profile {
   display: flex;
-  flex-flow: column;
-  align-items: stretch;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
-.middle.profile > .user {
-  display: flex; flex-flow: column; gap: 1rem;
+.middle.profile .panel > h2 {
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
+  font-size: 1rem;
+  font-weight: 650;
 }
 
-.middle.profile > .user h1 {
-  margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.middle.profile .rows {
+  display: flex;
+  flex-direction: column;
 }
 
-.middle.profile > .user > .row {
-  display: flex; flex-flow: row nowrap; gap: 0.75rem;
+.middle.profile .row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: baseline;
+  gap: 0.35rem 1rem;
+  padding: 0.65rem 0;
+  border-bottom: 1px solid var(--border);
 }
 
-.middle.profile > .user > .row > .key {
-  min-width: 8rem;
+.middle.profile .row:last-child {
+  border-bottom: none;
+}
+
+.middle.profile .row > .key {
+  flex: 0 0 9rem;
   color: var(--text-muted);
   font-size: 0.9rem;
 }
 
-.middle.profile > .user > .row > .value {
+.middle.profile .row > .value {
+  flex: 1 1 auto;
+  min-width: 0;
   color: var(--text);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 /* plan labels are stored lowercase; display them capitalized */
-.middle.profile > .user > .row > .value.plan {
+.middle.profile .row > .value.plan {
   text-transform: capitalize;
 }
 
-/* the delete account action looks like a simple link */
-.middle.profile > .user > .row > .value > a.delete-account {
+.middle.profile .row > .value > a.change-passphrase {
   color: var(--primary);
-  font-weight: normal;
-  text-decoration: none;
+  font-weight: 600;
 }
 
-.middle.profile > .user > .row > .value > a.delete-account:hover {
+.middle.profile .row > .value > a.change-passphrase:hover {
   color: var(--primary-hover);
-  text-decoration: underline;
 }
 
-/* the change passphrase action looks like a simple link */
-.middle.profile > .user > .row > .value > a.change-passphrase {
-  color: var(--primary);
-  font-weight: normal;
-  text-decoration: none;
+.middle.profile .row > .value > a.delete-account {
+  color: var(--danger);
+  font-weight: 600;
 }
 
-.middle.profile > .user > .row > .value > a.change-passphrase:hover {
-  color: var(--primary-hover);
-  text-decoration: underline;
+.middle.profile .row > .value > a.delete-account:hover {
+  color: var(--danger-solid);
 }
 
-.middle.profile > .user > .row > .value > .delete-notice {
+.middle.profile .danger-copy {
+  max-width: 58ch;
+  margin: 0 0 0.5rem;
   color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 400;
+  line-height: 1.55;
 }
 
-.middle.profile > .user #error {
-  color: red;
+.middle.profile .danger-zone {
+  border-left: 3px solid var(--danger-solid);
 }
 
-.middle.profile > .user #error:empty {
-  display: none;
+.middle.profile .danger-zone > h2 {
+  color: var(--danger);
 }
 
-/* the email edit row */
-.middle.profile > .user > .row.email > button.edit-email,
-.middle.profile > .user > .row.email button.inline-button {
-  height: 1.75rem;
-  padding: 0 0.75rem;
-  font-size: 0.8rem;
+/* Inline actions */
+.middle.profile .row > .value > button.show-history,
+.middle.profile .row.email > button.edit-email,
+.middle.profile .row.email button.inline-button {
+  min-height: 2rem;
+  padding: 0 0.65rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
   font-weight: 600;
   line-height: 1;
-  color: var(--text);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: var(--button-radius);
-  text-shadow: none;
   cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  transition: color 140ms ease, border-color 140ms ease,
+    background-color 140ms ease;
 }
 
-.middle.profile > .user > .row.email > button.edit-email:hover,
-.middle.profile > .user > .row.email > button.edit-email:focus-visible,
-.middle.profile > .user > .row.email button.inline-button:hover,
-.middle.profile > .user > .row.email button.inline-button:focus-visible {
+.middle.profile .row > .value > button.show-history:hover,
+.middle.profile .row.email > button.edit-email:hover,
+.middle.profile .row.email button.inline-button:hover {
   color: var(--primary);
+  background: var(--surface-raised);
   border-color: var(--primary);
-  outline: none;
 }
 
-.middle.profile > .user > .row.email > form.email-edit-form {
+/* Email editing */
+.middle.profile .row.email > form.email-edit-form {
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.25rem;
-  flex: 1;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1 1 14rem;
   min-width: 0;
 }
 
-.middle.profile > .user > .row.email > form.email-edit-form > .email-controls {
+.middle.profile .row.email > form.email-edit-form > .email-controls {
   display: flex;
-  flex-flow: row nowrap;
-  gap: 0.5rem;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
+  gap: 0.5rem;
 }
 
-.middle.profile > .user > .row.email .email-input {
-  flex: 1;
+.middle.profile .row.email .email-input {
+  flex: 1 1 10rem;
   min-width: 0;
-  height: 1.75rem;
+  height: 2.25rem;
+  font-size: 1rem;
+}
+
+.middle.profile .row.email .cancel-link {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Usage meter */
+.middle.profile .usage {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.middle.profile .usage-head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.middle.profile .usage-count {
+  color: var(--text);
   font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--text);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--button-radius);
-  padding: 0.2rem 0.5rem;
-  line-height: 1.4;
-  outline: none;
-  transition: border-color 0.15s ease;
+  font-variant-numeric: tabular-nums;
 }
 
-.middle.profile > .user > .row.email .email-input:focus {
-  border-color: var(--primary);
+.middle.profile .usage-percent {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
 }
 
-.middle.profile > .user > .row.email .cancel-link {
-  font-size: 0.8rem;
+.middle.profile .usage-percent.redline,
+.middle.profile .usage-percent.veryhigh,
+.middle.profile .usage-percent.overage {
+  color: var(--danger);
 }
 
-/* the show history action looks like a simple inline button */
-.middle.profile > .user > .row > .value > button.show-history {
-  height: 1.75rem;
-  padding: 0 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 600;
-  line-height: 1;
-  color: var(--text);
+.middle.profile .meter {
+  height: 0.5rem;
+  overflow: hidden;
   background: var(--surface-raised);
   border: 1px solid var(--border);
-  border-radius: var(--button-radius);
-  text-shadow: none;
-  cursor: pointer;
-  transition: border-color 0.15s ease, color 0.15s ease;
+  border-radius: var(--radius-pill);
 }
 
-.middle.profile > .user > .row > .value > button.show-history:hover,
-.middle.profile > .user > .row > .value > button.show-history:focus-visible {
-  color: var(--primary);
-  border-color: var(--primary);
-  outline: none;
+.middle.profile .meter .fill {
+  display: block;
+  height: 100%;
+  background: var(--primary);
 }
 
-/* login history panel */
+.middle.profile .meter .fill.high {
+  background: var(--primary-hover);
+}
+
+.middle.profile .meter .fill.veryhigh {
+  background: #cf7f2c;
+}
+
+.middle.profile .meter .fill.redline,
+.middle.profile .meter .fill.overage {
+  background: var(--danger-solid);
+}
+
+.middle.profile .usage-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+/* Login history */
 .middle.profile .history {
   display: flex;
-  flex-flow: column;
-  gap: 0.75rem;
+  flex-direction: column;
+  margin-top: 0.75rem;
+}
+
+.middle.profile .history:empty {
+  margin-top: 0;
 }
 
 .middle.profile .history-row {
   display: flex;
-  flex-flow: column;
+  flex-direction: column;
   gap: 0.15rem;
-  padding: 0.5rem 0;
+  padding: 0.6rem 0;
   border-bottom: 1px solid var(--border);
 }
 
@@ -181,19 +236,24 @@
 }
 
 .middle.profile .history-line {
-  font-size: 0.85rem;
   color: var(--text-muted);
+  font-size: 0.85rem;
 }
 
 .middle.profile .history-line:first-child {
   display: flex;
-  flex-flow: row wrap;
-  gap: 0.5rem;
+  flex-direction: row;
+  flex-wrap: wrap;
   align-items: baseline;
+  gap: 0.5rem;
+}
+
+.middle.profile .history-ip {
+  font-family: var(--font-mono);
 }
 
 .middle.profile .history-outcome.success {
-  color: #4ade80;
+  color: var(--success);
 }
 
 .middle.profile .history-outcome.failure {
@@ -203,4 +263,10 @@
 .middle.profile .history-empty {
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+@media (max-width: 560px) {
+  .middle.profile .row > .key {
+    flex-basis: 100%;
+  }
 }

@@ -1,7 +1,18 @@
 {{define "middle"}}
 <div class="middle passphrase">
-  <section class="passphrase" id="passphrase">
-    <h1>Change passphrase</h1>
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/profile">Profile</a>
+  </nav>
+
+  <section class="passphrase panel" id="passphrase">
+    <header class="page-head">
+      <h1>Change passphrase</h1>
+      <p>
+        Your passphrase encrypts everything you store. Choose something long
+        enough to be strong and simple enough to remember — there is no
+        recovery if you lose it.
+      </p>
+    </header>
 
     <form hx-post="/profile/passphrase" hx-target="#passphrase" hx-swap="outerHTML">
       <div class="field">
@@ -24,7 +35,9 @@
           placeholder="At least 16 characters"
           minlength="16"
           autocomplete="off"
+          aria-describedby="passphrase-help"
           required>
+        <p id="passphrase-help" class="field-help">At least 16 characters. A short phrase you can recall beats a complicated word.</p>
       </div>
 
       <div class="field">
@@ -39,7 +52,10 @@
           required>
       </div>
 
-      <button type="submit">Update passphrase</button>
+      <div class="form-actions">
+        <button type="submit">Update passphrase</button>
+        <a class="quiet-link" href="/profile">Back to profile</a>
+      </div>
     </form>
 
     <span id="error"></span>

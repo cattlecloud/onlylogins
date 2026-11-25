@@ -1,48 +1,148 @@
-.middle.about {
+/* Shared prose layout for about, help, privacy, and terms. */
+
+.middle.about,
+.middle.help,
+.middle.privacy,
+.middle.tos {
   width: 100%;
-  max-width: 72ch;
-  margin-left: auto;
-  margin-right: auto;
+  max-width: 68ch;
+  margin-inline: auto;
 }
 
-.middle.about h1 {
-  margin-top: 0;
+.middle.about h1,
+.middle.help h1,
+.middle.privacy h1,
+.middle.tos h1 {
+  margin: 0 0 0.5rem;
+  font-size: clamp(1.7rem, 3.5vw, 2.1rem);
+  letter-spacing: -0.015em;
 }
 
-.middle.about section + section {
+.middle.about .dateline,
+.middle.help .dateline,
+.middle.privacy .dateline,
+.middle.tos .dateline {
+  margin: 0 0 1.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.middle.about section,
+.middle.help section,
+.middle.privacy section,
+.middle.tos section {
+  scroll-margin-top: 1.5rem;
+}
+
+.middle.about section + section,
+.middle.help section + section,
+.middle.privacy section + section,
+.middle.tos section + section {
   margin-top: 2.5rem;
 }
 
-.middle.about h2 {
-  margin: 0 0 0.9rem;
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--text);
+.middle.about h2,
+.middle.help h2,
+.middle.privacy h2,
+.middle.tos h2 {
+  margin: 2.25rem 0 0.9rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
-.middle.about p {
+.middle.about section:first-of-type > h2,
+.middle.help section:first-of-type > h2,
+.middle.privacy section:first-of-type > h2,
+.middle.tos section:first-of-type > h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+.middle.about h3,
+.middle.help h3,
+.middle.privacy h3,
+.middle.tos h3 {
+  margin: 1.75rem 0 0.6rem;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.middle.about p,
+.middle.help p,
+.middle.privacy p,
+.middle.tos p {
   margin: 0 0 1rem;
   color: var(--text-muted);
   line-height: 1.7;
 }
 
-.middle.about p:last-child {
+.middle.about p:last-child,
+.middle.help p:last-child,
+.middle.privacy p:last-child,
+.middle.tos p:last-child {
   margin-bottom: 0;
 }
 
-.middle.about ul {
+.middle.about ul,
+.middle.about ol,
+.middle.help ul,
+.middle.help ol,
+.middle.privacy ul,
+.middle.privacy ol,
+.middle.tos ul,
+.middle.tos ol {
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.8rem;
-  margin: 0;
-  padding-left: 1.25rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  margin: 0 0 1.25rem;
+  padding-left: 1.35rem;
 }
 
-.middle.about li {
+.middle.about li,
+.middle.help li,
+.middle.privacy li,
+.middle.tos li {
   color: var(--text-muted);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
-.middle.about li strong {
+.middle.about li strong,
+.middle.help li strong,
+.middle.privacy li strong,
+.middle.tos li strong {
   color: var(--text);
+}
+
+.middle.about code,
+.middle.help code,
+.middle.privacy code,
+.middle.tos code {
+  padding: 0.12em 0.35em;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.88em;
+}
+
+.middle.about blockquote,
+.middle.help blockquote,
+.middle.privacy blockquote,
+.middle.tos blockquote {
+  margin: 1.5rem 0;
+  padding: 0.25rem 0 0.25rem 1rem;
+  border-left: 2px solid var(--border-strong);
+}
+
+.middle.about hr,
+.middle.help hr,
+.middle.privacy hr,
+.middle.tos hr {
+  margin: 2rem 0;
+  border: none;
+  border-top: 1px solid var(--border);
 }

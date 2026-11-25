@@ -1,247 +1,158 @@
+/* One-time share links. */
+
 .middle.share {
-  display: flex; flex-flow: column;
-  gap: 1rem;
-  padding: 1rem;
-  max-width: 100%;
-}
-
-.middle.share > .hero {
-  padding: 2rem;
-  background: linear-gradient(135deg, var(--surface-raised) 0%, var(--surface) 100%);
-  border: 1px solid var(--border);
-  border-radius: 16px;
-  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.25);
-}
-
-.middle.share .eyebrow {
-  margin: 0 0 0.5rem;
-  color: var(--primary);
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.middle.share .hero h1 {
-  margin: 0;
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-}
-
-.middle.share .hero .lede {
-  margin: 0.75rem 0 0;
-  max-width: 65ch;
-  color: var(--text-muted);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.middle.share > .create > h3 {
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-muted);
-  font-size: 0.9rem;
-}
-
-.middle.share > .create > form {
   display: flex;
-  flex-flow: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.middle.share > .create > form > fieldset {
-  display: flex;
-  flex-flow: column;
-  gap: 1rem;
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-
-.middle.share > .create label[for="ttl"] {
-  display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.middle.share > .create label[for="content"] {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.middle.share > .create textarea {
+  flex-direction: column;
+  gap: 1.25rem;
   width: 100%;
-  min-height: 120px;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.9rem;
-  font-family: inherit;
-  box-sizing: border-box;
-  resize: vertical;
-  background-color: var(--surface);
-  color: var(--text);
+  max-width: 760px;
+  margin-inline: auto;
 }
 
-.middle.share > .create textarea:focus {
-  outline: 2px solid var(--primary);
-  border-color: transparent;
+.middle.share .page-head h1 {
+  font-size: clamp(1.6rem, 3vw, 1.9rem);
+  letter-spacing: -0.01em;
 }
 
-.middle.share > .create select {
-  height: 40px;
-  padding: 0 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: var(--surface);
-  color: var(--text);
-  cursor: pointer;
+.middle.share .page-head .lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
 }
 
-.middle.share > .create select:focus {
-  outline: 2px solid var(--primary);
-  border-color: transparent;
+.middle.share .create > h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.05rem;
+  font-weight: 650;
 }
 
-.middle.share > .create button {
-  align-self: flex-start;
+.middle.share .create form {
+  margin-top: 0.75rem;
 }
 
+.middle.share .create form > fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.middle.share .create textarea {
+  min-height: 8rem;
+  font-size: 1rem;
+}
+
+.middle.share .create select {
+  max-width: 16rem;
+}
+
+.middle.share .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+/* Shared links */
 .middle.share > .list {
   display: flex;
-  flex-flow: column;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.middle.share > .list:empty::before {
+  content: "No shared links yet. Create one above to get started.";
+  display: block;
+  padding: 1.25rem;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+  text-align: center;
 }
 
 .middle.share > .list > article {
-  padding: 1rem;
+  padding: 1rem 1.15rem;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background-color: var(--surface-raised);
+  border-radius: var(--radius);
   overflow-wrap: break-word;
-  transition: border-color 0.2s;
-}
-
-.middle.share > .list > article:hover {
-  border-color: var(--primary);
 }
 
 .middle.share > .list > article > label {
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: flex-start;
-  margin-bottom: 0.5rem;
-  font-weight: 600;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
   color: var(--text-muted);
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 .middle.share > .list > article > label > .copy-btn {
-  flex-shrink: 0;
-  margin-left: 0.75rem;
-  height: auto;
-  padding: 0.3rem 0.6rem;
-  background: var(--text-muted);
-  color: var(--bg);
-  border: none;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  min-height: 1.9rem;
+  padding: 0 0.65rem;
+  color: var(--primary);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease-in, color 0.2s ease-in;
+  transition: color 140ms ease, border-color 140ms ease,
+    background-color 140ms ease;
 }
 
 .middle.share > .list > article > label > .copy-btn:hover {
-  opacity: 0.9;
+  color: var(--primary-hover);
+  background: var(--surface-raised);
+  border-color: var(--primary);
 }
 
 .middle.share > .list > article > label > .copy-btn.copied {
-  background: #34d399;
-  color: var(--bg);
-  transition: background-color 0.2s ease-in, color 0.2s ease-in;
+  color: var(--primary-ink);
+  background: var(--success);
+  border-color: var(--success);
 }
 
 .middle.share > .list > article > label > .copy-btn.copied::after {
-  content: "\2713";          /* heavy check mark */
-  margin-left: 0.4em;
+  content: "\2713";
+  margin-left: 0.35em;
   display: inline-block;
-  animation: share-copy-pop 0.4s ease-out;
-}
-
-@keyframes share-copy-pop {
-  0%   { opacity: 0; transform: scale(0.3) rotate(-15deg); }
-  60%  { opacity: 1; transform: scale(1.25) rotate(0deg);   }
-  100% { opacity: 1; transform: scale(1)    rotate(0deg);   }
 }
 
 .middle.share > .list > article > input[type="text"] {
-  width: 30ch;
-  padding: 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 4px;
+  font-family: var(--font-mono);
   font-size: 0.85rem;
-  background-color: var(--surface);
-  color: var(--text);
-  box-sizing: border-box;
-  overflow: hidden;
+  user-select: text;
 }
 
-/* landing page when user is not logged in */
-
-.middle.share > .landing {
-  display: flex;
-  flex-flow: column;
-  gap: 1rem;
-  padding: 1.5rem;
-  background-color: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.middle.share > .landing > p {
-  margin: 0;
+.middle.share > .list > article > input[type="text"]:disabled {
   color: var(--text-muted);
-  line-height: 1.5;
-  background: transparent;
-  border: none;
-  padding: 0;
-  border-radius: 0;
-  font-size: 0.95rem;
+  background: var(--input);
+  border-color: var(--border);
+  opacity: 1;
 }
 
-.middle.share > .landing > .button-cta {
-  align-self: flex-start;
-  margin-top: 0.5rem;
+/* Landing panel */
+.middle.share > .landing p {
+  max-width: 60ch;
+  margin: 0 0 1rem;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
-@media (max-width: 900px) {
-  .middle.share {
-    padding: 0.5rem;
+@media (max-width: 560px) {
+  .middle.share .create select {
+    max-width: 100%;
   }
 
-  .middle.share > .hero {
-    padding: 1.5rem;
-    border-radius: 12px;
-  }
-
-  .middle.share > .create > form > fieldset {
-    align-items: stretch;
-  }
-
-  .middle.share > .create button {
-    width: 100%;
-  }
-
-  .middle.share > .list > article > input[type="text"] {
+  .middle.share .form-actions .button-cta {
     width: 100%;
   }
 }

@@ -4,21 +4,21 @@
     <img class="brand-mark" src="/ui/images/onlylogins.svg" alt="" aria-hidden="true">
     <span class="brand-name">OnlyLogins</span>
   </a>
-  <div class="links">
-    <a href="/share">share</a>
-    <span class="sep">|</span>
-    <a href="/export">export</a>
-    <span class="sep">|</span>
-    <a href="/patreon">patreon</a>
-  </div>
+  <nav class="links" aria-label="Main">
+    <a href="/share">Share</a>
+    <a href="/export">Export</a>
+    <a href="/patreon">Patreon</a>
+  </nav>
 </div>
 <div class="right">
-  <div class="profile">
+  <div class="session">
     {{if .Session.Active}}
-    <span class="username"><a href="/profile">{{.Section.Profile.Username}}</a></span>
-    <span class="logout"><a href="#" hx-post="/internal/logout" hx-swap="none">logout</a></span>
+    <a class="username" href="/profile" title="Your profile">{{.Section.Profile.Username}}</a>
+    <form class="logout" method="post" action="/internal/logout" hx-post="/internal/logout" hx-swap="none">
+      <button class="nav-button" type="submit">Sign out</button>
+    </form>
     {{else}}
-    <span class="login"><a href="/login">login</a></span>
+    <a class="nav-button login-link" href="/login">Log in</a>
     {{end}}
   </div>
 </div>

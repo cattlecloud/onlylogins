@@ -1,27 +1,26 @@
 {{define "middle"}}
 <div class="middle share">
-  <section class="hero">
-    <p class="eyebrow">One-time links</p>
+  <section class="page-head">
     <h1>Share</h1>
     {{if .Session.Active}}
     <p class="lede">
-      Use the share feature to securely share a secret message using a one-time
-      link. When the recipient opens the link, they can read the message exactly
-      once. After the message is opened or expired, it is permanently deleted.
+      Share a secret message with a one-time link. The recipient can read the
+      message exactly once. After it is opened or expires, it is permanently
+      deleted.
     </p>
     {{else}}
     <p class="lede">
       Share lets you encrypt a secret message and send it to anyone with a
-      one-time link. When the recipient opens the link the secret is shown
-      exactly once, then immediately and permanently destroyed. You can also
-      set the link to expire automatically after a chosen period of time.
+      one-time link. The recipient reads it exactly once, and it is then
+      immediately and permanently destroyed. Links can also expire on their
+      own after a set period.
     </p>
     {{end}}
   </section>
 
   {{if .Session.Active}}
-  <section class="create">
-    <h3>Create link to a secret message</h3>
+  <section class="panel create">
+    <h2>Create link to a secret message</h2>
     <span id="error"></span>
     <form
       hx-put="/share"
@@ -30,31 +29,39 @@
       hx-on::after-request="this.reset()"
     >
       <fieldset>
-        <label for="content">Messsage</label>
-        <textarea name="content" id="content" placeholder="Share secret text" autocomplete="off" required></textarea>
-        <label for="ttl">Expires in</label>
-        <select name="ttl" id="ttl">
-          <option value="900">15 minutes</option>
-          <option value="3600">1 hour</option>
-          <option value="86400">1 day</option>
-          <option value="432000">5 days</option>
-          <option value="2592000">30 days</option> 
-        </select>
-        <button type="submit">Create</button>
+        <div class="field">
+          <label for="content">Message</label>
+          <textarea name="content" id="content" placeholder="Share secret text" autocomplete="off" required></textarea>
+          <p class="field-help">The message is encrypted and can only be read once, by whoever opens the link.</p>
+        </div>
+        <div class="field">
+          <label for="ttl">Link expires after</label>
+          <select name="ttl" id="ttl">
+            <option value="900">15 minutes</option>
+            <option value="3600">1 hour</option>
+            <option value="86400">1 day</option>
+            <option value="432000">5 days</option>
+            <option value="2592000">30 days</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="submit">Create link</button>
+        </div>
       </fieldset>
     </form>
   </section>
 
-  <section class="list" id="list">
-  </section>
+  <section class="list" id="list"></section>
 
   {{else}}
-  <section class="landing">
+  <section class="panel landing">
     <p>
       To create a share, please log in or sign up for an OnlyLogins account.
       Recipients do not need an account to view a shared secret.
     </p>
-    <a class="button-cta" href="/login">Log in to start sharing</a>
+    <div class="form-actions">
+      <a class="button-cta" href="/login">Log in to start sharing</a>
+    </div>
   </section>
   {{end}}
 </div>

@@ -1,20 +1,19 @@
 {{define "middle"}}
 <div class="middle export">
-  <section class="hero">
-    <p class="eyebrow">Backup</p>
+  <section class="page-head">
     <h1>Export a backup</h1>
 
     {{if .Session.Active}}
     <p class="lede">
       Create a complete copy of your OnlyLogins data. The downloadable export
       includes every folder and secure document in your account, along with
-      each document's weblinks, usernames, passwords, key/value pairs, and
+      each document's web links, usernames, passwords, key/value pairs, and
       notes.
     </p>
     <ul class="contents" aria-label="What the backup includes">
       <li>Folders</li>
       <li>Documents</li>
-      <li>Weblinks</li>
+      <li>Web links</li>
       <li>Usernames</li>
       <li>Passwords</li>
       <li>Key/value pairs</li>
@@ -38,13 +37,12 @@
     <strong>This backup is not encrypted.</strong>
     <p>
       Your passphrase does not protect this file. It contains every secret in
-      your account in plaintext. Be sure to print this document and store it
-      in a physical, fireproof safe in a secure location. Remember to delete the
-      file from your device when done with it.
+      your account in plaintext. Store it somewhere safe, and delete the file
+      from your device when you are done with it.
     </p>
   </div>
 
-  <section class="action">
+  <section class="panel action">
     <h2>Get backup file</h2>
     <p>
       Your data is downloaded as a single
@@ -56,7 +54,7 @@
     </form>
   </section>
   {{else}}
-  <section class="action">
+  <section class="panel action">
     <h2>Log in to continue</h2>
     <p>
       Log in to download a complete copy of your OnlyLogins data as one TOML file.

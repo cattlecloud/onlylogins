@@ -9,22 +9,24 @@
   <link rel="stylesheet" href="/ui/css/login.css">
   <link rel="icon" type="image/svg+xml" href="/ui/images/favicon.svg">
   <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js" integrity="sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V" crossorigin="anonymous"></script>
-  <title>Login to OnlyLogins</title>
-  <meta name="description" content="Login to OnlyLogins to manage your usernames,
+  <title>Log in to OnlyLogins</title>
+  <meta name="description" content="Log in to OnlyLogins to manage your usernames,
   passwords, backup codes, and other authentication credentials.">
 </head>
 <body>
+  <a class="skip-link" href="#content">Skip to content</a>
+
   <header>
-    <span class="brand">
+    <a href="/" class="brand">
       <img class="brand-mark" src="/ui/images/onlylogins.svg" alt="" aria-hidden="true">
       <span class="brand-name">OnlyLogins</span>
-    </span>
+    </a>
   </header>
 
-  <main>
-    <section class="card">
-      <h2>Login</h2>
-      <p class="card-subtitle">Welcome back to your OnlyLogins account</p>
+  <main id="content">
+    <section class="card card-login">
+      <h1>Log in</h1>
+      <p class="card-subtitle">Welcome back. Enter your username and passphrase.</p>
       <form hx-post="/login?do=login" hx-swap="none">
         <div class="field">
           <label for="login-username">Username</label>
@@ -34,14 +36,14 @@
           <label for="login-passphrase">Passphrase</label>
           <input type="password" id="login-passphrase" name="passphrase" placeholder="Enter your passphrase" minlength="16" autocomplete="off" required>
         </div>
-        <button type="submit">Login</button>
+        <button type="submit">Log in</button>
       </form>
       <span id="error"></span>
     </section>
 
-    <section class="card">
-      <h2>Create Account</h2>
-      <p class="card-subtitle">New to OnlyLogins? Sign up in seconds</p>
+    <section class="card card-create" id="create">
+      <h2>Create an account</h2>
+      <p class="card-subtitle">New to OnlyLogins? Sign up in a few seconds.</p>
       <form hx-post="/login?do=create" hx-swap="none">
         <div class="field">
           <label for="signup-email">Email</label>
@@ -54,18 +56,19 @@
         <div class="field">
           <label for="signup-passphrase">Passphrase</label>
           <input type="password" id="signup-passphrase" name="signup-passphrase" placeholder="At least 16 characters" minlength="16" autocomplete="off" required>
+          <p class="field-help">Use a passphrase you can remember. There is no recovery.</p>
         </div>
         <div class="field">
-          <label for="signup-confirm">Confirm</label>
-          <input type="password" id="signup-confirm" name="signup-confirm" placeholder="Enter passphrase again" minlength="16" autocomplete="off" required>
+          <label for="signup-confirm">Confirm passphrase</label>
+          <input type="password" id="signup-confirm" name="signup-confirm" placeholder="Enter the passphrase again" minlength="16" autocomplete="off" required>
         </div>
         <div class="checkbox">
           <input type="checkbox" id="notifications" name="notifications" value="true">
-          <label for="notifications">Get security notifications in your inbox</label>
+          <label for="notifications">Send me security notifications</label>
         </div>
         <div class="checkbox">
           <input type="checkbox" id="marketing" name="marketing" value="true">
-          <label for="marketing">Get marketing spam in your inbox</label>
+          <label for="marketing">Send me occasional product news</label>
         </div>
         <div class="checkbox">
           <input type="checkbox" id="unique" name="unique" value="true" required>
@@ -75,27 +78,26 @@
           <input type="checkbox" id="no-recovery" name="no-recovery" value="true" required>
           <label for="no-recovery">I understand there is no recovery mechanism if I forget my passphrase</label>
         </div>
-        <button type="submit">Create Account</button>
+        <button type="submit" class="btn-secondary">Create account</button>
       </form>
     </section>
 
     <section class="notes">
       <p>
         <strong>First time?</strong>
-        Learn more about <a href="/about">onlylogins.net</a>
+        Learn more <a href="/about">about OnlyLogins</a>.
       </p>
       <p>
-        <strong>Learn</strong> how to come up with a <a href="/help#passphrases" target="_blank" rel="noopener">strong passphrase</a>
+        <strong>Need a passphrase?</strong>
+        Read how to choose a <a href="/help#passphrases" target="_blank" rel="noopener">strong passphrase</a>.
       </p>
     </section>
   </main>
 
   <footer>
     <p>
-      By clicking the buttons above, you acknowledge that you have read,
-      understood, and agree to the OnlyLogins
-      <a href="/terms">Terms of Service</a>
-      and
+      By creating an account or logging in, you acknowledge that you have read
+      and agree to the OnlyLogins <a href="/terms">Terms of Service</a> and
       <a href="/privacy">Privacy Policy</a>.
     </p>
   </footer>

@@ -20,6 +20,19 @@ body {
   background-color: white;
 }
 
+/* the administration pages keep their own light theme */
+h1,
+h2,
+h3,
+h4 {
+  color: var(--font-color);
+}
+
+.modpage a {
+  color: var(--primary-color);
+  text-decoration: underline;
+}
+
 body > .title > h2 {
   font-size: 1.75rem;
   font-weight: 500;
