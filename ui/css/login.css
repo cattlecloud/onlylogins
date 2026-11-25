@@ -117,6 +117,15 @@ main {
   cursor: pointer;
 }
 
+/* inline links in the checkbox copy stay quiet until hovered */
+.checkbox label a {
+  text-decoration: none;
+}
+
+.checkbox label a:hover {
+  text-decoration: underline;
+}
+
 .notes {
   grid-column: 1 / -1;
   display: flex;
@@ -135,6 +144,14 @@ main {
 
 .notes strong {
   color: var(--text);
+}
+
+.notes p a {
+  text-decoration: none;
+}
+
+.notes p a:hover {
+  text-decoration: underline;
 }
 
 footer {

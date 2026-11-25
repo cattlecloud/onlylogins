@@ -158,6 +158,11 @@
   letter-spacing: -0.01em;
 }
 
+.middle.index .store > h2 {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
 /* Store list */
 .middle.index .ledger-defs {
   margin: 0;
