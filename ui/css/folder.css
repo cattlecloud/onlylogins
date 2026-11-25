@@ -1,199 +1,46 @@
+/* Folder page: one document per account, plus the new-document disclosure. */
+
 .middle.folder {
   display: flex;
-  flex-flow: column nowrap;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1rem 0 2rem;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
 }
 
-.middle.folder > section {
-  width: 100%;
-  max-width: 640px;
+.middle.folder .page-head h1 {
+  font-size: clamp(1.6rem, 3vw, 1.9rem);
+  letter-spacing: -0.01em;
+}
+
+.middle.folder .page-head p {
+  font-size: 0.95rem;
+}
+
+/* New document disclosure */
+.middle.folder > .new-document {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.75rem;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
-}
-
-.middle.folder h1 {
-  margin: 0 0 1.25rem;
-  font-size: 1.35rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.middle.folder .header {
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 1rem;
-}
-
-.middle.folder .header h1 {
-  margin: 0;
-}
-
-.middle.folder .back-link {
-  flex-shrink: 0;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.15s ease;
-}
-
-.middle.folder .back-link:hover,
-.middle.folder .back-link:focus-visible {
-  color: var(--primary);
-  text-decoration: underline;
-  outline: none;
-}
-
-.middle.folder form {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 1.25rem;
-}
-
-.middle.folder .field {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.4rem;
-}
-
-.middle.folder .field label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.middle.folder .field-hint {
-  font-weight: 400;
-  color: var(--text-muted);
-  text-decoration: none;
-  transition: color 0.1s ease;
-}
-
-.middle.folder .field-hint:hover,
-.middle.folder .field-hint:focus-visible {
-  color: var(--primary);
-  text-decoration: underline;
-  outline: none;
-}
-
-.middle.folder .field input {
-  width: 100%;
-  padding: 0.65rem 0.8rem;
-  font-size: 1rem;
-  color: var(--text);
-  caret-color: var(--primary);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.middle.folder .field input::placeholder {
-  color: var(--text-muted);
-}
-
-.middle.folder .field input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.folder button {
-  align-self: flex-start;
-  min-width: 8rem;
-}
-
-.middle.folder h2 {
-  margin: 0 0 0.75rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.middle.folder .documents-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.middle.folder .documents-list li {
-  border-top: 1px solid var(--border);
-}
-
-.middle.folder .documents-list li:first-child {
-  border-top: none;
-}
-
-.middle.folder .documents-list a {
-  display: block;
-  padding: 0.55rem 0.25rem 0.55rem 0.75rem;
-  font-size: 0.95rem;
-  color: var(--text);
-  text-decoration: none;
-  border-radius: 6px;
-  transition: background 0.1s ease, color 0.1s ease;
-}
-
-.middle.folder .documents-list a:hover,
-.middle.folder .documents-list a:focus-visible {
-  background: var(--surface-raised);
-  color: var(--primary-hover);
-  text-decoration: none;
-  outline: none;
-}
-
-.middle.folder .empty {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-}
-
-.middle.folder > section.new-document {
-  padding: 0;
+  border-radius: var(--radius);
   overflow: hidden;
-  box-shadow: none;
-  transition: box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-.middle.folder > section.new-document:has(details[open]) {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
 }
 
 .middle.folder .new-document summary {
   display: flex;
-  flex-flow: row nowrap;
+  flex-direction: row;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  padding: 1rem 1.5rem;
+  padding: 0.9rem 1.25rem;
+  color: var(--text);
   font-size: 0.95rem;
   font-weight: 600;
-  color: var(--text);
-  list-style: none;
-  cursor: pointer;
-  outline: none;
-  transition: color 0.15s ease, background 0.15s ease;
 }
 
-.middle.folder .new-document summary::-webkit-details-marker {
-  display: none;
-}
-
-.middle.folder .new-document summary:hover,
-.middle.folder .new-document summary:focus-visible {
+.middle.folder .new-document summary:hover {
   color: var(--primary);
   background: var(--surface-raised);
-}
-
-.middle.folder .new-document summary:focus-visible {
-  box-shadow: inset 0 0 0 2px var(--primary);
 }
 
 .middle.folder .new-document details[open] summary {
@@ -202,13 +49,13 @@
 
 .middle.folder .new-document .summary-chevron {
   flex: 0 0 auto;
-  width: 0.55rem;
-  height: 0.55rem;
+  width: 0.5rem;
+  height: 0.5rem;
   margin-top: -0.2rem;
   border-right: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   transform: rotate(45deg);
-  transition: transform 0.15s ease, margin-top 0.15s ease;
+  transition: transform 140ms ease, margin-top 140ms ease;
 }
 
 .middle.folder .new-document details[open] .summary-chevron {
@@ -217,24 +64,34 @@
 }
 
 .middle.folder .new-document form {
-  padding: 1.25rem 1.5rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 1.25rem;
+}
+
+.middle.folder .field-hint {
+  margin-left: 0.35rem;
+  color: var(--text-muted);
+  font-weight: 400;
+  text-decoration: none;
+}
+
+.middle.folder .field-hint:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 .middle.folder .doc-hint {
-  display: flex;
-  flex-flow: column nowrap;
-  gap: 0.5rem;
-  padding: 0.85rem 1rem;
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
+  padding: 0.1rem 0 0.1rem 0.9rem;
+  border-left: 2px solid var(--border-strong);
 }
 
 .middle.folder .doc-hint .hint-text {
-  margin: 0;
-  font-size: 0.88rem;
-  line-height: 1.45;
+  margin: 0 0 0.6rem;
   color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 .middle.folder .doc-hint .hint-text strong {
@@ -243,95 +100,169 @@
 }
 
 .middle.folder .doc-hint .hint-examples {
-  margin: 0;
   display: flex;
-  flex-flow: row wrap;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
+  margin: 0;
 }
 
 .middle.folder .doc-hint .hint-examples-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  margin-right: 0.2rem;
   color: var(--text-muted);
-  margin-right: 0.15rem;
+  font-size: 0.82rem;
 }
 
 .middle.folder .example-chip {
-  height: auto;
+  min-height: 2rem;
+  padding: 0.25rem 0.7rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
   font-family: inherit;
   font-size: 0.82rem;
   font-weight: 500;
-  color: var(--text);
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.middle.folder .example-chip:hover {
+  color: var(--primary);
+  background: var(--surface-raised);
+  border-color: var(--primary);
+}
+
+.middle.folder .form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.middle.folder .form-actions button {
+  min-width: 10rem;
+}
+
+/* Documents list */
+.middle.folder > .documents {
+  padding: 1.25rem 1.5rem 1.5rem;
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.3rem 0.75rem;
-  cursor: pointer;
-  transition: border-color 0.1s ease, color 0.1s ease, background 0.1s ease;
+  border-radius: var(--radius);
 }
 
-.middle.folder .example-chip:hover,
-.middle.folder .example-chip:focus-visible {
-  border-color: var(--primary);
-  color: var(--primary);
-  background: var(--surface);
-  outline: none;
+.middle.folder .documents-head {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.25rem 1rem;
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid var(--border);
 }
 
-.middle.folder .example-chip:active {
-  background: var(--surface);
-  border-color: var(--primary-hover);
-  color: var(--primary-hover);
-}
-
-.middle.folder .doc-hint .hint-footnote {
+.middle.folder .documents-head > h2 {
   margin: 0;
-  font-size: 0.75rem;
-  font-style: italic;
-  color: var(--text-muted);
+  font-size: 1.05rem;
+  font-weight: 650;
 }
 
-.middle.folder .danger-zone {
-  border-color: var(--danger);
+.middle.folder .documents-head .count {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.middle.folder .documents-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.middle.folder .documents-list li {
+  border-bottom: 1px solid var(--border);
+}
+
+.middle.folder .documents-list li:last-child {
+  border-bottom: none;
+}
+
+.middle.folder .documents-list a {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.25rem;
+  color: var(--text);
+  text-decoration: none;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.middle.folder .documents-list .document-label {
+  overflow-wrap: anywhere;
+  font-size: 0.95rem;
+}
+
+.middle.folder .documents-list .document-chevron {
+  flex: 0 0 auto;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-right: 2px solid var(--border-strong);
+  border-bottom: 2px solid var(--border-strong);
+  transform: rotate(-45deg);
+  transition: border-color 140ms ease;
+}
+
+.middle.folder .documents-list a:hover {
+  color: var(--primary);
+  background: var(--surface-raised);
+}
+
+.middle.folder .documents-list a:hover .document-chevron {
+  border-color: var(--primary);
+}
+
+.middle.folder .empty {
+  padding-top: 0.5rem;
+}
+
+/* Danger zone */
+.middle.folder > .danger-zone {
+  padding: 0.85rem 1.25rem;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--danger-solid);
+  border-radius: var(--radius);
 }
 
 .middle.folder .danger-zone summary {
-  cursor: pointer;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
   color: var(--danger);
-  list-style: none;
-  outline: none;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
-.middle.folder .danger-zone summary::-webkit-details-marker {
-  display: none;
-}
-
-.middle.folder .danger-zone summary:hover,
-.middle.folder .danger-zone summary:focus-visible {
-  text-decoration: underline;
+.middle.folder .danger-zone summary:hover {
+  color: var(--danger-solid);
 }
 
 .middle.folder .danger-zone-body {
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  margin-top: 1rem;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
   border-top: 1px solid var(--border);
 }
 
 .middle.folder .danger-zone-body p {
+  max-width: 62ch;
   margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.45;
   color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
 }
 
 .middle.folder .danger-zone-body p strong {
@@ -340,34 +271,21 @@
 }
 
 .middle.folder .danger-zone-body form {
-  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
 }
 
-@media (max-width: 640px) {
-  .middle.folder > section {
-    padding: 1.25rem;
+@media (max-width: 560px) {
+  .middle.folder > .new-document form {
+    padding: 1rem;
   }
 
-  .middle.folder .documents-list a {
-    padding: 0.5rem 0.2rem 0.5rem 0.6rem;
-    font-size: 0.92rem;
+  .middle.folder > .documents {
+    padding: 1rem 1.1rem 1.25rem;
   }
 
-  .middle.folder .doc-hint {
-    padding: 0.75rem 0.85rem;
-  }
-
-  .middle.folder .new-document summary {
-    padding: 0.9rem 1.25rem;
-  }
-
-  .middle.folder .new-document form {
-    padding: 1rem 1.25rem 1.25rem;
-  }
-
-  .middle.folder .header {
-    flex-flow: column nowrap;
-    align-items: flex-start;
-    gap: 0.5rem;
+  .middle.folder .form-actions button {
+    width: 100%;
   }
 }

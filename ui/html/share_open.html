@@ -1,26 +1,41 @@
 {{define "middle"}}
 <div class="middle shareopen">
-  <h1>Open Share</h1>
+  <header class="page-head">
+    <h1>Open share</h1>
+  </header>
 
   {{if .Section.Paper}}
-  <div class="paper">
+  <div class="paper panel">
     <span id="error"></span>
-    <label>Created</label><span>{{DateTime .Section.Paper.Creation}}</span>
-    <label>Opened</label><span>{{DateTime .Section.Opened}}</span>
-    <label>Accessed From</label><span>{{.Section.IP}}</span>
-    <label>Message</label>
-    <textarea readonly>{{.Section.Paper.Secret.Unveil}}</textarea>
+    <dl class="meta-list">
+      <div>
+        <dt>Created</dt>
+        <dd>{{DateTime .Section.Paper.Creation}}</dd>
+      </div>
+      <div>
+        <dt>Opened</dt>
+        <dd>{{DateTime .Section.Opened}}</dd>
+      </div>
+      <div>
+        <dt>Accessed from</dt>
+        <dd>{{.Section.IP}}</dd>
+      </div>
+    </dl>
+    <div class="field">
+      <span class="label">Message</span>
+      <textarea readonly>{{.Section.Paper.Secret.Unveil}}</textarea>
+    </div>
   </div>
   {{else}}
-  <div class="missing">
+  <div class="missing panel">
     <div class="uid-display">
-      <label>Share ID</label>
+      <span class="label">Share ID</span>
       <code>{{.Section.UID}}</code>
     </div>
     <p>This share does not exist.</p>
     <p>Once a share is viewed or expired, it is automatically and permanently deleted.</p>
     <div class="back-link">
-      <a href="/share">&lt; Back to Share</a>
+      <a href="/share">Back to share</a>
     </div>
   </div>
   {{end}}

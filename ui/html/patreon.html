@@ -1,29 +1,21 @@
 {{define "middle"}}
 <div class="middle patreon">
-  <section class="hero">
-    <p class="eyebrow">Patreon</p>
-    <h1>Support OnlyLogins<span class="slogan">Store more of what matters.</span></h1>
+  <section class="page-head">
+    <h1>Support OnlyLogins</h1>
     <p class="lede">
-      OnlyLogins is free and open source. The <span class="white">Patreon</span>
-      plan enables you to store way more secure documents, while supporting
-      further development of the project.
+      OnlyLogins is free and open source. The Patreon plan lets you store many
+      more secure documents, and it supports further development of the project.
     </p>
     <p class="lede">
-      If you get value from OnlyLogins, please consider subscribing.
-    </p>
-    <p class="lede">
-      <span class="white">Just $2 per month.</span>
-    </p>
-    <p class="lede">
-      That's less than the price of a cup of coffee! But your patronage pays
-      for hosting costs and other development fees. With your support we
-      can afford to keep OnlyLogins online and out of the hands of private
-      equity ... forever!
+      It costs <span class="emphasis">$2 per month</span>, less than a cup of
+      coffee, and your patronage pays for hosting costs and other development
+      fees. With your support we can keep OnlyLogins online and out of the
+      hands of private equity.
     </p>
     {{if not .Session.Active}}
     <div class="hero-actions">
-      <a class="button-link" href="/login">Log in</a>
-      <a class="button-link secondary" href="/login">Create account</a>
+      <a class="button-cta" href="/login#create">Create account</a>
+      <a class="btn-secondary" href="/login">Log in</a>
     </div>
     {{end}}
   </section>
@@ -47,15 +39,10 @@
 
   {{if .Session.Active}}
     {{with .Section.Usage}}
-    <section class="usage">
+    <section class="panel usage">
       <div class="usage-head">
-        <div>
-          <p class="eyebrow">Current plan</p>
-          <h2>{{.Plan.Label}}</h2>
-        </div>
-        <p class="usage-count">
-          <strong>{{.Documents}}</strong> / {{.Plan.DocumentsLimit}} documents
-        </p>
+        <h2>{{.Plan.Label}}</h2>
+        <p class="usage-count">{{.Documents}} / {{.Plan.DocumentsLimit}} documents</p>
       </div>
       <div class="meter" role="img" aria-label="{{.Documents}} of {{.Plan.DocumentsLimit}} documents used">
         <span class="fill {{.Level}}" style="width: {{.Percent}}%"></span>
@@ -87,7 +74,7 @@
     {{if not .Section.IsPatreon}}
     <section class="plans">
       <article class="plan-card current">
-        <p class="eyebrow">Current plan</p>
+        <p class="plan-label">Current plan</p>
         <h2>{{.Section.Free.Label}}</h2>
         <p class="price">$0 <span>/ month</span></p>
         <ul>
@@ -99,7 +86,7 @@
       </article>
 
       <article class="plan-card featured">
-        <p class="eyebrow">Upgrade</p>
+        <p class="plan-label">Upgrade</p>
         <h2>{{.Section.Patreon.Label}}</h2>
         <p class="price">{{.Section.Patreon.PriceTag}}</p>
         <ul>
@@ -124,7 +111,7 @@
     </p>
     {{end}}
   {{else}}
-    <section class="benefits">
+    <section class="panel benefits">
       <h2>What the Patreon plan includes</h2>
       <ul>
         <li>

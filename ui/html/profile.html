@@ -1,57 +1,87 @@
 {{define "middle"}}
 <div class="middle profile">
-  <section class="user">
+  <header class="page-head">
     <h1>Profile</h1>
+    <p>Your account details, storage usage, and login activity.</p>
+  </header>
 
-    <div class="row">
-      <span class="key">username</span>
-      <div class="value">{{.Section.Profile.Username}}</div>
-    </div>
-
-    <div class="row">
-      <span class="key">plan</span>
-      <div class="value plan">{{.Section.Profile.Usage.Plan.Label}}</div>
-    </div>
-
-    <div class="row">
-      <span class="key">documents</span>
-      <div class="value">
-        {{.Section.Profile.Usage.Documents}} / {{.Section.Profile.Usage.Plan.DocumentsLimit}}
+  <section class="panel">
+    <h2>Account</h2>
+    <div class="rows">
+      <div class="row">
+        <span class="key">Username</span>
+        <div class="value">{{.Section.Profile.Username}}</div>
       </div>
-    </div>
 
-    <div class="row email" id="edit-email">
-      <span class="key">email</span>
-      <div class="value">{{.Section.Email}}</div>
-      <button
-        class="edit-email"
-        hx-get="/internal/email/edit"
-        hx-target="#edit-email"
-        hx-swap="outerHTML">edit</button>
-    </div>
+      <div class="row">
+        <span class="key">Plan</span>
+        <div class="value plan">{{.Section.Profile.Usage.Plan.Label}}</div>
+      </div>
 
-    <div class="row history">
-      <span class="key">history</span>
-      <div class="value">
+      <div class="row email" id="edit-email">
+        <span class="key">Email</span>
+        <div class="value">{{.Section.Email}}</div>
         <button
-          class="show-history"
-          hx-get="/internal/profile/history"
-          hx-target="#history-panel"
-          hx-swap="innerHTML">show</button>
+          class="edit-email"
+          hx-get="/internal/email/edit"
+          hx-target="#edit-email"
+          hx-swap="outerHTML">Edit</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Usage</h2>
+    <div class="usage">
+      <div class="usage-head">
+        <span class="usage-count">{{.Section.Profile.Usage.Documents}} / {{.Section.Profile.Usage.Plan.DocumentsLimit}} documents</span>
+        <span class="usage-percent {{.Section.Profile.Usage.Level}}">{{.Section.Profile.Usage.Percent}}%</span>
+      </div>
+      <div
+        class="meter"
+        role="img"
+        aria-label="{{.Section.Profile.Usage.Documents}} of {{.Section.Profile.Usage.Plan.DocumentsLimit}} documents used">
+        <span class="fill {{.Section.Profile.Usage.Level}}" style="width: {{.Section.Profile.Usage.Percent}}%"></span>
+      </div>
+      <p class="usage-hint">{{.Section.Profile.Usage.Remaining}} documents remaining.</p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Security</h2>
+    <div class="rows">
+      <div class="row passphrase">
+        <span class="key">Passphrase</span>
+        <div class="value">
+          <a class="change-passphrase" href="/profile/passphrase">Change</a>
+        </div>
+      </div>
+
+      <div class="row activity">
+        <span class="key">Login history</span>
+        <div class="value">
+          <button
+            class="show-history"
+            hx-get="/internal/profile/history"
+            hx-target="#history-panel"
+            hx-swap="innerHTML">Show</button>
+        </div>
       </div>
     </div>
 
-    <div class="row passphrase">
-      <span class="key">passphrase</span>
-      <div class="value">
-        <a class="change-passphrase" href="/profile/passphrase">change</a>
-      </div>
-    </div>
+    <div id="history-panel"></div>
+  </section>
 
-    {{if .Section.CanDelete}}
+  {{if .Section.CanDelete}}
+  <section class="panel danger-zone">
+    <h2>Danger zone</h2>
     <div class="row account">
-      <span class="key">account</span>
+      <span class="key">Account</span>
       <div class="value">
+        <p class="danger-copy">
+          Deleting your account permanently removes every folder, document, and
+          secret you have stored. This action cannot be undone.
+        </p>
         <a class="delete-account"
            href="#"
            hx-delete="/internal/logout"
@@ -59,18 +89,21 @@
            hx-swap="none">delete</a>
       </div>
     </div>
-    {{else}}
+  </section>
+  {{else}}
+  <section class="panel danger-zone">
+    <h2>Account</h2>
     <div class="row account">
-      <span class="key">account</span>
+      <span class="key">Subscription</span>
       <div class="value">
-        <span class="delete-notice">Your Patreon subscription must end before you can delete your account.</span>
-        <a href="/patreon">manage your subscription</a>
+        <p class="danger-copy">
+          Your Patreon subscription must end before you can delete your account.
+        </p>
+        <a href="/patreon">Manage your subscription</a>
       </div>
     </div>
-    {{end}}
-
   </section>
+  {{end}}
 
-  <div id="history-panel"></div>
 </div>
 {{end}}

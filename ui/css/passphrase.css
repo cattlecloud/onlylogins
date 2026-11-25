@@ -1,87 +1,88 @@
+/* Change-passphrase form. */
+
 .middle.passphrase {
-  max-width: 42rem;
-  margin-left: auto;
-  margin-right: auto;
+  width: 100%;
+  max-width: 38rem;
+  margin-inline: auto;
 }
 
-.middle.passphrase > .passphrase {
+.middle.passphrase .passphrase {
   display: flex;
-  flex-flow: column nowrap;
+  flex-direction: column;
   gap: 1.25rem;
-  padding: 1.75rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  margin-top: 0.75rem;
 }
 
-.middle.passphrase > .passphrase > h1 {
+.middle.passphrase .passphrase > .page-head h1 {
+  font-size: clamp(1.5rem, 3vw, 1.75rem);
+  letter-spacing: -0.01em;
+}
+
+.middle.passphrase .passphrase > .page-head p {
+  max-width: 58ch;
   margin: 0;
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  color: var(--text-muted);
+  line-height: 1.6;
 }
 
-.middle.passphrase > .passphrase > form {
+.middle.passphrase .passphrase > form {
   display: flex;
-  flex-flow: column nowrap;
+  flex-direction: column;
   gap: 1rem;
 }
 
-.middle.passphrase .field {
+.middle.passphrase .form-actions {
   display: flex;
-  flex-flow: column nowrap;
-  gap: 0.4rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1.25rem;
+  margin-top: 0.25rem;
 }
 
-.middle.passphrase .field label {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text);
-}
-
-.middle.passphrase .field input {
-  width: 100%;
-  padding: 0.65rem 0.8rem;
-  font-size: 1rem;
-  color: var(--text);
-  caret-color: var(--primary);
-  background: var(--surface-raised);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-.middle.passphrase .field input::placeholder {
+.middle.passphrase .quiet-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
   color: var(--text-muted);
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-decoration: none;
 }
 
-.middle.passphrase .field input:focus {
-  outline: none;
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
-}
-
-.middle.passphrase > .passphrase > form > button {
-  align-self: flex-start;
+.middle.passphrase .quiet-link:hover {
+  color: var(--primary);
+  text-decoration: underline;
 }
 
 /* success state rendered after a successful passphrase change */
-.middle.passphrase > .passphrase.success > h1 {
-  color: var(--text);
+.middle.passphrase .passphrase.success {
+  gap: 0.75rem;
 }
 
-.middle.passphrase > .passphrase.success > p {
+.middle.passphrase .passphrase.success > h1 {
+  font-size: 1.25rem;
+}
+
+.middle.passphrase .passphrase.success > p {
   margin: 0;
   color: var(--text-muted);
 }
 
-.middle.passphrase > .passphrase.success > p a {
+.middle.passphrase .passphrase.success > p a {
   font-weight: 600;
 }
 
-@media (max-width: 640px) {
-  .middle.passphrase > .passphrase > form > button {
+@media (max-width: 560px) {
+  .middle.passphrase .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .middle.passphrase .form-actions button {
     width: 100%;
+  }
+
+  .middle.passphrase .quiet-link {
+    justify-content: center;
   }
 }

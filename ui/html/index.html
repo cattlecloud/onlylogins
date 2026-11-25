@@ -2,108 +2,90 @@
 <div class="middle index">
 {{if .Session.Active}}
   <section class="logged-in">
+    <header class="page-head">
+      <h1>Folders</h1>
+      <p>Pick a folder to see its documents, or create a new one.</p>
+    </header>
 
     <section class="folders-list">
-      <a href="/folders" class="folder folder-create" aria-label="Manage folders">
-        <span class="folder-create-glyph" aria-hidden="true">+/-</span>
-        <span class="folder-label">add folders</span>
-      </a>
       {{range .Section.Folders}}
       <a href="/folders/{{.Slug}}" class="folder" aria-label="{{.Label}}" title="{{.Label}}">
         <img class="folder-icon" src="{{Icon .Icon}}" alt="" aria-hidden="true">
         <span class="folder-label">{{.Label}}</span>
       </a>
       {{end}}
+      <a href="/folders" class="folder folder-create">
+        <span class="folder-create-glyph" aria-hidden="true">+</span>
+        <span class="folder-label">New folder</span>
+      </a>
     </section>
-
   </section>
 {{else}}
   <section class="logged-out">
     <section class="hero">
-      <h1>Your secrets. <span class="accent">One passphrase.</span><br>Zero lockouts.</h1>
-      <p>
-        OnlyLogins is a free and open source password manager that keeps your
-        usernames, passwords and other login credentials secure. Your data is
-        encrypted by your own passphrase and cannot be accessed without it. No
-        2FA, passkeys, or any other third-party account is required.
+      <h1>Your secrets.<br>One <span class="accent">passphrase</span>.<br>Zero lockouts.</h1>
+      <p class="lede">
+        OnlyLogins is a free and open source password manager for usernames,
+        passwords, and the other credentials you need. Everything is encrypted
+        with your own passphrase. No 2FA, no passkeys, and no third-party
+        account required.
       </p>
-      <a class="button-cta" href="/login">Get Started</a>
+      <div class="hero-actions">
+        <a class="button-cta" href="/login">Create an account</a>
+        <a class="quiet-link" href="/help#passphrases">How passphrases work</a>
+      </div>
     </section>
 
-    <section class="features">
-      <h2>What's inside</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
+    <section class="store">
+      <h2>What you can store</h2>
+      <dl class="ledger-defs">
+        <div class="def">
+          <dt>Account logins</dt>
+          <dd>Website URLs, usernames, and passwords, kept together so you never lose track of which credential belongs where.</dd>
+        </div>
+        <div class="def">
+          <dt>Private notes</dt>
+          <dd>Free-form notes for anything that does not fit a login: recovery instructions, account details, or reminders.</dd>
+        </div>
+        <div class="def">
+          <dt>Backup codes</dt>
+          <dd>Recovery codes, license keys, Wi-Fi passwords, and other secrets that need a safe place to live.</dd>
+        </div>
+      </dl>
+    </section>
+
+    <section class="principles">
+      <h2>Why OnlyLogins</h2>
+      <div class="principles-list">
+        <article class="principle">
           <h3>Open source</h3>
           <p>
             The AGPL source <a href="https://github.com/cattlecloud/onlylogins">code</a>
-            is free to read, audit, and self-host. Run your own instance locally
-            and keep your data on hardware you control.
+            is free to read, audit, and self-host. Run your own instance and keep
+            your data on hardware you control.
           </p>
-        </div>
-        <div class="feature-card">
+        </article>
+        <article class="principle">
           <h3>One passphrase</h3>
           <p>
-            A single strong 16+ character passphrase replaces 2FA codes,
-            hardware passkeys, and email verifications. As long as you remember
-            your passphrase, your data stays secure and accessible.
+            A single strong passphrase replaces 2FA codes, hardware passkeys,
+            and email verifications. Remember it, and your data stays both
+            secure and accessible.
           </p>
-        </div>
-        <div class="feature-card">
-          <h3>Organize</h3>
+        </article>
+        <article class="principle">
+          <h3>Organize better</h3>
           <p>
-            Keep your usernames, passwords, and other login credentials
-            organized into categorized folders. Never lose track of anything
-            again.
+            Group logins into folders and open a single document per account.
+            Everything stays where you expect it.
           </p>
-        </div>
+        </article>
       </div>
     </section>
 
-    <section class="use-cases">
-      <h2>What you can store</h2>
-      <div class="use-case-list">
-        <div class="use-case">
-          <h4>Account Logins</h4>
-          <p>
-            Store website login information including usernames and passwords.
-            Keep track of website links so you never get lost.
-          </p>
-        </div>
-        <div class="use-case">
-          <h4>Private Notes</h4>
-          <p>
-            Write down private information in a digital secure note.
-          </p>
-        </div>
-        <div class="use-case">
-          <h4>Backup codes</h4>
-          <p>
-            Stash backup codes, license keys, Wi-Fi passwords, and other
-            secret items in an organized document.
-          </p>
-        </div>
-        <div class="use-case">
-          <h4>Self Host</h4>
-          <p>
-            Operate an OnlyLogins instance on your own hardware and maintain
-            total soverignty over your data.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section class="trust">
-      <span class="trust-item">No 2FA required</span>
-      <span class="trust-item">No hardware passkey required</span>
-      <span class="trust-item">No vendor lock-in</span>
-    </section>
-
-    <section class="cta-footer">
-      <p>
-        Create one strong passphrase and secure your online logins.
-      </p>
-      <a class="button-cta" href="/login">Get Started</a>
+    <section class="closing">
+      <p><span class="emphasis">No</span> 2FA required. <span class="emphasis">No</span> hardware passkey required.<br><span class="emphasis">No</span> vendor lock-in.</p>
+      <a class="quiet-link" href="/login">Create an account</a>
     </section>
   </section>
 {{end}}

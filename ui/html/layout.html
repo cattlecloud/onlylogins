@@ -21,8 +21,9 @@
     {{end}}
   </head>
   <body>
+    <a class="skip-link" href="#content">Skip to content</a>
     <header>{{template "head" .Head}}</header>
-    <main>{{template "middle" .Middle}}</main>
+    <main id="content">{{template "middle" .Middle}}</main>
     <footer>{{template "foot"}}</footer>
   </body>
 </html>

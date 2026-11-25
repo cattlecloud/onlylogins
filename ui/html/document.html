@@ -1,260 +1,286 @@
 {{define "middle"}}
 <div class="middle document">
-  <section class="doc-header">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">All folders</a>
+    <span class="sep" aria-hidden="true">/</span>
+    <a href="/folders/{{.Section.Document.FolderSlug}}">{{.Section.Document.Folder}}</a>
+    <span class="sep" aria-hidden="true">/</span>
+    <span aria-current="page">{{.Section.Document.Label}}</span>
+  </nav>
+
+  <header class="page-head">
     <h1>{{.Section.Document.Label}}</h1>
-    <a class="back-link" href="/folders/{{.Section.Document.FolderSlug}}">&lt; back to {{.Section.Document.Folder}}</a>
-  </section>
+    <p>Everything stored for this account.</p>
+  </header>
 
   <script src="/ui/scripts/document.js" defer></script>
 
-  <section class="doc-section">
-    <div class="section-header">
-      <h3>Website Links</h3>
-      <button
-        class="add-btn"
-        hx-get="/internal/weblink/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        hx-target="#weblinks-form-container"
-        hx-swap="innerHTML"
-      >+ Weblink</button>
-    </div>
-    <div id="weblinks-form-container"></div>
-    <ul id="weblinks-list" class="fields weblinks">
-      {{if .Section.Document.Weblinks}}
-        {{range .Section.Document.Weblinks}}
-        {{$u := .Unlock $.Section.Vault}}
-        <li class="weblink-row" data-value="{{$u}}">
-          <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
-          <span class="weblink-actions">
-            <button type="button" class="weblink-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
-            <button class="weblink-edit-btn"
-              hx-get="/internal/weblink/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-target="closest .weblink-row"
-              hx-swap="outerHTML"
-              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
-            <button class="weblink-delete-btn"
-              hx-delete="/internal/weblink/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-confirm="Delete this weblink?"
-              hx-target="closest .weblink-row"
-              hx-swap="delete"
-              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
-          </span>
-        </li>
-        {{end}}
-      {{else}}
-        <li class="empty-li"><p class="empty">No web links yet</p></li>
-      {{end}}
-    </ul>
-  </section>
+  <div class="doc-layout">
+    <nav class="doc-index" aria-label="Sections">
+      <ul>
+        <li><a href="#weblinks">Website links <span class="count">{{len .Section.Document.Weblinks}}</span></a></li>
+        <li><a href="#usernames">Usernames <span class="count">{{len .Section.Document.Usernames}}</span></a></li>
+        <li><a href="#passwords">Passwords <span class="count">{{len .Section.Document.Passwords}}</span></a></li>
+        <li><a href="#keyvals">Key values <span class="count">{{len .Section.Document.Keyvals}}</span></a></li>
+        <li><a href="#note">Note <span class="count">{{if .Section.Document.Note}}1{{else}}0{{end}}</span></a></li>
+      </ul>
+    </nav>
 
-  <section class="doc-section">
-    <div class="section-header">
-      <h3>Usernames</h3>
-      <button
-        class="add-btn"
-        hx-get="/internal/username/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        hx-target="#usernames-form-container"
-        hx-swap="innerHTML"
-      >+ Username</button>
-    </div>
-    <div id="usernames-form-container"></div>
-    <ul id="usernames-list" class="fields usernames">
-      {{if .Section.Document.Usernames}}
-        {{range .Section.Document.Usernames}}
-        {{$u := .Unlock $.Section.Vault}}
-        <li class="username-row" data-value="{{$u}}">
-          <code class="username-value">{{$u}}</code>
-          <span class="username-actions">
-            <button type="button" class="username-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
-            <button class="username-edit-btn"
-              hx-get="/internal/username/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-target="closest .username-row"
-              hx-swap="outerHTML"
-              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
-            <button class="username-delete-btn"
-              hx-delete="/internal/username/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-confirm="Delete this username?"
-              hx-target="closest .username-row"
-              hx-swap="delete"
-              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
-          </span>
-        </li>
-        {{end}}
-      {{else}}
-        <li class="empty-li"><p class="empty">No usernames yet</p></li>
-      {{end}}
-    </ul>
-  </section>
-
-  <section class="doc-section">
-    <div class="section-header">
-      <h3>Passwords</h3>
-      <button
-        class="add-btn"
-        hx-get="/internal/password/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        hx-target="#passwords-form-container"
-        hx-swap="innerHTML"
-      >+ Password</button>
-    </div>
-    <div id="passwords-form-container"></div>
-    <ul id="passwords-list" class="fields passwords">
-      {{if .Section.Document.Passwords}}
-        {{range .Section.Document.Passwords}}
-        {{$p := .Unlock $.Section.Vault}}
-        <li class="password-row" data-password="{{$p}}">
-          <code class="password-value">{{Mask $p}}</code>
-          <span class="password-actions">
-            <button type="button" class="password-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
-            <button type="button" class="password-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
-            <button class="password-edit-btn"
-              hx-get="/internal/password/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-target="closest .password-row"
-              hx-swap="outerHTML"
-              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
-            <button class="password-delete-btn"
-              hx-delete="/internal/password/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-confirm="Delete this password?"
-              hx-target="closest .password-row"
-              hx-swap="delete"
-              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
-          </span>
-        </li>
-        {{end}}
-      {{else}}
-        <li class="empty-li"><p class="empty">No passwords yet</p></li>
-      {{end}}
-    </ul>
-  </section>
-
-  <section class="doc-section">
-    <div class="section-header">
-      <h3>Key Values</h3>
-      <button
-        class="add-btn"
-        hx-get="/internal/keyval/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        hx-target="#keyvals-form-container"
-        hx-swap="innerHTML"
-      >+ Key Value</button>
-    </div>
-    <div id="keyvals-form-container"></div>
-    <ul id="keyvals-list" class="fields keyvals">
-      {{if .Section.Document.Keyvals}}
-        {{range .Section.Document.Keyvals}}
-        {{$u := .Unlock $.Section.Vault}}
-        <li class="keyval-row" data-value="{{$u}}">
-          <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
-          <code class="keyval-value">{{Mask $u}}</code>
-          <span class="keyval-actions">
-            <button type="button" class="keyval-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
-            <button type="button" class="keyval-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
-            <button class="keyval-edit-btn"
-              hx-get="/internal/keyval/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-target="closest .keyval-row"
-              hx-swap="outerHTML"
-              title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
-            <button class="keyval-delete-btn"
-              hx-delete="/internal/keyval/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
-              hx-confirm="Delete this key/value pair?"
-              hx-target="closest .keyval-row"
-              hx-swap="delete"
-              title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
-          </span>
-        </li>
-        {{end}}
-      {{else}}
-        <li class="empty-li"><p class="empty">No key/value pairs yet</p></li>
-      {{end}}
-    </ul>
-  </section>
-
-  <section class="doc-section">
-    <div class="section-header">
-      <h3>Note</h3>
-      <button
-        id="note-add-btn"
-        class="add-btn"
-        hx-get="/internal/note/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        hx-target="#note-form-container"
-        hx-swap="innerHTML"
-        {{if .Section.Document.Note}}hidden{{end}}
-      >+ Note</button>
-    </div>
-    <div id="note-form-container"></div>
-    {{if .Section.Document.Note}}
-      <div class="note-area">
-        <div class="note-panel" data-note="{{.Section.Document.Note.Unlock $.Section.Vault}}">
-          <button type="button" class="note-reveal-btn">Click to view note</button>
-          <div class="note-content" hidden></div>
+    <div class="doc-body">
+      <section class="doc-section" id="weblinks">
+        <div class="section-header">
+          <h2>Website links</h2>
+          <button
+            class="add-btn"
+            hx-get="/internal/weblink/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            hx-target="#weblinks-form-container"
+            hx-swap="innerHTML"
+          >+ Weblink</button>
         </div>
-        <div class="note-actions" hidden>
-          <button class="note-edit-btn"
-            hx-get="/internal/note/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{$.Section.Document.Note.ID}}"
-            hx-target="closest .note-area"
-            hx-swap="outerHTML"
-            title="Edit"><img src="/ui/images/wrench.svg" alt="Edit"></button>
-          <button class="note-delete-btn"
-            hx-delete="/internal/note/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{$.Section.Document.Note.ID}}"
-            hx-confirm="Delete this note?"
-            hx-target="closest .note-area"
-            hx-swap="delete"
-            title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
-        </div>
-      </div>
-    {{else}}
-      <p class="empty">No note yet</p>
-    {{end}}
-  </section>
-
-  <section class="danger-zone">
-    <details>
-      <summary>Danger Zone</summary>
-      <div class="danger-zone-body">
-        <form
-          class="document-rename-form"
-          hx-post="/internal/document/rename/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        >
-          <label for="document-rename-label">Rename document</label>
-          <input
-            type="text"
-            id="document-rename-label"
-            name="label"
-            value="{{.Section.Document.Label}}"
-            pattern="[\p{L}\p{M}0-9\s-]+"
-            title="letters (including accented), numbers, spaces, and dashes"
-            autocomplete="off"
-            required>
-          <button type="submit" class="danger-zone-rename-btn">Rename</button>
-          <span id="error"></span>
-        </form>
-
-        {{if .Section.Folders}}
-        <form
-          class="document-migrate-form"
-          hx-post="/internal/document/migrate/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-        >
-          <label for="document-migrate-target">Migrate document</label>
-          <select id="document-migrate-target" name="target" required>
-            {{range .Section.Folders}}
-            <option value="{{.Slug}}">{{.Label}}</option>
+        <div id="weblinks-form-container"></div>
+        <ul id="weblinks-list" class="fields weblinks">
+          {{if .Section.Document.Weblinks}}
+            {{range .Section.Document.Weblinks}}
+            {{$u := .Unlock $.Section.Vault}}
+            <li class="weblink-row" data-value="{{$u}}">
+              <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
+              <span class="weblink-actions">
+                <button type="button" class="weblink-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+                <button class="weblink-edit-btn"
+                  hx-get="/internal/weblink/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-target="closest .weblink-row"
+                  hx-swap="outerHTML"
+                  title="Edit"><img src="/ui/images/pencil.svg" alt="Edit"></button>
+                <button class="weblink-delete-btn"
+                  hx-delete="/internal/weblink/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-confirm="Delete this weblink?"
+                  hx-target="closest .weblink-row"
+                  hx-swap="delete"
+                  title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+              </span>
+            </li>
             {{end}}
-          </select>
-          <button type="submit" class="danger-zone-migrate-btn">Migrate</button>
-          <span id="error"></span>
-        </form>
-        {{end}}
+          {{else}}
+            <li class="empty-li"><p class="empty">No web links yet. Add one to keep the site URL handy.</p></li>
+          {{end}}
+        </ul>
+      </section>
 
-        <p>
-          Deleting <strong>{{.Section.Document.Label}}</strong> will permanently
-          remove this document and every username, password, key/value, web
-          link, and note inside it. This action cannot be undone.
-        </p>
-        <button
-          type="button"
-          class="danger-zone-delete-btn"
-          hx-delete="/folders/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
-          hx-confirm="Delete this document {{.Section.Document.Label}} and all its secrets?"
-        >Delete document</button>
-      </div>
-    </details>
-  </section>
+      <section class="doc-section" id="usernames">
+        <div class="section-header">
+          <h2>Usernames</h2>
+          <button
+            class="add-btn"
+            hx-get="/internal/username/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            hx-target="#usernames-form-container"
+            hx-swap="innerHTML"
+          >+ Username</button>
+        </div>
+        <div id="usernames-form-container"></div>
+        <ul id="usernames-list" class="fields usernames">
+          {{if .Section.Document.Usernames}}
+            {{range .Section.Document.Usernames}}
+            {{$u := .Unlock $.Section.Vault}}
+            <li class="username-row" data-value="{{$u}}">
+              <code class="username-value">{{$u}}</code>
+              <span class="username-actions">
+                <button type="button" class="username-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+                <button class="username-edit-btn"
+                  hx-get="/internal/username/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-target="closest .username-row"
+                  hx-swap="outerHTML"
+                  title="Edit"><img src="/ui/images/pencil.svg" alt="Edit"></button>
+                <button class="username-delete-btn"
+                  hx-delete="/internal/username/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-confirm="Delete this username?"
+                  hx-target="closest .username-row"
+                  hx-swap="delete"
+                  title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+              </span>
+            </li>
+            {{end}}
+          {{else}}
+            <li class="empty-li"><p class="empty">No usernames yet. Add one to fill in a sign-in form faster.</p></li>
+          {{end}}
+        </ul>
+      </section>
+
+      <section class="doc-section" id="passwords">
+        <div class="section-header">
+          <h2>Passwords</h2>
+          <button
+            class="add-btn"
+            hx-get="/internal/password/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            hx-target="#passwords-form-container"
+            hx-swap="innerHTML"
+          >+ Password</button>
+        </div>
+        <div id="passwords-form-container"></div>
+        <ul id="passwords-list" class="fields passwords">
+          {{if .Section.Document.Passwords}}
+            {{range .Section.Document.Passwords}}
+            {{$p := .Unlock $.Section.Vault}}
+            <li class="password-row" data-password="{{$p}}">
+              <code class="password-value">{{Mask $p}}</code>
+              <span class="password-actions">
+                <button type="button" class="password-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+                <button type="button" class="password-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
+                <button class="password-edit-btn"
+                  hx-get="/internal/password/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-target="closest .password-row"
+                  hx-swap="outerHTML"
+                  title="Edit"><img src="/ui/images/pencil.svg" alt="Edit"></button>
+                <button class="password-delete-btn"
+                  hx-delete="/internal/password/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-confirm="Delete this password?"
+                  hx-target="closest .password-row"
+                  hx-swap="delete"
+                  title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+              </span>
+            </li>
+            {{end}}
+          {{else}}
+            <li class="empty-li"><p class="empty">No passwords yet. Add one to store the login for this account.</p></li>
+          {{end}}
+        </ul>
+      </section>
+
+      <section class="doc-section" id="keyvals">
+        <div class="section-header">
+          <h2>Key values</h2>
+          <button
+            class="add-btn"
+            hx-get="/internal/keyval/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            hx-target="#keyvals-form-container"
+            hx-swap="innerHTML"
+          >+ Key value</button>
+        </div>
+        <div id="keyvals-form-container"></div>
+        <ul id="keyvals-list" class="fields keyvals">
+          {{if .Section.Document.Keyvals}}
+            {{range .Section.Document.Keyvals}}
+            {{$u := .Unlock $.Section.Vault}}
+            <li class="keyval-row" data-value="{{$u}}">
+              <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
+              <code class="keyval-value">{{Mask $u}}</code>
+              <span class="keyval-actions">
+                <button type="button" class="keyval-copy-btn" title="Copy"><img src="/ui/images/copy.svg" alt="Copy"></button>
+                <button type="button" class="keyval-show-btn" title="Show"><img src="/ui/images/show.svg" alt="Show"></button>
+                <button class="keyval-edit-btn"
+                  hx-get="/internal/keyval/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-target="closest .keyval-row"
+                  hx-swap="outerHTML"
+                  title="Edit"><img src="/ui/images/pencil.svg" alt="Edit"></button>
+                <button class="keyval-delete-btn"
+                  hx-delete="/internal/keyval/delete/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.ID}}"
+                  hx-confirm="Delete this key/value pair?"
+                  hx-target="closest .keyval-row"
+                  hx-swap="delete"
+                  title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+              </span>
+            </li>
+            {{end}}
+          {{else}}
+            <li class="empty-li"><p class="empty">No key/value pairs yet. Add one for recovery codes or API keys.</p></li>
+          {{end}}
+        </ul>
+      </section>
+
+      <section class="doc-section" id="note">
+        <div class="section-header">
+          <h2>Note</h2>
+          <button
+            id="note-add-btn"
+            class="add-btn"
+            hx-get="/internal/note/add/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            hx-target="#note-form-container"
+            hx-swap="innerHTML"
+            {{if .Section.Document.Note}}hidden{{end}}
+          >+ Note</button>
+        </div>
+        <div id="note-form-container"></div>
+        {{if .Section.Document.Note}}
+          <div class="note-area">
+            <div class="note-panel" data-note="{{.Section.Document.Note.Unlock $.Section.Vault}}">
+              <button type="button" class="note-reveal-btn">Show note</button>
+              <div class="note-content" hidden></div>
+            </div>
+            <div class="note-actions" hidden>
+              <button class="note-edit-btn"
+                hx-get="/internal/note/edit/{{$.Section.Document.FolderSlug}}/{{$.Section.Document.Slug}}/{{.Section.Document.Note.ID}}"
+                hx-target="closest .note-area"
+                hx-swap="outerHTML"
+                title="Edit"><img src="/ui/images/pencil.svg" alt="Edit"></button>
+              <button class="note-delete-btn"
+                hx-delete="/internal/note/delete/{{$.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}/{{.Section.Document.Note.ID}}"
+                hx-confirm="Delete this note?"
+                hx-target="closest .note-area"
+                hx-swap="delete"
+                title="Delete"><img src="/ui/images/delete.svg" alt="Delete"></button>
+            </div>
+          </div>
+        {{else}}
+          <p class="empty">No note yet. Add one for anything that does not fit a field.</p>
+        {{end}}
+      </section>
+
+      <section class="danger-zone">
+        <details>
+          <summary>Danger Zone</summary>
+          <div class="danger-zone-body">
+            <form
+              class="document-rename-form"
+              hx-post="/internal/document/rename/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            >
+              <label for="document-rename-label">Rename document</label>
+              <input
+                type="text"
+                id="document-rename-label"
+                name="label"
+                value="{{.Section.Document.Label}}"
+                pattern="[\p{L}\p{M}0-9\s-]+"
+                title="letters (including accented), numbers, spaces, and dashes"
+                autocomplete="off"
+                required>
+              <div class="form-actions">
+                <button type="submit" class="danger-zone-rename-btn">Rename</button>
+              </div>
+              <span id="error"></span>
+            </form>
+
+            {{if .Section.Folders}}
+            <form
+              class="document-migrate-form"
+              hx-post="/internal/document/migrate/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+            >
+              <label for="document-migrate-target">Move to another folder</label>
+              <select id="document-migrate-target" name="target" required>
+                {{range .Section.Folders}}
+                <option value="{{.Slug}}">{{.Label}}</option>
+                {{end}}
+              </select>
+              <div class="form-actions">
+                <button type="submit" class="danger-zone-migrate-btn">Move</button>
+              </div>
+              <span id="error"></span>
+            </form>
+            {{end}}
+
+            <p>
+              Deleting <strong>{{.Section.Document.Label}}</strong> will permanently
+              remove this document and every username, password, key/value pair,
+              web link, and note inside it. This action cannot be undone.
+            </p>
+            <button
+              type="button"
+              class="danger-zone-delete-btn"
+              hx-delete="/folders/{{.Section.Document.FolderSlug}}/{{.Section.Document.Slug}}"
+              hx-confirm="Delete this document {{.Section.Document.Label}} and all its secrets?"
+            >Delete document</button>
+          </div>
+        </details>
+      </section>
+    </div>
+  </div>
 </div>
 {{end}}
