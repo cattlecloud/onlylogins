@@ -18,6 +18,10 @@
   letter-spacing: -0.015em;
 }
 
+.middle.about h1 {
+  margin-bottom: 1.75rem;
+}
+
 .middle.about .dateline,
 .middle.help .dateline,
 .middle.privacy .dateline,
@@ -145,4 +149,43 @@
   margin: 2rem 0;
   border: none;
   border-top: 1px solid var(--border);
+}
+
+/* Compact build information block at the foot of the about page. */
+
+.middle.about section.build {
+  margin-top: 3rem;
+}
+
+.middle.about section.build h2 {
+  margin: 0 0 0.6rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.middle.about section.build dl {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.middle.about section.build .row {
+  display: flex;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.middle.about section.build dt {
+  min-width: 6.5rem;
+  color: var(--text-muted);
+}
+
+.middle.about section.build dd {
+  margin: 0;
+  color: var(--text);
 }

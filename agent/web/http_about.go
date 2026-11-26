@@ -16,7 +16,13 @@ import (
 	"cattlecloud.net/onlylogins/database"
 	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/users"
+	"cattlecloud.net/onlylogins/pkg/version"
 )
+
+type aboutContent struct {
+	Build       version.Info
+	Environment string
+}
 
 type aboutHTTP struct {
 	log         *ulog.Log
@@ -68,7 +74,10 @@ func (h *aboutHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		Profile:     profile,
 	}
 
-	middle := struct{}{}
+	middle := &aboutContent{
+		Build:       version.Build(),
+		Environment: h.environment.String(),
+	}
 
 	return pages.New[identity.UserSession[users.Identity]](h.html, head, middle).Execute(w, session)
 }
