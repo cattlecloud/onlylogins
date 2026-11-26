@@ -77,7 +77,7 @@ func tpmSealCmd() *babycli.Component {
 		Help: "seal a passphrase to the tpm",
 		Description: `
 Read a passphrase from standard input and seal it to the
-TPM, bound to the given set of PCRs. The resulting blob
+TPM, bound to the given set of PCRs. The resulting json
 is written to the file given with --output. Keep a paper
 copy of the plaintext passphrase in a secure location so
 it can be restored in an emergency, for example total
@@ -87,7 +87,7 @@ loss of the server, or if PCR values change.`,
 				Type:    babycli.StringFlag,
 				Long:    "output",
 				Short:   "o",
-				Help:    "path to write the sealed blob",
+				Help:    "path to write the sealed json",
 				Require: true,
 			},
 			{
@@ -150,7 +150,7 @@ loss of the server, or if PCR values change.`,
 				return babycli.Failure
 			}
 
-			// safely write blob to disk (sync + rename)
+			// safely write json to disk (sync + rename)
 			if err := atomicfs.New(
 				atomicfs.WithTempDir(filepath.Dir(output)),
 				atomicfs.WithMode(0600),
@@ -172,14 +172,14 @@ func tpmVerifyCmd() *babycli.Component {
 		Name: "verify",
 		Help: "verify a sealed passphrase",
 		Description: `
-Unseal the passphrase held in the blob given with --input
+Unseal the passphrase held in the json given with --input
 and confirm it matches the expected passphrase format.`,
 		Flags: babycli.Flags{
 			{
 				Type:    babycli.StringFlag,
 				Long:    "input",
 				Short:   "i",
-				Help:    "path to the sealed blob",
+				Help:    "path to the sealed json",
 				Require: true,
 			},
 			{
@@ -196,7 +196,7 @@ and confirm it matches the expected passphrase format.`,
 
 			data, err := os.ReadFile(input)
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "tpm verify: unable to read sealed blob: %v\n", err)
+				fmt.Fprintf(os.Stderr, "tpm verify: unable to read sealed json: %v\n", err)
 				return babycli.Failure
 			}
 
