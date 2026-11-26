@@ -338,6 +338,69 @@
   font-family: var(--font-mono);
 }
 
+/* Secret values are masked with CSS instead of using type="password". A
+   password field anywhere on the documents page makes the browser treat the
+   page as a credential form and offer to store the value in its password
+   manager. The secrets in a document are not credentials for onlylogins.net,
+   so the browser never gets to see them as one. */
+.middle.document .secret-input {
+  -moz-text-security: disc;
+  -webkit-text-security: disc;
+  text-security: disc;
+}
+
+.middle.document .secret-input.revealed {
+  -moz-text-security: none;
+  -webkit-text-security: none;
+  text-security: none;
+}
+
+.middle.document .secret-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: color 140ms ease, border-color 140ms ease,
+    background-color 140ms ease;
+}
+
+.middle.document .secret-toggle-btn img {
+  display: block;
+  width: 1.2rem;
+  height: 1.2rem;
+  filter: invert(1);
+}
+
+.middle.document .secret-toggle-btn:hover {
+  color: var(--text);
+  background: var(--surface-raised);
+  border-color: var(--border);
+}
+
+.middle.document .secret-generate-btn {
+  min-height: 2.25rem;
+  padding: 0 0.9rem;
+  color: var(--text);
+  background: var(--surface-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 140ms ease;
+}
+
+.middle.document .secret-generate-btn:hover {
+  border-color: var(--text-muted);
+}
+
 .middle.document .add-note-form .note-input {
   flex: 1;
   width: 100%;

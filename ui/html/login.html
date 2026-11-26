@@ -30,11 +30,11 @@
       <form hx-post="/login?do=login" hx-swap="none">
         <div class="field">
           <label for="login-username">Username</label>
-          <input type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="off" required>
+          <input type="text" id="login-username" name="username" placeholder="Enter your username" autocomplete="username" required>
         </div>
         <div class="field">
           <label for="login-passphrase">Passphrase</label>
-          <input type="password" id="login-passphrase" name="passphrase" placeholder="Enter your passphrase" minlength="16" autocomplete="off" required>
+          <input type="password" id="login-passphrase" name="passphrase" placeholder="Enter your passphrase" minlength="16" autocomplete="current-password" required>
         </div>
         <button type="submit">Log in</button>
       </form>
@@ -47,20 +47,20 @@
       <form hx-post="/login?do=create" hx-swap="none">
         <div class="field">
           <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" name="signup-email" placeholder="you@example.com" autocomplete="off" required>
+          <input type="email" id="signup-email" name="signup-email" placeholder="you@example.com" autocomplete="email" required>
         </div>
         <div class="field">
           <label for="signup-username">Username</label>
-          <input type="text" id="signup-username" name="signup-username" placeholder="Choose a username" autocomplete="off" required>
+          <input type="text" id="signup-username" name="signup-username" placeholder="Choose a username" autocomplete="username" required>
         </div>
         <div class="field">
           <label for="signup-passphrase">Passphrase</label>
-          <input type="password" id="signup-passphrase" name="signup-passphrase" placeholder="At least 16 characters" minlength="16" autocomplete="off" required>
+          <input type="password" id="signup-passphrase" name="signup-passphrase" placeholder="At least 16 characters" minlength="16" autocomplete="new-password" required>
           <p class="field-help">Use a passphrase you can remember. There is no recovery.</p>
         </div>
         <div class="field">
           <label for="signup-confirm">Confirm passphrase</label>
-          <input type="password" id="signup-confirm" name="signup-confirm" placeholder="Enter the passphrase again" minlength="16" autocomplete="off" required>
+          <input type="password" id="signup-confirm" name="signup-confirm" placeholder="Enter the passphrase again" minlength="16" autocomplete="new-password" required>
         </div>
         <div class="checkbox">
           <input type="checkbox" id="notifications" name="notifications" value="true">
