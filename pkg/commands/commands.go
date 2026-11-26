@@ -5,7 +5,7 @@ package commands
 
 import (
 	"cattlecloud.net/go/babycli"
-	"cattlecloud.net/onlylogins/version"
+	"cattlecloud.net/onlylogins/pkg/version"
 )
 
 func Invoke(args []string) babycli.Code {
