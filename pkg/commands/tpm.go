@@ -84,10 +84,11 @@ it can be restored in an emergency, for example total
 loss of the server, or if PCR values change.`,
 		Flags: babycli.Flags{
 			{
-				Type:  babycli.StringFlag,
-				Long:  "output",
-				Short: "o",
-				Help:  "path to write the sealed blob",
+				Type:    babycli.StringFlag,
+				Long:    "output",
+				Short:   "o",
+				Help:    "path to write the sealed blob",
+				Require: true,
 			},
 			{
 				Type:    babycli.StringFlag,
@@ -97,27 +98,16 @@ loss of the server, or if PCR values change.`,
 				Default: &babycli.Default{Value: tpm.DefaultPCRs, Show: true},
 			},
 			{
-				Type:  babycli.StringFlag,
-				Long:  "device",
-				Short: "d",
-				Help:  "TPM device path to seal against",
+				Type:    babycli.StringFlag,
+				Long:    "device",
+				Short:   "d",
+				Help:    "TPM device path to seal against",
+				Require: true,
 			},
 		},
 		Function: func(c *babycli.Component) babycli.Code {
-			// TODO: babycli's Require only panics at GetString, so we check
-			// manually here for a clean error. Fix babycli to surface required
-			// flags before running the command.
 			output := c.GetString("output")
-			if output == "" {
-				fmt.Fprintln(os.Stderr, "tpm seal: --output is required")
-				return babycli.Failure
-			}
-
 			device := c.GetString("device")
-			if device == "" {
-				fmt.Fprintln(os.Stderr, "tpm seal: --device is required")
-				return babycli.Failure
-			}
 
 			pcrs, err := tpm.ParsePCRs(c.GetString("pcrs"))
 			if err != nil {
@@ -186,30 +176,23 @@ Unseal the passphrase held in the blob given with --input
 and confirm it matches the expected passphrase format.`,
 		Flags: babycli.Flags{
 			{
-				Type:  babycli.StringFlag,
-				Long:  "input",
-				Short: "i",
-				Help:  "path to the sealed blob",
+				Type:    babycli.StringFlag,
+				Long:    "input",
+				Short:   "i",
+				Help:    "path to the sealed blob",
+				Require: true,
 			},
 			{
-				Type:  babycli.StringFlag,
-				Long:  "device",
-				Short: "d",
-				Help:  "TPM device path to unseal against",
+				Type:    babycli.StringFlag,
+				Long:    "device",
+				Short:   "d",
+				Help:    "TPM device path to unseal against",
+				Require: true,
 			},
 		},
 		Function: func(c *babycli.Component) babycli.Code {
 			input := c.GetString("input")
-			if input == "" {
-				fmt.Fprintln(os.Stderr, "tpm verify: --input is required")
-				return babycli.Failure
-			}
-
 			device := c.GetString("device")
-			if device == "" {
-				fmt.Fprintln(os.Stderr, "tpm verify: --device is required")
-				return babycli.Failure
-			}
 
 			data, err := os.ReadFile(input)
 			if err != nil {

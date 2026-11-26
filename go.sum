@@ -1,7 +1,7 @@
 cattlecloud.net/go/atomicfs/v2 v2.0.0 h1:SXGSV9AHQwnoExHcwiRdTiMMZh7adEaym9bdJh3SxzI=
 cattlecloud.net/go/atomicfs/v2 v2.0.0/go.mod h1:NU/JZA51QiRE1p9ybcQfnJEQ8tkk58RYq2of3AoU+jM=
-cattlecloud.net/go/babycli v0.2.2 h1:svdBTAL7eTWipk3Fa4cVP6CTxbIaqYMhHUlAA0FWeW0=
-cattlecloud.net/go/babycli v0.2.2/go.mod h1:3LABFGN1bV6T6LHSF9SnuFf3Xupb5lYwUf1vYd/oHJc=
+cattlecloud.net/go/babycli v0.2.3 h1:1in/6M7p9NcPhrra383OnfiOGJN+8C/Aj+j1iX9g9CU=
+cattlecloud.net/go/babycli v0.2.3/go.mod h1:3LABFGN1bV6T6LHSF9SnuFf3Xupb5lYwUf1vYd/oHJc=
 cattlecloud.net/go/forms v1.1.0 h1:ZTIyg4AMG9IY87tfNHmRnRgy8X4ZPiui1JYwNT3562s=
 cattlecloud.net/go/forms v1.1.0/go.mod h1:B8PMCKE7VtjbvirdXJpvxZIDdU8F/ybaKgNsOqZMkCw=
 cattlecloud.net/go/litesql v1.4.1 h1:B8VubfY/bQHPiSQa68X95wteiEpcugsH0mQ/VYm1l/o=
