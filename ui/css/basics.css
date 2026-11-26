@@ -22,6 +22,10 @@
   margin-bottom: 1.75rem;
 }
 
+.middle.help h1 {
+  margin-bottom: 2rem;
+}
+
 .middle.about .dateline,
 .middle.help .dateline,
 .middle.privacy .dateline,
@@ -64,6 +68,10 @@
   margin-top: 0;
   padding-top: 0;
   border-top: none;
+}
+
+.middle.help section:first-of-type > h2 {
+  margin-bottom: 1.5rem;
 }
 
 .middle.about h3,

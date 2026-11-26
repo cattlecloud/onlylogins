@@ -70,8 +70,8 @@
     <p>
       <strong>There is no account recovery mechanism.</strong>
       If you forget your passphrase, there is nothing anybody can do to help
-      you. There is no backdoor, there is nothing that can be done with the
-      encrypted data without your passphrase. Keep your own offline backups
+      you. There is no backdoor because there is nothing that can be done with
+      the encrypted data without your passphrase. Keep your own offline backups
       using the <a href="/export">export</a> feature. Store them in a physical
       fireproof safe in your home.
     </p>
@@ -81,15 +81,10 @@
     <h2>Usage guidelines</h2>
     <p>
       A password manager concentrates a lot of sensitive information in one
-      place. A few good habits help keep it that way.
+      place.<br/>
+      Follow these guidelines to keep it that way.
     </p>
     <ul>
-      <li><strong>Maintain your own backups.</strong>
-        Use the export feature regularly. The exported file is not encrypted.
-        It contains every secret in your account, so store it in a physical safe
-        in a secure location. Delete old offline copies when you no longer need
-        them.
-      </li>
       <li><strong>Use a unique passphrase.</strong>
         Never reuse your OnlyLogins passphrase on another site, and do not
         store it in another online service. Make sure it stays out of email,
@@ -101,16 +96,22 @@
         web page you visit, and uploads the content to their servers. You are
         trusting entities like Meta to not abuse your data.
       </li>
-      <li><strong>Do not scrape or spam the service.</strong>
-        High-volume requests, vulnerability scanners, and automated crawlers
-        waste resources and may be rate-limited, blocked, or banned by IP.
-      </li>
       <li><strong>Use a trusted device.</strong>
         Only use a laptop, tablet, or phone that you own and control. Keep them
         updated regularly. If you MUST use a shared device, use the web browser
         in incognito mode, and fully exit the browser when you are done. Reboot
         the device if you can. Avoid using public computers, such as at a
         library.
+      </li>
+      <li><strong>Do not scrape or spam the service.</strong>
+        High-volume requests, vulnerability scanners, and automated crawlers
+        waste resources and may be rate-limited, blocked, or banned by IP.
+      </li>
+      <li><strong>Maintain your own backups.</strong>
+        Use the export feature regularly. The exported file is not encrypted.
+        It contains every secret in your account, so store it in a physical safe
+        in a secure location. Delete old offline copies when you no longer need
+        them.
       </li>
       <li><strong>Report security problems privately.</strong>
         If you believe you have found a vulnerability, please contact
@@ -126,10 +127,54 @@
       OnlyLogins is free to use, and the code is open source. Hosting, domains,
       and development are paid for by people who find the project useful. If you
       would like to support the project, subscribe to the
-      <a href="/patreon">Patreon</a> plan for $2/month. Patreon subscribers also
-      get a higher document limit. There is no obligation, and the free plan
+      <a href="/patreon">Patreon</a> plan for $2 per month. Patreon subscribers
+      also get a higher document limit. There is no obligation, and the free plan
       remains fully usable.
     </p>
+  </section>
+
+  <section id="oss" class="guidelines support">
+    <h2>Open source recognition</h2>
+    <p>
+      The OnlyLogins project makes use of many open source technologies, far
+      too many to list here. We would like to thank the maintainers of each and
+      every one for the work they do and for their commitment to building open,
+      auditable, and repairable software.
+    </p>
+    <ul>
+      <li>
+        <span>The Go Programming Language</span>
+        (<a href="https://go.dev">go.dev</a>)
+      </li>
+      <li>
+        <span>SQLite</span>
+        (<a href="https://sqlite.org">sqlite.org</a>)
+      </li>
+      <li>
+        <span>HTMX</span>
+        (<a href="https://htmx.org">htmx.org</a>)
+      </li>
+      <li>
+        <span>Memcached</span>
+        (<a href="https://memcached.org">memcached.org</a>)
+      </li>
+      <li>
+        <span>Linux</span>
+        (<a href="https://kernel.org">kernel.org</a>)
+      </li>
+      <li>
+        <span>SVG Repo</span>
+        (<a href="https://www.svgrepo.com">svgrepo.com</a>)
+      </li>
+      <li>
+        <span>go-tpm</span>
+        (<a href="https://github.com/google/go-tpm">github.com/google/go-tpm</a>)
+      </li>
+      <li>
+        <span>Just command runner</span>
+        (<a href="https://just.systems">just.systems</a>)
+      </li>
+    </ul>
   </section>
 
   <section id="build" class="build" aria-label="Build information">
@@ -148,7 +193,7 @@
         <dd>{{.Section.Build.Architecture}}</dd>
       </div>
       <div class="row">
-        <dt>OS</dt>
+        <dt>System</dt>
         <dd>{{.Section.Build.OS}}</dd>
       </div>
       <div class="row">

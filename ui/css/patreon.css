@@ -10,6 +10,7 @@
 }
 
 .middle.patreon .page-head h1 {
+  margin-bottom: 0.75rem;
   font-size: clamp(1.7rem, 3.5vw, 2.1rem);
   letter-spacing: -0.015em;
 }

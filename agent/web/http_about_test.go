@@ -39,7 +39,7 @@ func TestAbout_ServeHTTP(t *testing.T) {
 	body := w.Body.String()
 	must.StrContains(t, body, `<div class="middle about">`)
 	must.StrContains(t, body, `<section id="build" class="build" aria-label="Build information">`)
-	must.StrContains(t, body, `OS</dt>`)
+	must.StrContains(t, body, `System</dt>`)
 	must.StrContains(t, body, `Architecture</dt>`)
 	must.StrContains(t, body, `Environment</dt>`)
 	must.StrContains(t, body, `local</dd>`)
