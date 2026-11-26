@@ -4,7 +4,7 @@ go 1.27
 
 require (
 	cattlecloud.net/go/atomicfs/v2 v2.0.0
-	cattlecloud.net/go/babycli v0.2.2
+	cattlecloud.net/go/babycli v0.2.3
 	cattlecloud.net/go/forms v1.1.0
 	cattlecloud.net/go/litesql v1.4.1
 	cattlecloud.net/go/memc v0.6.0
