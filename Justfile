@@ -20,7 +20,7 @@ run config: compile
 # compile the executable
 [group('build')]
 compile version="localdev": tidy
-    go install -ldflags "-X cattlecloud.net/onlylogins/version.Version={{version}}"
+    go install -ldflags "-X cattlecloud.net/onlylogins/pkg/version.Version={{version}}"
 
 # run specific unit test
 [group('build')]

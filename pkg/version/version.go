@@ -4,5 +4,5 @@
 package version
 
 // Version is the onlylogins release version. It is overridden at build time via
-// -ldflags "-X cattlecloud.net/onlylogins/version.Version=<tag>".
+// -ldflags "-X cattlecloud.net/onlylogins/pkg/version.Version=<tag>".
 var Version = "dirty"
