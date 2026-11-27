@@ -182,16 +182,21 @@
   list-style: none;
 }
 
-.middle.folder .documents-list li {
+.middle.folder .documents-list > li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   border-bottom: 1px solid var(--border);
 }
 
-.middle.folder .documents-list li:last-child {
+.middle.folder .documents-list > li:last-child {
   border-bottom: none;
 }
 
-.middle.folder .documents-list a {
+.middle.folder .documents-list > li > a {
   display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
@@ -218,13 +223,64 @@
   transition: border-color 140ms ease;
 }
 
-.middle.folder .documents-list a:hover {
+.middle.folder .documents-list > li > a:hover {
   color: var(--primary);
   background: var(--surface-raised);
 }
 
-.middle.folder .documents-list a:hover .document-chevron {
+.middle.folder .documents-list > li > a:hover .document-chevron {
   border-color: var(--primary);
+}
+
+/* Weblink dropdown button and menu */
+.middle.folder .weblink-menu-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  margin: 0 0.25rem;
+  padding: 0.35rem;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: color 140ms ease, background-color 140ms ease;
+}
+
+.middle.folder .weblink-menu-btn img {
+  width: 100%;
+  height: 100%;
+  filter: invert(1);
+}
+
+.middle.folder .weblink-menu-btn:hover {
+  color: var(--primary);
+  background: var(--surface-raised);
+}
+
+.middle.folder .weblink-menu {
+  flex-basis: 100%;
+}
+
+.middle.folder .weblink-menu-list {
+  margin: 0;
+  padding: 0.25rem 0 0.75rem;
+  list-style: none;
+}
+
+.middle.folder .weblink-menu-list a {
+  display: block;
+  overflow-wrap: anywhere;
+  padding: 0.3rem 0.25rem;
+  color: var(--primary);
+  font-size: 0.9rem;
+}
+
+.middle.folder .weblink-menu-list a:hover {
+  background: var(--surface-raised);
 }
 
 .middle.folder .empty {

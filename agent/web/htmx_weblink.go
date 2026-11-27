@@ -4,6 +4,7 @@
 package web
 
 import (
+	"errors"
 	"net/http"
 	"path"
 	"strings"
@@ -15,6 +16,7 @@ import (
 	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
@@ -50,14 +52,14 @@ func (h *weblinkHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func (h *weblinkHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
+func (h *weblinkHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
 		return htmx.SetRedirect(w, "/login")
 	}
 
-	folder, document := h.folderDocumentFrom(r)
+	folder, document, action := h.from(r)
 
 	if err := (&sitecontent.GetDocumentRequest{
 		User:     session.Identity(),
@@ -67,6 +69,19 @@ func (h *weblinkHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) err
 		return abort(h.log, w, err)
 	}
 
+	switch action {
+	case "add":
+		return h.add(w, folder, document)
+	case "list":
+		return h.list(ctx, w, r, session.Identity(), folder, document)
+	default:
+		h.log.W.Fmt("rejecting unknown weblink action %q", action)
+		return abort(h.log, w, errors.New("no such weblink action"))
+	}
+}
+
+// add renders the inline form used to create a new weblink.
+func (h *weblinkHTMX) add(w http.ResponseWriter, folder, document string) error {
 	fields := struct {
 		Folder   string
 		Document string
@@ -78,6 +93,44 @@ func (h *weblinkHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) err
 	return htmx.Write(w, &htmx.Template{
 		FS:       htmx.FS(ui.HTMX, "parts"),
 		Filename: "weblink_form.html",
+		Fields:   fields,
+	})
+}
+
+// list renders the decrypted weblinks for a document as a read-only list. The
+// URLs are decrypted on demand using the vault cookie, so the folder page never
+// decrypts weblink values.
+func (h *weblinkHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request, user users.Identity, folder, document string) error {
+	vault, verr := getVault(r)
+	if verr != nil {
+		return htmx.SetRedirect(w, "/login")
+	}
+
+	request := &sitecontent.ListWeblinksRequest{
+		User:     user,
+		Folder:   folder,
+		Document: document,
+	}
+	if err := request.Validate(); err != nil {
+		return problem(w, err)
+	}
+
+	weblinks, werr := h.store.Documents().ListWeblinks(ctx, request)
+	if werr != nil {
+		return abort(h.log, w, werr)
+	}
+
+	fields := struct {
+		Weblinks []*sitecontent.Weblink
+		Vault    encrypt.Vault
+	}{
+		Weblinks: weblinks,
+		Vault:    vault,
+	}
+
+	return htmx.Write(w, &htmx.Template{
+		FS:       htmx.FS(ui.HTMX, "parts"),
+		Filename: "weblink_list.html",
 		Fields:   fields,
 	})
 }
@@ -132,6 +185,16 @@ func (h *weblinkHTMX) folderDocumentFrom(r *http.Request) (string, string) {
 		"document": urlpath.String(&document),
 	})
 	return folder, document
+}
+
+// from extracts the action, folder, and document path segments.
+func (h *weblinkHTMX) from(r *http.Request) (folder, document, action string) {
+	urlpath.MustParse(r, urlpath.Schema{
+		"action":   urlpath.String(&action),
+		"folder":   urlpath.String(&folder),
+		"document": urlpath.String(&document),
+	})
+	return folder, document, action
 }
 
 func (h *weblinkHTMX) urlFrom(r *http.Request) string {

@@ -74,9 +74,10 @@ func (n *Note) Unlock(v encrypt.Vault) string {
 }
 
 type DocumentListing struct {
-	ID    records.DocumentsAuto
-	Label string
-	Slug  string
+	ID          records.DocumentsAuto
+	Label       string
+	Slug        string
+	HasWeblinks bool
 }
 
 type Document struct {
@@ -264,6 +265,25 @@ func (r *GetWeblinkRequest) Validate() error {
 	if r.ID <= 0 {
 		return errors.New("weblink must be set")
 	}
+	if r.User <= 0 {
+		return errors.New("user must be set")
+	}
+	if !ValidateSlug(r.Folder) {
+		return errors.New("folder must be set")
+	}
+	if !ValidateSlug(r.Document) {
+		return errors.New("document must be set")
+	}
+	return nil
+}
+
+type ListWeblinksRequest struct {
+	User     users.Identity
+	Folder   string
+	Document string
+}
+
+func (r *ListWeblinksRequest) Validate() error {
 	if r.User <= 0 {
 		return errors.New("user must be set")
 	}

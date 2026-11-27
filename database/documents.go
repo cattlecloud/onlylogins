@@ -36,6 +36,7 @@ type Documents interface {
 	// document > weblinks
 	CreateWeblink(scope.C, *sitecontent.CreateWeblinkRequest) (records.WeblinksAuto, error)
 	GetWeblink(scope.C, *sitecontent.GetWeblinkRequest) (*sitecontent.Weblink, error)
+	ListWeblinks(scope.C, *sitecontent.ListWeblinksRequest) ([]*sitecontent.Weblink, error)
 	UpdateWeblink(scope.C, *sitecontent.UpdateWeblinkRequest) error
 	DeleteWeblink(scope.C, *sitecontent.DeleteWeblinkRequest) error
 
@@ -381,7 +382,8 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 	select
 		d.id,
 		d.label,
-		d.slug
+		d.slug,
+		exists(select 1 from weblinks w where w.did = d.id) as has_weblinks
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
@@ -391,7 +393,9 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
 		listing := new(sitecontent.DocumentListing)
-		err := scan(&listing.ID, &listing.Label, &listing.Slug)
+		var links int
+		err := scan(&listing.ID, &listing.Label, &listing.Slug, &links)
+		listing.HasWeblinks = links > 0
 		return listing, err
 	}
 
@@ -618,6 +622,44 @@ func (s *documentsql) GetWeblink(ctx scope.C, request *sitecontent.GetWeblinkReq
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
+}
+
+func (s *documentsql) ListWeblinks(ctx scope.C, request *sitecontent.ListWeblinksRequest) ([]*sitecontent.Weblink, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to list weblinks: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select w.id, w.v
+	from weblinks w
+	where w.did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.slug = ? and
+			d.slug = ?
+	)
+	order by w.id asc`
+
+	f := func(scan litesql.ScanFunc) (*sitecontent.Weblink, error) {
+		w := new(sitecontent.Weblink)
+		var v []byte
+		err := scan(&w.ID, &v)
+		w.V = conceal.NewBytes(v)
+		return w, err
+	}
+
+	weblinks, werr := litesql.QueryRows(ctx, tx, f, statement,
+		request.User, request.Folder, request.Document,
+	)
+	if werr != nil {
+		return nil, fmt.Errorf("unable to list weblinks: %w", werr)
+	}
+	return weblinks, nil
 }
 
 func (s *documentsql) UpdateWeblink(ctx scope.C, request *sitecontent.UpdateWeblinkRequest) error {

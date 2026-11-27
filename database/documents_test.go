@@ -1126,6 +1126,82 @@ func TestDocuments_List_CaseInsensitive(t *testing.T) {
 	must.Eq(t, "Zebra", list[3].Label)
 }
 
+func TestDocuments_List_HasWeblinks(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+	crypt := mocks.NewTestCrypt()
+	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
+
+	insertDocument(t, ctx, db, mocks.Nobody, "empty")
+
+	insertDocument(t, ctx, db, mocks.Nobody, "linked")
+	insertWeblink(t, ctx, db, mocks.Nobody, "linked", "https://example.com", crypt)
+
+	list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
+		User:   mocks.Nobody,
+		Folder: folder,
+	})
+	must.NoError(t, err)
+	must.SliceLen(t, 2, list)
+
+	// alphabetical: "empty" sorts before "linked"
+	must.Eq(t, "empty", list[0].Label)
+	must.False(t, list[0].HasWeblinks)
+
+	must.Eq(t, "linked", list[1].Label)
+	must.True(t, list[1].HasWeblinks)
+}
+
+func TestDocuments_ListWeblinks(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ordered by id", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://first.example.com", crypt)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://second.example.com", crypt)
+
+		links, err := db.Documents().ListWeblinks(ctx, &sitecontent.ListWeblinksRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 2, links)
+		must.Eq(t, "https://first.example.com", links[0].Unlock(crypt.Vault()))
+		must.Eq(t, "https://second.example.com", links[1].Unlock(crypt.Vault()))
+	})
+
+	t.Run("no weblinks", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		links, err := db.Documents().ListWeblinks(ctx, &sitecontent.ListWeblinksRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceEmpty(t, links)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		bob := insertUser(t, ctx, db, "bob")
+
+		links, err := db.Documents().ListWeblinks(ctx, &sitecontent.ListWeblinksRequest{
+			User: bob, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceEmpty(t, links)
+	})
+}
+
 func TestDocuments_Delete(t *testing.T) {
 	t.Parallel()
 

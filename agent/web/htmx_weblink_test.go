@@ -168,6 +168,129 @@ func TestWeblinkHTMX_Get_NoSession_Redirects(t *testing.T) {
 	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
+func TestWeblinkHTMX_Get_List_RendersLinks(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+
+	router, scache := newWeblinkRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
+	r.AddCookie(crypt.Cookie())
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	must.StrContains(t, body, `class="weblink-menu-list"`)
+	must.StrContains(t, body, `href="https://example.com"`)
+}
+
+func TestWeblinkHTMX_Get_List_MultipleLinksOrdered(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+
+	// create a document and two weblinks directly (insertWeblink only adds one)
+	{
+		ctx, cancel := scope.TTL(testwait)
+		defer cancel()
+
+		list, err := store.Folders().List(ctx, mocks.Nobody)
+		must.NoError(t, err)
+		folder := list[0].Label
+		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
+		})
+		must.NoError(t, err)
+
+		for _, u := range []string{"https://first.example.com", "https://second.example.com"} {
+			ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(u))
+			must.NoError(t, cerr)
+			_, err = store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
+				User: mocks.Nobody, Folder: folder, Document: "github", URL: u, Encrypted: ciphertext,
+			})
+			must.NoError(t, err)
+		}
+	}
+
+	router, scache := newWeblinkRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
+	r.AddCookie(crypt.Cookie())
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+	first := strings.Index(body, "https://first.example.com")
+	second := strings.Index(body, "https://second.example.com")
+	must.True(t, first >= 0)
+	must.True(t, second >= 0)
+	must.True(t, first < second)
+}
+
+func TestWeblinkHTMX_Get_List_NoWeblinks(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+
+	// a document with no weblinks
+	{
+		ctx, cancel := scope.TTL(testwait)
+		defer cancel()
+
+		list, err := store.Folders().List(ctx, mocks.Nobody)
+		must.NoError(t, err)
+		folder := list[0].Label
+		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
+		})
+		must.NoError(t, err)
+	}
+
+	router, scache := newWeblinkRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
+	r.AddCookie(crypt.Cookie())
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, w.Body.String(), `class="weblink-menu-list"`)
+	must.StrNotContains(t, w.Body.String(), "https://")
+}
+
+func TestWeblinkHTMX_Get_List_MissingVault_Redirects(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+
+	router, scache := newWeblinkRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
+	// intentionally no vault cookie
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
+}
+
 func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
