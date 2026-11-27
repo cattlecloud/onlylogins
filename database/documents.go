@@ -49,6 +49,7 @@ type Documents interface {
 	// document > passwords
 	CreatePassword(scope.C, *sitecontent.CreatePasswordRequest) (records.PasswordsAuto, error)
 	GetPassword(scope.C, *sitecontent.GetPasswordRequest) (*sitecontent.Password, error)
+	ListPasswords(scope.C, *sitecontent.ListPasswordsRequest) ([]*sitecontent.Password, error)
 	UpdatePassword(scope.C, *sitecontent.UpdatePasswordRequest) error
 	DeletePassword(scope.C, *sitecontent.DeletePasswordRequest) error
 
@@ -383,7 +384,8 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 		d.id,
 		d.label,
 		d.slug,
-		exists(select 1 from weblinks w where w.did = d.id) as has_weblinks
+		exists(select 1 from weblinks w where w.did = d.id) as has_weblinks,
+		exists(select 1 from passwords p where p.did = d.id) as has_passwords
 	from documents d
 	join folders f on f.id = d.folders_id
 	where
@@ -393,9 +395,10 @@ func (s *documentsql) List(ctx scope.C, request *sitecontent.ListDocumentsReques
 
 	f := func(scan litesql.ScanFunc) (*sitecontent.DocumentListing, error) {
 		listing := new(sitecontent.DocumentListing)
-		var links int
-		err := scan(&listing.ID, &listing.Label, &listing.Slug, &links)
-		listing.HasWeblinks = links > 0
+		var weblinks, passwords int
+		err := scan(&listing.ID, &listing.Label, &listing.Slug, &weblinks, &passwords)
+		listing.HasWeblinks = weblinks > 0
+		listing.HasPasswords = passwords > 0
 		return listing, err
 	}
 
@@ -934,6 +937,44 @@ func (s *documentsql) GetPassword(ctx scope.C, request *sitecontent.GetPasswordR
 		return nil, nil //nolint:nilnil
 	}
 	return rows[0], nil
+}
+
+func (s *documentsql) ListPasswords(ctx scope.C, request *sitecontent.ListPasswordsRequest) ([]*sitecontent.Password, error) {
+	tx, done, xerr := s.ldb.StartRead(ctx)
+	if xerr != nil {
+		return nil, fmt.Errorf("unable to list passwords: %w", xerr)
+	}
+	defer done()
+
+	const statement = `
+	select p.id, p.v
+	from passwords p
+	where p.did in (
+		select d.id
+		from documents d
+		join folders f on f.id = d.folders_id
+		where
+			f.users_id = ? and
+			f.slug = ? and
+			d.slug = ?
+	)
+	order by p.id asc`
+
+	scanPassword := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
+		p := new(sitecontent.Password)
+		var v []byte
+		err := scan(&p.ID, &v)
+		p.V = conceal.NewBytes(v)
+		return p, err
+	}
+
+	passwords, perr := litesql.QueryRows(ctx, tx, scanPassword, statement,
+		request.User, request.Folder, request.Document,
+	)
+	if perr != nil {
+		return nil, fmt.Errorf("unable to list passwords: %w", perr)
+	}
+	return passwords, nil
 }
 
 func (s *documentsql) UpdatePassword(ctx scope.C, request *sitecontent.UpdatePasswordRequest) error {

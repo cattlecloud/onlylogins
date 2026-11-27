@@ -82,12 +82,28 @@
           class="weblink-menu-btn"
           type="button"
           hx-get="/internal/weblink/list/{{$.Section.Slug}}/{{.Slug}}"
-          hx-target="next .weblink-menu"
+          hx-target="#weblink-menu-{{.ID}}"
           hx-swap="innerHTML"
           title="Open website links"
           aria-label="Open {{.Label}} website links"
         ><img src="/ui/images/link.svg" alt=""></button>
-        <div class="weblink-menu"></div>
+        {{end}}
+        {{if .HasPasswords}}
+        <button
+          class="password-menu-btn"
+          type="button"
+          hx-get="/internal/password/list/{{$.Section.Slug}}/{{.Slug}}"
+          hx-target="#password-menu-{{.ID}}"
+          hx-swap="innerHTML"
+          title="Reveal passwords"
+          aria-label="Reveal {{.Label}} passwords"
+        ><img src="/ui/images/key.svg" alt=""></button>
+        {{end}}
+        {{if .HasWeblinks}}
+        <div class="weblink-menu" id="weblink-menu-{{.ID}}"></div>
+        {{end}}
+        {{if .HasPasswords}}
+        <div class="password-menu" id="password-menu-{{.ID}}"></div>
         {{end}}
       </li>
       {{end}}
@@ -139,5 +155,6 @@
   {{end}}
 </div>
 
+<script src="/ui/scripts/secrets.js" defer></script>
 <script src="/ui/scripts/folder.js" defer></script>
 {{end}}

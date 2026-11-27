@@ -308,6 +308,73 @@ func TestFolder_Get_WeblinkButton(t *testing.T) {
 	must.StrNotContains(t, body, `hx-get="/internal/weblink/list/miscellaneous/gitlab"`)
 }
 
+func TestFolder_Get_PasswordButton(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &folderHTTP{
+		log:         ulog.New("test"),
+		store:       store,
+		environment: env,
+		html:        ui.Load("folder.html"),
+	}
+
+	scache := mocks.NewSessions()
+	ss := session(handler, scache)
+
+	routes := mux.NewRouter()
+	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
+
+	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
+
+	ctx, cancel := scope.TTL(timeout)
+	defer cancel()
+
+	crypt := mocks.NewTestCrypt()
+
+	// a document with a password
+	_, err := store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+		Slug:   "github",
+	})
+	must.NoError(t, err)
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("s3cret!"))
+	must.NoError(t, cerr)
+	_, err = store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
+		User:      mocks.Nobody,
+		Folder:    "miscellaneous",
+		Document:  "github",
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+
+	// a document without a password
+	_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "gitlab",
+		Slug:   "gitlab",
+	})
+	must.NoError(t, err)
+
+	request := requestGet(t, "/folders/miscellaneous", cookie)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+
+	// the document with a password renders the button and its dropdown target
+	must.StrContains(t, body, `class="password-menu-btn"`)
+	must.StrContains(t, body, `hx-get="/internal/password/list/miscellaneous/github"`)
+	must.StrContains(t, body, `class="password-menu"`)
+
+	// the document without a password gets no button
+	must.StrNotContains(t, body, `hx-get="/internal/password/list/miscellaneous/gitlab"`)
+}
+
 // TestFolder_Get_DangerZone_ForUserCreated confirms the Danger Zone is
 // rendered for a user-created folder (anything other than the system
 // "miscellaneous" folder).
