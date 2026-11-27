@@ -960,7 +960,7 @@ func (s *documentsql) ListPasswords(ctx scope.C, request *sitecontent.ListPasswo
 	)
 	order by p.id asc`
 
-	scanPassword := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
+	f := func(scan litesql.ScanFunc) (*sitecontent.Password, error) {
 		p := new(sitecontent.Password)
 		var v []byte
 		err := scan(&p.ID, &v)
@@ -968,7 +968,7 @@ func (s *documentsql) ListPasswords(ctx scope.C, request *sitecontent.ListPasswo
 		return p, err
 	}
 
-	passwords, perr := litesql.QueryRows(ctx, tx, scanPassword, statement,
+	passwords, perr := litesql.QueryRows(ctx, tx, f, statement,
 		request.User, request.Folder, request.Document,
 	)
 	if perr != nil {
