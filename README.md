@@ -114,6 +114,23 @@ just mc-run
 just mc-stats
 ```
 
+#### Metrics
+
+Running the agent exposes a Prometheus-style metrics endpoint at `/api/metrics`.
+You can it with [Prometheus](https://prometheus.io) and present it with
+[Grafana](https://grafana.com/), or any other compatible tooling.
+
+
+```shell
+curl http://localhost:3000/api/metrics
+```
+
+Application metrics use the `ol_` prefix. Go process metrics start with the
+`go_` prefix or `process_` prefix.
+
+The endpoint is unauthenticated, so if your instance is reachable from the
+internet you should restrict access.
+
 #### Stripe Integration
 
 Note: it is not necessary to integrate with Stripe for local development or for

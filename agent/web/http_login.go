@@ -22,6 +22,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/encrypt"
 	"cattlecloud.net/onlylogins/pkg/sessions"
 	"cattlecloud.net/onlylogins/pkg/users"
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/shoenig/go-conceal"
 )
 
@@ -31,6 +32,7 @@ type loginHTTP struct {
 	session     middles.Sessions[users.Identity]
 	environment runtime.Environment
 	html        *template.Template
+	metrics     *metrics.Set
 }
 
 func (h *loginHTTP) Path() string {
@@ -192,6 +194,9 @@ func (h *loginHTTP) signup(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 	// set the session cookie
 	http.SetCookie(w, h.session.Create(userID, sessions.IdleTimeout))
 
+	// count the new signup
+	h.count("ol_signups_total")
+
 	// send user to the homepage
 	return htmx.SetRedirect(w, "/")
 }
@@ -209,13 +214,26 @@ func (h *loginHTTP) cookie(key *conceal.Bytes) *http.Cookie {
 }
 
 func (h *loginHTTP) audit(request *users.LoginRequest, success bool) {
+	if success {
+		h.count("ol_logins_success_total")
+	} else {
+		h.count("ol_logins_failure_total")
+	}
+
 	ctx, cancel := scope.TTL(3 * time.Second)
 	defer cancel()
 	_ = h.store.Audit().Record(ctx, request, success)
 }
 
 func (h *loginHTTP) bogus(request *users.LoginRequest) {
+	h.count("ol_logins_bogus_total")
+
 	ctx, cancel := scope.TTL(3 * time.Second)
 	defer cancel()
 	_ = h.store.Audit().RecordBogus(ctx, request)
+}
+
+// count increments the named counter metric.
+func (h *loginHTTP) count(metric string) {
+	h.metrics.GetOrCreateCounter(metric).Inc()
 }

@@ -43,6 +43,10 @@ type Application struct {
 func (a *Application) createRoutes(router *mux.Router) {
 	a.handleStatics(router)
 
+	a.handleAPI(router, &metricsAPI{
+		mset: a.metrics,
+	})
+
 	a.handleAPI(router, &robotsAPI{
 		log:         ulog.New("api/robots"),
 		environment: a.environment,
@@ -184,6 +188,7 @@ func (a *Application) createRoutes(router *mux.Router) {
 		session:     a.scache,
 		store:       a.store,
 		html:        ui.Load("login.html"),
+		metrics:     a.metrics,
 	})
 
 	a.handleNormal(router, &profileHTTP{
@@ -301,7 +306,7 @@ type Objects struct {
 }
 
 func New(config *Config, objects *Objects) *Application {
-	return &Application{
+	a := &Application{
 		config:      config,
 		log:         ulog.New("http"),
 		environment: objects.Environment,
@@ -315,6 +320,11 @@ func New(config *Config, objects *Objects) *Application {
 		vault:       objects.Vault,
 		payments:    objects.Payments,
 	}
+
+	// setup gauges on storage
+	a.periodicMetrics()
+
+	return a
 }
 
 func (a *Application) Start(ctx scope.C) {
