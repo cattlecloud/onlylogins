@@ -180,6 +180,94 @@ func TestPasswordHTMX_Get_NoSession_Redirects(t *testing.T) {
 	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
 }
 
+func TestPasswordHTMX_Get_List_RendersMaskedRows(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
+
+	router, scache := newPasswordRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
+	r.AddCookie(crypt.Cookie())
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+
+	// the row renders masked (bullets) with copy and show actions
+	must.StrContains(t, body, `class="password-row"`)
+	must.StrContains(t, body, `class="password-copy-btn"`)
+	must.StrContains(t, body, `class="password-show-btn"`)
+	must.StrContains(t, body, `<code class="password-value">`+strings.Repeat("\u2022", 7)+`</code>`)
+
+	// the plaintext lives in the data attribute for the copy/show script, but
+	// is never rendered as visible text
+	must.StrContains(t, body, `data-password="s3cret!"`)
+	must.StrNotContains(t, body, `<code class="password-value">s3cret!`)
+
+	// no browser credential field may ever appear
+	must.StrNotContains(t, body, `type="password"`)
+}
+
+func TestPasswordHTMX_Get_List_NoPasswords(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+
+	// a document with no passwords
+	{
+		ctx, cancel := scope.TTL(testwait)
+		defer cancel()
+
+		list, err := store.Folders().List(ctx, mocks.Nobody)
+		must.NoError(t, err)
+		folder := list[0].Label
+		_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+			User: mocks.Nobody, Folder: folder, Label: "github", Slug: "github",
+		})
+		must.NoError(t, err)
+	}
+
+	router, scache := newPasswordRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
+	r.AddCookie(crypt.Cookie())
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	must.StrContains(t, w.Body.String(), `class="password-menu-list"`)
+	must.StrNotContains(t, w.Body.String(), `class="password-row"`)
+}
+
+func TestPasswordHTMX_Get_List_MissingVault_Redirects(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	crypt := mocks.NewTestCrypt()
+	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
+
+	router, scache := newPasswordRouter(t, store)
+	ss := session(router, scache)
+	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
+
+	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
+	// intentionally no vault cookie
+	w := httptest.NewRecorder()
+	ss.ServeHTTP(w, r)
+
+	must.Eq(t, http.StatusFound, w.Code)
+	must.Eq(t, "/login", w.Header().Get("HX-Redirect"))
+}
+
 func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 

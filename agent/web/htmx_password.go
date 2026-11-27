@@ -4,6 +4,8 @@
 package web
 
 import (
+	"errors"
+	"html/template"
 	"net/http"
 	"path"
 
@@ -14,6 +16,8 @@ import (
 	"cattlecloud.net/go/webtools/htmx"
 	"cattlecloud.net/go/webtools/middles"
 	"cattlecloud.net/onlylogins/database"
+	"cattlecloud.net/onlylogins/pkg/encrypt"
+	"cattlecloud.net/onlylogins/pkg/format"
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/pkg/users"
 	"cattlecloud.net/onlylogins/ui"
@@ -49,14 +53,14 @@ func (h *passwordHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
-func (h *passwordHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) error {
+func (h *passwordHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
 
 	if !session.Active() {
 		return htmx.SetRedirect(w, "/login")
 	}
 
-	folder, document := h.folderDocumentFrom(r)
+	folder, document, action := h.from(r)
 
 	if err := (&sitecontent.GetDocumentRequest{
 		User:     session.Identity(),
@@ -66,6 +70,19 @@ func (h *passwordHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) er
 		return abort(h.log, w, err)
 	}
 
+	switch action {
+	case "add":
+		return h.add(w, folder, document)
+	case "list":
+		return h.list(ctx, w, r, session.Identity(), folder, document)
+	default:
+		h.log.W.Fmt("rejecting unknown password action %q", action)
+		return abort(h.log, w, errors.New("no such password action"))
+	}
+}
+
+// add renders the inline form used to create a new password.
+func (h *passwordHTMX) add(w http.ResponseWriter, folder, document string) error {
 	fields := struct {
 		Folder   string
 		Document string
@@ -78,6 +95,45 @@ func (h *passwordHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) er
 		FS:       htmx.FS(ui.HTMX, "parts"),
 		Filename: "password_form.html",
 		Fields:   fields,
+	})
+}
+
+// list renders the passwords for a document as masked rows with copy and show
+// actions. The values are decrypted on demand in the template, so the folder
+// page never decrypts password values.
+func (h *passwordHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request, user users.Identity, folder, document string) error {
+	vault, verr := getVault(r)
+	if verr != nil {
+		return htmx.SetRedirect(w, "/login")
+	}
+
+	request := &sitecontent.ListPasswordsRequest{
+		User:     user,
+		Folder:   folder,
+		Document: document,
+	}
+	if err := request.Validate(); err != nil {
+		return problem(w, err)
+	}
+
+	passwords, perr := h.store.Documents().ListPasswords(ctx, request)
+	if perr != nil {
+		return abort(h.log, w, perr)
+	}
+
+	fields := struct {
+		Passwords []*sitecontent.Password
+		Vault     encrypt.Vault
+	}{
+		Passwords: passwords,
+		Vault:     vault,
+	}
+
+	return htmx.Write(w, &htmx.Template{
+		FS:       htmx.FS(ui.HTMX, "parts"),
+		Filename: "password_list.html",
+		Fields:   fields,
+		Funcs:    template.FuncMap{"Mask": format.Mask},
 	})
 }
 
@@ -133,6 +189,16 @@ func (h *passwordHTMX) folderDocumentFrom(r *http.Request) (string, string) {
 		"document": urlpath.String(&document),
 	})
 	return folder, document
+}
+
+// from extracts the action, folder, and document path segments.
+func (h *passwordHTMX) from(r *http.Request) (folder, document, action string) {
+	urlpath.MustParse(r, urlpath.Schema{
+		"action":   urlpath.String(&action),
+		"folder":   urlpath.String(&folder),
+		"document": urlpath.String(&document),
+	})
+	return folder, document, action
 }
 
 func (h *passwordHTMX) passwordFrom(r *http.Request) string {

@@ -1202,6 +1202,82 @@ func TestDocuments_ListWeblinks(t *testing.T) {
 	})
 }
 
+func TestDocuments_List_HasPasswords(t *testing.T) {
+	t.Parallel()
+
+	db, ctx := openTestDB(t)
+	d := db.Documents()
+	crypt := mocks.NewTestCrypt()
+	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
+
+	insertDocument(t, ctx, db, mocks.Nobody, "empty")
+
+	insertDocument(t, ctx, db, mocks.Nobody, "secured")
+	insertPassword(t, ctx, db, mocks.Nobody, "secured", "s3cret!", crypt)
+
+	list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
+		User:   mocks.Nobody,
+		Folder: folder,
+	})
+	must.NoError(t, err)
+	must.SliceLen(t, 2, list)
+
+	// alphabetical: "empty" sorts before "secured"
+	must.Eq(t, "empty", list[0].Label)
+	must.False(t, list[0].HasPasswords)
+
+	must.Eq(t, "secured", list[1].Label)
+	must.True(t, list[1].HasPasswords)
+}
+
+func TestDocuments_ListPasswords(t *testing.T) {
+	t.Parallel()
+
+	t.Run("ordered by id", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "first", crypt)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "second", crypt)
+
+		passwords, err := db.Documents().ListPasswords(ctx, &sitecontent.ListPasswordsRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceLen(t, 2, passwords)
+		must.Eq(t, "first", passwords[0].Unlock(crypt.Vault()))
+		must.Eq(t, "second", passwords[1].Unlock(crypt.Vault()))
+	})
+
+	t.Run("no passwords", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+
+		passwords, err := db.Documents().ListPasswords(ctx, &sitecontent.ListPasswordsRequest{
+			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceEmpty(t, passwords)
+	})
+
+	t.Run("wrong user", func(t *testing.T) {
+		db, ctx := openTestDB(t)
+		crypt := mocks.NewTestCrypt()
+
+		insertDocument(t, ctx, db, mocks.Nobody, "github")
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
+		bob := insertUser(t, ctx, db, "bob")
+
+		passwords, err := db.Documents().ListPasswords(ctx, &sitecontent.ListPasswordsRequest{
+			User: bob, Folder: "miscellaneous", Document: "github",
+		})
+		must.NoError(t, err)
+		must.SliceEmpty(t, passwords)
+	})
+}
+
 func TestDocuments_Delete(t *testing.T) {
 	t.Parallel()
 
