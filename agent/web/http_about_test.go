@@ -43,4 +43,5 @@ func TestAbout_ServeHTTP(t *testing.T) {
 	must.StrContains(t, body, `Architecture</dt>`)
 	must.StrContains(t, body, `Environment</dt>`)
 	must.StrContains(t, body, `local</dd>`)
+	must.StrContains(t, body, `Made in Austin, Texas`)
 }
