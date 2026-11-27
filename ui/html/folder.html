@@ -77,6 +77,18 @@
           <span class="document-label">{{.Label}}</span>
           <span class="document-chevron" aria-hidden="true"></span>
         </a>
+        {{if .HasWeblinks}}
+        <button
+          class="weblink-menu-btn"
+          type="button"
+          hx-get="/internal/weblink/list/{{$.Section.Slug}}/{{.Slug}}"
+          hx-target="next .weblink-menu"
+          hx-swap="innerHTML"
+          title="Open website links"
+          aria-label="Open {{.Label}} website links"
+        ><img src="/ui/images/link.svg" alt=""></button>
+        <div class="weblink-menu"></div>
+        {{end}}
       </li>
       {{end}}
     </ul>

@@ -1,7 +1,8 @@
 // Copyright (c) 2026 Cattle Cloud LLC
 // SPDX-License-Identifier: AGPL-3.0
 
-// folder.js implements the "example chip" behaviour on the new-document form.
+// folder.js implements the "example chip" behaviour on the new-document form,
+// and toggles the per-document weblink dropdown in the documents list.
 (function () {
   'use strict';
 
@@ -24,4 +25,26 @@
     input.focus();
     input.select();
   });
+
+  // htmx lazily populates the weblink dropdown on click. A second click on the
+  // same button clears it instead of re-fetching, so the button toggles the
+  // menu open and closed.
+  document.addEventListener('click', function (event) {
+    var target = event.target;
+    if (!(target instanceof Element)) {
+      return;
+    }
+
+    var btn = target.closest('.weblink-menu-btn');
+    if (!btn) {
+      return;
+    }
+
+    var menu = btn.nextElementSibling;
+    if (menu && menu.innerHTML.trim() !== '') {
+      event.preventDefault();
+      event.stopPropagation();
+      menu.innerHTML = '';
+    }
+  }, true);
 })();

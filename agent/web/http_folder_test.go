@@ -18,6 +18,7 @@ import (
 	"cattlecloud.net/onlylogins/pkg/sitecontent"
 	"cattlecloud.net/onlylogins/ui"
 	"github.com/gorilla/mux"
+	"github.com/shoenig/go-conceal"
 	"github.com/shoenig/test/must"
 )
 
@@ -237,6 +238,74 @@ func TestFolder_Get_WithDocuments(t *testing.T) {
 	// "miscellaneous" is the well-known system folder: Danger Zone stays hidden
 	must.StrNotContains(t, body, "Danger Zone")
 	must.StrNotContains(t, body, `class="danger-zone"`)
+}
+
+func TestFolder_Get_WeblinkButton(t *testing.T) {
+	t.Parallel()
+
+	store := mockdb.Open(t)
+	handler := &folderHTTP{
+		log:         ulog.New("test"),
+		store:       store,
+		environment: env,
+		html:        ui.Load("folder.html"),
+	}
+
+	scache := mocks.NewSessions()
+	ss := session(handler, scache)
+
+	routes := mux.NewRouter()
+	routes.Handle("/folders/{folder}", ss).Methods(http.MethodGet, http.MethodDelete)
+
+	cookie := ss.Sessions.Create(mocks.Nobody, 1*time.Minute)
+
+	ctx, cancel := scope.TTL(timeout)
+	defer cancel()
+
+	crypt := mocks.NewTestCrypt()
+
+	// a document with a weblink
+	_, err := store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "github",
+		Slug:   "github",
+	})
+	must.NoError(t, err)
+	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://example.com"))
+	must.NoError(t, cerr)
+	_, err = store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
+		User:      mocks.Nobody,
+		Folder:    "miscellaneous",
+		Document:  "github",
+		URL:       "https://example.com",
+		Encrypted: ciphertext,
+	})
+	must.NoError(t, err)
+
+	// a document without a weblink
+	_, err = store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
+		User:   mocks.Nobody,
+		Folder: "miscellaneous",
+		Label:  "gitlab",
+		Slug:   "gitlab",
+	})
+	must.NoError(t, err)
+
+	request := requestGet(t, "/folders/miscellaneous", cookie)
+	w := httptest.NewRecorder()
+	routes.ServeHTTP(w, request)
+
+	must.Eq(t, http.StatusOK, w.Code)
+	body := w.Body.String()
+
+	// the document with a weblink renders the button and its dropdown target
+	must.StrContains(t, body, `class="weblink-menu-btn"`)
+	must.StrContains(t, body, `hx-get="/internal/weblink/list/miscellaneous/github"`)
+	must.StrContains(t, body, `class="weblink-menu"`)
+
+	// the document without a weblink gets no button
+	must.StrNotContains(t, body, `hx-get="/internal/weblink/list/miscellaneous/gitlab"`)
 }
 
 // TestFolder_Get_DangerZone_ForUserCreated confirms the Danger Zone is

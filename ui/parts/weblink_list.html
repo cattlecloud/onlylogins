@@ -1,0 +1,10 @@
+{{define "weblink_list"}}
+<ul class="weblink-menu-list">
+  {{range .Weblinks}}
+  {{$u := .Unlock $.Vault}}
+  <li>
+    <a href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
+  </li>
+  {{end}}
+</ul>
+{{end}}
