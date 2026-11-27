@@ -38,9 +38,9 @@ func New(cache *memc.Client, metset *metrics.Set) Client {
 		now:   time.Now,
 
 		// setup metrics counters
-		missSessions: metset.NewCounter("sb_memc_sessions_miss"),
-		hitsSessions: metset.NewCounter("sb_memc_sessions_hits"),
-		putsSessions: metset.NewCounter("sb_memc_sessions_puts"),
+		missSessions: metset.NewCounter("ol_memc_sessions_miss"),
+		hitsSessions: metset.NewCounter("ol_memc_sessions_hits"),
+		putsSessions: metset.NewCounter("ol_memc_sessions_puts"),
 	}
 }
 

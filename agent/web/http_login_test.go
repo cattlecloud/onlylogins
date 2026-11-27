@@ -15,6 +15,7 @@ import (
 	"cattlecloud.net/onlylogins/hack/mocks"
 	"cattlecloud.net/onlylogins/hack/mocks/mockdb"
 	"cattlecloud.net/onlylogins/ui"
+	"github.com/VictoriaMetrics/metrics"
 	"github.com/gorilla/mux"
 	"github.com/shoenig/test/must"
 )
@@ -50,6 +51,7 @@ func newSignupRouter(t *testing.T) (*mux.Router, database.Store) {
 		session:     mocks.NewSessions(),
 		environment: env,
 		html:        ui.Load("login.html"),
+		metrics:     metrics.NewSet(),
 	})
 
 	return routes, store
