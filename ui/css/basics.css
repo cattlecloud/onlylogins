@@ -159,6 +159,16 @@
   border-top: 1px solid var(--border);
 }
 
+/* Open source recognition links are quiet until hovered. */
+
+.middle.about section#oss a {
+  text-decoration: none;
+}
+
+.middle.about section#oss a:hover {
+  text-decoration: underline;
+}
+
 /* Compact build information block at the foot of the about page. */
 
 .middle.about section.build {
