@@ -68,7 +68,7 @@ func (h *noteEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) e
 	ctx, cancel := scope.WithTTL(r.Context(), timeout)
 	defer cancel()
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -87,7 +87,7 @@ func (h *noteEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request) e
 		return abort(h.log, w, errors.New("record not found"))
 	}
 
-	current := dbNote.Unlock(vault)
+	current := dbNote.Unlock(cypher)
 
 	fields := struct {
 		ID       records.NotesAuto
@@ -122,7 +122,7 @@ func (h *noteEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request)
 		return abort(h.log, w, errors.New("no such note action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -133,7 +133,7 @@ func (h *noteEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Request)
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(raw))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(raw))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

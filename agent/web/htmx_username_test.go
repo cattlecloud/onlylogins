@@ -45,7 +45,7 @@ func newUsernameRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.
 }
 
 func insertUsernameHandlerHelper(t *testing.T, store database.Store, user users.Identity,
-	doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
+	doc, username string, cypher mocks.TestCypher) records.UsernamesAuto {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -61,7 +61,7 @@ func insertUsernameHandlerHelper(t *testing.T, store database.Store, user users.
 	})
 	must.NoError(t, err)
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(username))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(username))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
@@ -156,7 +156,7 @@ func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -180,7 +180,7 @@ func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		url.Values{"username": {"alice"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -190,14 +190,14 @@ func TestUsernameHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	doc := fetchDocUsername(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Usernames)
-	must.Eq(t, "alice", doc.Usernames[0].Unlock(crypt.Vault()))
+	must.Eq(t, "alice", doc.Usernames[0].Unlock(cypher.Cypher()))
 }
 
 func TestUsernameHTMX_Post_EmptyUsername_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -221,7 +221,7 @@ func TestUsernameHTMX_Post_EmptyUsername_ReturnsProblem(t *testing.T) {
 		url.Values{"username": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -237,7 +237,7 @@ func TestUsernameHTMX_Post_WhitespaceOnlyUsername_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -261,7 +261,7 @@ func TestUsernameHTMX_Post_WhitespaceOnlyUsername_ReturnsProblem(t *testing.T) {
 		url.Values{"username": {"   "}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -277,7 +277,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -302,7 +302,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 		url.Values{"username": {longName}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -314,7 +314,7 @@ func TestUsernameHTMX_Post_TooLongUsername_ReturnsProblem(t *testing.T) {
 	must.SliceLen(t, 0, doc.Usernames)
 }
 
-func TestUsernameHTMX_Post_MissingVault_Redirects(t *testing.T) {
+func TestUsernameHTMX_Post_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -327,7 +327,7 @@ func TestUsernameHTMX_Post_MissingVault_Redirects(t *testing.T) {
 		url.Values{"username": {"alice"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -340,7 +340,7 @@ func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobUsername(t, store)
 
 	// nobody owns the document
@@ -365,7 +365,7 @@ func TestUsernameHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		url.Values{"username": {"mallory"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -378,8 +378,8 @@ func TestUsernameEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -387,7 +387,7 @@ func TestUsernameEntryHTMX_Get_RendersEditForm(t *testing.T) {
 
 	u := usernameURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -402,8 +402,8 @@ func TestUsernameEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -412,7 +412,7 @@ func TestUsernameEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	u := usernameURL("update", "miscellaneous", "github", id)
 	r := postUsernameForm(t, http.MethodPut, u, url.Values{"username": {"alice2"}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -424,15 +424,15 @@ func TestUsernameEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 
 	doc := fetchDocUsername(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Usernames)
-	must.Eq(t, "alice2", doc.Usernames[0].Unlock(crypt.Vault()))
+	must.Eq(t, "alice2", doc.Usernames[0].Unlock(cypher.Cypher()))
 }
 
 func TestUsernameEntryHTMX_Put_EmptyUsername_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -441,7 +441,7 @@ func TestUsernameEntryHTMX_Put_EmptyUsername_ReturnsProblem(t *testing.T) {
 	u := usernameURL("update", "miscellaneous", "github", id)
 	r := postUsernameForm(t, http.MethodPut, u, url.Values{"username": {""}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -452,16 +452,16 @@ func TestUsernameEntryHTMX_Put_EmptyUsername_ReturnsProblem(t *testing.T) {
 	// original row remains untouched
 	doc := fetchDocUsername(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Usernames)
-	must.Eq(t, "alice", doc.Usernames[0].Unlock(crypt.Vault()))
+	must.Eq(t, "alice", doc.Usernames[0].Unlock(cypher.Cypher()))
 }
 
 func TestUsernameEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobUsername(t, store)
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -470,7 +470,7 @@ func TestUsernameEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	u := usernameURL("update", "miscellaneous", "github", id)
 	r := postUsernameForm(t, http.MethodPut, u, url.Values{"username": {"mallory"}})
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -483,8 +483,8 @@ func TestUsernameEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)
@@ -509,9 +509,9 @@ func TestUsernameEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobUsername(t, store)
-	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", crypt)
+	id := insertUsernameHandlerHelper(t, store, mocks.Nobody, "github", "alice", cypher)
 
 	router, scache := newUsernameRouter(t, store)
 	ss := session(router, scache)

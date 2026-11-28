@@ -25,7 +25,7 @@ type Store interface {
 	Folders() Folders
 	Documents() Documents
 	Plans() Plans
-	Shares(encrypt.Vault) Shares
+	Shares(encrypt.Cypher) Shares
 	Stripe() Stripe
 }
 

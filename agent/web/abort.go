@@ -14,9 +14,9 @@ import (
 )
 
 var (
-	ErrPageProblem  = errors.New("problem loading page")
-	ErrMissingVault = errors.New("no encryption key cookie")
-	ErrInvalidVault = errors.New("invalid encryption key cookie")
+	ErrPageProblem   = errors.New("problem loading page")
+	ErrMissingCypher = errors.New("no encryption key cookie")
+	ErrInvalidCypher = errors.New("invalid encryption key cookie")
 )
 
 func login(log *ulog.Log, w http.ResponseWriter, r *http.Request) error {

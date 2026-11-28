@@ -62,8 +62,8 @@ Allow: /about
 Allow: /privacy
 Allow: /terms
 Allow: /help
-Allow: /share
-Allow: /export
+Allow: /vaults
+Allow: /tools
 Allow: /patreon
 Allow: /ui/*
 Allow: /sitemap.xml

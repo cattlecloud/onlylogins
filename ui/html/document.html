@@ -42,7 +42,7 @@
         <ul id="weblinks-list" class="fields weblinks">
           {{if .Section.Document.Weblinks}}
             {{range .Section.Document.Weblinks}}
-            {{$u := .Unlock $.Section.Vault}}
+            {{$u := .Unlock $.Section.Cypher}}
             <li class="weblink-row" data-value="{{$u}}">
               <a class="weblink-value" href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
               <span class="weblink-actions">
@@ -81,7 +81,7 @@
         <ul id="usernames-list" class="fields usernames">
           {{if .Section.Document.Usernames}}
             {{range .Section.Document.Usernames}}
-            {{$u := .Unlock $.Section.Vault}}
+            {{$u := .Unlock $.Section.Cypher}}
             <li class="username-row" data-value="{{$u}}">
               <code class="username-value">{{$u}}</code>
               <span class="username-actions">
@@ -120,7 +120,7 @@
         <ul id="passwords-list" class="fields passwords">
           {{if .Section.Document.Passwords}}
             {{range .Section.Document.Passwords}}
-            {{$p := .Unlock $.Section.Vault}}
+            {{$p := .Unlock $.Section.Cypher}}
             <li class="password-row" data-password="{{$p}}">
               <code class="password-value">{{Mask $p}}</code>
               <span class="password-actions">
@@ -160,7 +160,7 @@
         <ul id="keyvals-list" class="fields keyvals">
           {{if .Section.Document.Keyvals}}
             {{range .Section.Document.Keyvals}}
-            {{$u := .Unlock $.Section.Vault}}
+            {{$u := .Unlock $.Section.Cypher}}
             <li class="keyval-row" data-value="{{$u}}">
               <span class="keyval-key" title="{{.K.Unveil}}">{{.K.Unveil}}</span>
               <code class="keyval-value">{{Mask $u}}</code>
@@ -202,7 +202,7 @@
         <div id="note-form-container"></div>
         {{if .Section.Document.Note}}
           <div class="note-area">
-            <div class="note-panel" data-note="{{.Section.Document.Note.Unlock $.Section.Vault}}">
+            <div class="note-panel" data-note="{{.Section.Document.Note.Unlock $.Section.Cypher}}">
               <button type="button" class="note-reveal-btn">Show note</button>
               <div class="note-content" hidden></div>
             </div>

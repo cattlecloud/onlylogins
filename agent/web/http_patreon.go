@@ -157,6 +157,6 @@ func findPlan(plans []*sitecontent.Plan, id records.PlansEnum) *sitecontent.Plan
 func (h *patreonHTTP) description() string {
 	const text = `
 	Support OnlyLogins on Patreon and store thousands of login credentials,
-	passwords, notes, and other secrets in your encrypted vault.`
+	passwords, notes, and other secrets in your encrypted account.`
 	return format.PageDescription(text)
 }

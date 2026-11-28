@@ -205,7 +205,7 @@ We like to think of this as the "GoSH" stack.
 
 ### TPM Operations
 
-In staging and production the global vault passphrase is unsealed from a
+In staging and production the global cypher passphrase is unsealed from a
 Trusted Platform Module (TPM) at startup, binding the secret to the hardware of
 a specific machine. The `tpm` subcommands walk through preparing a sealed blob,
 in the order they are used to bring up a production agent.
@@ -225,7 +225,7 @@ onlylogins tpm devices
 #### 2. Seal the passphrase
 
 Seal a passphrase to the TPM, read from standard input. The passphrase must be
-in the quasi-uuid4 format expected by the vault (36 hexadecimal digits and
+in the quasi-uuid4 format expected by the cypher (36 hexadecimal digits and
 hyphens). By default the blob is sealed to PCRs 0, 1, and 2; override with
 `--pcrs`.
 
@@ -244,7 +244,7 @@ matches the expected format.
 onlylogins tpm verify --device /dev/tpmrm0 --input /etc/onlylogins/sealed
 ```
 
-#### 4. Configure the vault
+#### 4. Configure the cypher
 
 Point the agent at the sealed blob and the TPM device. Ensure the agent runs
 as a user with sufficient permission to read the sealed file, and access the
@@ -276,7 +276,7 @@ onlylogins agent -c ./hack/dev.toml
 Note: run the agent as a dedicated service user that belongs to the `tss` group.
 `tss` stands for "tpm software stack". On a typical Linux host the TPM device
 nodes (`/dev/tpm0` and `/dev/tpmrm0`) are owned by the `tss` group, which the
-agent needs to unseal the vault passphrase.
+agent needs to unseal the cypher passphrase.
 
 ```shell
 # create an onlylogins service user

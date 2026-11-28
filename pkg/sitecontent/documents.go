@@ -19,7 +19,7 @@ var (
 	ErrNoUnlock = "(decryption-failure)"
 )
 
-func unlock(b *conceal.Bytes, v encrypt.Vault) string {
+func unlock(b *conceal.Bytes, v encrypt.Cypher) string {
 	s, err := v.Decrypt(b)
 	if err != nil {
 		return ErrNoUnlock
@@ -32,7 +32,7 @@ type Weblink struct {
 	V  *conceal.Bytes
 }
 
-func (w *Weblink) Unlock(v encrypt.Vault) string {
+func (w *Weblink) Unlock(v encrypt.Cypher) string {
 	return unlock(w.V, v)
 }
 
@@ -41,7 +41,7 @@ type Username struct {
 	V  *conceal.Bytes
 }
 
-func (u *Username) Unlock(v encrypt.Vault) string {
+func (u *Username) Unlock(v encrypt.Cypher) string {
 	return unlock(u.V, v)
 }
 
@@ -50,7 +50,7 @@ type Password struct {
 	V  *conceal.Bytes
 }
 
-func (p *Password) Unlock(v encrypt.Vault) string {
+func (p *Password) Unlock(v encrypt.Cypher) string {
 	return unlock(p.V, v)
 }
 
@@ -60,7 +60,7 @@ type Keyval struct {
 	V  *conceal.Bytes
 }
 
-func (k *Keyval) Unlock(v encrypt.Vault) string {
+func (k *Keyval) Unlock(v encrypt.Cypher) string {
 	return unlock(k.V, v)
 }
 
@@ -69,7 +69,7 @@ type Note struct {
 	V  *conceal.Bytes
 }
 
-func (n *Note) Unlock(v encrypt.Vault) string {
+func (n *Note) Unlock(v encrypt.Cypher) string {
 	return unlock(n.V, v)
 }
 

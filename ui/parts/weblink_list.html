@@ -1,7 +1,7 @@
 {{define "weblink_list"}}
 <ul class="weblink-menu-list">
   {{range .Weblinks}}
-  {{$u := .Unlock $.Vault}}
+  {{$u := .Unlock $.Cypher}}
   <li>
     <a href="{{$u}}" target="_blank" rel="noopener noreferrer">{{$u}}</a>
   </li>

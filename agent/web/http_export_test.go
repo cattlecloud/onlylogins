@@ -33,14 +33,14 @@ func TestExport_ServeHTTP_LoggedOut(t *testing.T) {
 
 	store := mockdb.Open(t)
 	routes := mux.NewRouter()
-	routes.Handle("/export", &exportHTTP{
+	routes.Handle("/tools/export", &exportHTTP{
 		log:         ulog.New("test"),
 		environment: env,
 		store:       store,
 		html:        ui.Load("export.html"),
 	})
 
-	request := requestGet(t, "/export", nil)
+	request := requestGet(t, "/tools/export", nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
@@ -49,7 +49,7 @@ func TestExport_ServeHTTP_LoggedOut(t *testing.T) {
 	must.StrContains(t, body, "You must be logged in to export your data.")
 	must.StrContains(t, body, `<form method="get" action="/login">`)
 	must.StrContains(t, body, `Log in to export your data`)
-	must.StrNotContains(t, body, `<form method="post" action="/export">`)
+	must.StrNotContains(t, body, `<form method="post" action="/tools/export">`)
 }
 
 func TestExport_ServeHTTP_LoggedIn(t *testing.T) {
@@ -58,23 +58,23 @@ func TestExport_ServeHTTP_LoggedIn(t *testing.T) {
 	_, routes, scache, _ := newExportHarness(t)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
-	request := requestGet(t, "/export", cookie)
+	request := requestGet(t, "/tools/export", cookie)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
 	body := w.Body.String()
 	must.StrContains(t, body, `<div class="middle export">`)
-	must.StrContains(t, body, `<form method="post" action="/export">`)
+	must.StrContains(t, body, `<form method="post" action="/tools/export">`)
 	must.StrContains(t, body, `Get backup file`)
-	must.StrNotContains(t, body, `hx-post="/export"`)
+	must.StrNotContains(t, body, `hx-post="/tools/export"`)
 	must.StrNotContains(t, body, "You must be logged in")
 }
 
-func newExportHarness(t *testing.T) (database.Store, *mux.Router, *mocks.Sessions, mocks.TestCrypt) {
+func newExportHarness(t *testing.T) (database.Store, *mux.Router, *mocks.Sessions, mocks.TestCypher) {
 	t.Helper()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	scache := mocks.NewSessions()
 
 	handler := &exportHTTP{
@@ -85,15 +85,15 @@ func newExportHarness(t *testing.T) (database.Store, *mux.Router, *mocks.Session
 	}
 
 	routes := mux.NewRouter()
-	routes.Handle("/export", session(handler, scache))
+	routes.Handle("/tools/export", session(handler, scache))
 
-	return store, routes, scache, crypt
+	return store, routes, scache, cypher
 }
 
 func TestExport_Post(t *testing.T) {
 	t.Parallel()
 
-	store, routes, scache, crypt := newExportHarness(t)
+	store, routes, scache, cypher := newExportHarness(t)
 
 	ctx, cancel := scope.TTL(testwait)
 	defer cancel()
@@ -108,7 +108,7 @@ func TestExport_Post(t *testing.T) {
 	must.NoError(t, err)
 
 	encrypted := func(value string) *conceal.Bytes {
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(value))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(value))
 		must.NoError(t, cerr)
 		return ciphertext
 	}
@@ -157,8 +157,8 @@ func TestExport_Post(t *testing.T) {
 	must.NoError(t, err)
 
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
-	request := requestPost(t, "/export", cookie, nil)
-	request.AddCookie(crypt.Cookie())
+	request := requestPost(t, "/tools/export", cookie, nil)
+	request.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
@@ -188,11 +188,11 @@ func TestExport_Post(t *testing.T) {
 func TestExport_Post_Empty(t *testing.T) {
 	t.Parallel()
 
-	_, routes, scache, crypt := newExportHarness(t)
+	_, routes, scache, cypher := newExportHarness(t)
 
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
-	request := requestPost(t, "/export", cookie, nil)
-	request.AddCookie(crypt.Cookie())
+	request := requestPost(t, "/tools/export", cookie, nil)
+	request.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
@@ -213,7 +213,7 @@ func TestExport_Post_NoSession(t *testing.T) {
 
 	_, routes, _, _ := newExportHarness(t) //nolint:dogsled
 
-	request := requestPost(t, "/export", nil, nil)
+	request := requestPost(t, "/tools/export", nil, nil)
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 

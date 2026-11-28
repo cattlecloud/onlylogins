@@ -51,8 +51,8 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 	newKey := encrypt.DeriveKey(request.Passphrase, newSalt)
 	newVerifier := encrypt.MakeVerifier(newKey)
 
-	oldVault := encrypt.New(oldKey)
-	newVault := encrypt.New(newKey)
+	oldCypher := encrypt.New(oldKey)
+	newCypher := encrypt.New(newKey)
 
 	// re-encrypt every piece of user-owned content with the new key
 
@@ -63,7 +63,7 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 		join folders f on f.id = d.folders_id
 	where f.users_id = ?`
 	const weblinksUpdateSQL = `update weblinks set v = ? where id = ?`
-	if err := s.reencrypt(ctx, tx, oldVault, newVault, weblinksSQL, weblinksUpdateSQL, id); err != nil {
+	if err := s.reencrypt(ctx, tx, oldCypher, newCypher, weblinksSQL, weblinksUpdateSQL, id); err != nil {
 		return fmt.Errorf("unable to change passphrase: %w", err)
 	}
 
@@ -74,7 +74,7 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 		join folders f on f.id = d.folders_id
 	where f.users_id = ?`
 	const usernamesUpdateSQL = `update usernames set v = ? where id = ?`
-	if err := s.reencrypt(ctx, tx, oldVault, newVault, usernamesSQL, usernamesUpdateSQL, id); err != nil {
+	if err := s.reencrypt(ctx, tx, oldCypher, newCypher, usernamesSQL, usernamesUpdateSQL, id); err != nil {
 		return fmt.Errorf("unable to change passphrase: %w", err)
 	}
 
@@ -85,7 +85,7 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 		join folders f on f.id = d.folders_id
 	where f.users_id = ?`
 	const passwordsUpdateSQL = `update passwords set v = ? where id = ?`
-	if err := s.reencrypt(ctx, tx, oldVault, newVault, passwordsSQL, passwordsUpdateSQL, id); err != nil {
+	if err := s.reencrypt(ctx, tx, oldCypher, newCypher, passwordsSQL, passwordsUpdateSQL, id); err != nil {
 		return fmt.Errorf("unable to change passphrase: %w", err)
 	}
 
@@ -96,7 +96,7 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 		join folders f on f.id = d.folders_id
 	where f.users_id = ?`
 	const keyvalsUpdateSQL = `update keyvals set v = ? where id = ?`
-	if err := s.reencrypt(ctx, tx, oldVault, newVault, keyvalsSQL, keyvalsUpdateSQL, id); err != nil {
+	if err := s.reencrypt(ctx, tx, oldCypher, newCypher, keyvalsSQL, keyvalsUpdateSQL, id); err != nil {
 		return fmt.Errorf("unable to change passphrase: %w", err)
 	}
 
@@ -107,7 +107,7 @@ func (s *usersql) ChangePassphrase(ctx scope.C, id users.Identity, request *user
 		join folders f on f.id = d.folders_id
 	where f.users_id = ?`
 	const notesUpdateSQL = `update notes set v = ? where id = ?`
-	if err := s.reencrypt(ctx, tx, oldVault, newVault, notesSQL, notesUpdateSQL, id); err != nil {
+	if err := s.reencrypt(ctx, tx, oldCypher, newCypher, notesSQL, notesUpdateSQL, id); err != nil {
 		return fmt.Errorf("unable to change passphrase: %w", err)
 	}
 
@@ -156,12 +156,12 @@ func (s *usersql) loadAuthorization(ctx scope.C, tx *sql.Tx, id users.Identity) 
 	return auth, nil
 }
 
-// reencrypt decrypts every row returned by selectSQL with oldVault,
-// re-encrypts it with newVault, and writes it back via updateSQL.
+// reencrypt decrypts every row returned by selectSQL with oldCypher,
+// re-encrypts it with newCypher, and writes it back via updateSQL.
 func (s *usersql) reencrypt(
 	ctx scope.C,
 	tx *sql.Tx,
-	oldVault, newVault encrypt.Vault,
+	oldCypher, newCypher encrypt.Cypher,
 	selectSQL, updateSQL string,
 	id users.Identity,
 ) error {
@@ -182,12 +182,12 @@ func (s *usersql) reencrypt(
 	}
 
 	for _, r := range rows {
-		plaintext, derr := oldVault.Decrypt(conceal.NewBytes(r.v))
+		plaintext, derr := oldCypher.Decrypt(conceal.NewBytes(r.v))
 		if derr != nil {
 			return fmt.Errorf("unable to decrypt content: %w", derr)
 		}
 
-		ciphertext, cerr := newVault.Encrypt(plaintext)
+		ciphertext, cerr := newCypher.Encrypt(plaintext)
 		if cerr != nil {
 			return fmt.Errorf("unable to encrypt content: %w", cerr)
 		}

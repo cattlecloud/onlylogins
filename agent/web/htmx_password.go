@@ -102,7 +102,7 @@ func (h *passwordHTMX) add(w http.ResponseWriter, folder, document string) error
 // actions. The values are decrypted on demand in the template, so the folder
 // page never decrypts password values.
 func (h *passwordHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request, user users.Identity, folder, document string) error {
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -123,10 +123,10 @@ func (h *passwordHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request,
 
 	fields := struct {
 		Passwords []*sitecontent.Password
-		Vault     encrypt.Vault
+		Cypher    encrypt.Cypher
 	}{
 		Passwords: passwords,
-		Vault:     vault,
+		Cypher:    cypher,
 	}
 
 	return htmx.Write(w, &htmx.Template{
@@ -146,7 +146,7 @@ func (h *passwordHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request)
 
 	folder, document := h.folderDocumentFrom(r)
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -157,7 +157,7 @@ func (h *passwordHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request)
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(password))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(password))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

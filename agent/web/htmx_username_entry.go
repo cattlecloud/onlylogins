@@ -65,7 +65,7 @@ func (h *usernameEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return abort(h.log, w, errors.New("no such username action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -90,7 +90,7 @@ func (h *usernameEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		Document string
 	}{
 		ID:       usernameID,
-		Username: dbUsername.Unlock(vault),
+		Username: dbUsername.Unlock(cypher),
 		Folder:   folder,
 		Document: document,
 	}
@@ -116,7 +116,7 @@ func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return abort(h.log, w, errors.New("no such username action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -133,7 +133,7 @@ func (h *usernameEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(request.Username))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(request.Username))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

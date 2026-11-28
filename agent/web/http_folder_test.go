@@ -262,7 +262,7 @@ func TestFolder_Get_WeblinkButton(t *testing.T) {
 	ctx, cancel := scope.TTL(timeout)
 	defer cancel()
 
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	// a document with a weblink
 	_, err := store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
@@ -272,7 +272,7 @@ func TestFolder_Get_WeblinkButton(t *testing.T) {
 		Slug:   "github",
 	})
 	must.NoError(t, err)
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://example.com"))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://example.com"))
 	must.NoError(t, cerr)
 	_, err = store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
 		User:      mocks.Nobody,
@@ -330,7 +330,7 @@ func TestFolder_Get_PasswordButton(t *testing.T) {
 	ctx, cancel := scope.TTL(timeout)
 	defer cancel()
 
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	// a document with a password
 	_, err := store.Documents().Create(ctx, &sitecontent.CreateDocumentRequest{
@@ -340,7 +340,7 @@ func TestFolder_Get_PasswordButton(t *testing.T) {
 		Slug:   "github",
 	})
 	must.NoError(t, err)
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("s3cret!"))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("s3cret!"))
 	must.NoError(t, cerr)
 	_, err = store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
 		User:      mocks.Nobody,

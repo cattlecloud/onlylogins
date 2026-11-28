@@ -1,0 +1,17 @@
+/* Vaults stub. */
+
+.middle.vaults {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.middle.vaults .lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}

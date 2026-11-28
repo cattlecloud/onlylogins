@@ -36,7 +36,7 @@ type Application struct {
 	metrics     *metrics.Set
 	mcache      memcache.Client
 	mint        nonces.Mint
-	vault       encrypt.Vault
+	cypher      encrypt.Cypher
 	payments    payments.Client
 }
 
@@ -235,17 +235,17 @@ func (a *Application) createRoutes(router *mux.Router) {
 	a.handleNormal(router, &shareHTTP{
 		log:         ulog.New("http/share"),
 		store:       a.store,
-		vault:       a.vault,
+		cypher:      a.cypher,
 		environment: a.environment,
 		html:        ui.Load("share.html"),
 	})
 
 	a.handleNormal(router, &shareOpenHTTP{
-		log:   ulog.New("http/share/open"),
-		store: a.store,
-		vault: a.vault,
-		now:   time.Now,
-		html:  ui.Load("share_open.html"),
+		log:    ulog.New("http/share/open"),
+		store:  a.store,
+		cypher: a.cypher,
+		now:    time.Now,
+		html:   ui.Load("share_open.html"),
 	})
 
 	a.handleNormal(router, &exportHTTP{
@@ -253,6 +253,20 @@ func (a *Application) createRoutes(router *mux.Router) {
 		store:       a.store,
 		environment: a.environment,
 		html:        ui.Load("export.html"),
+	})
+
+	a.handleNormal(router, &toolsHTTP{
+		log:         ulog.New("http/tools"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("tools.html"),
+	})
+
+	a.handleNormal(router, &vaultsHTTP{
+		log:         ulog.New("http/vaults"),
+		store:       a.store,
+		environment: a.environment,
+		html:        ui.Load("vaults.html"),
 	})
 
 	a.handleNormal(router, &patreonHTTP{
@@ -301,7 +315,7 @@ type Objects struct {
 	Metrics     *metrics.Set
 	Mcache      memcache.Client
 	Mint        nonces.Mint
-	Vault       encrypt.Vault
+	Cypher      encrypt.Cypher
 	Payments    payments.Client
 }
 
@@ -317,7 +331,7 @@ func New(config *Config, objects *Objects) *Application {
 		metrics:     objects.Metrics,
 		mcache:      objects.Mcache,
 		mint:        objects.Mint,
-		vault:       objects.Vault,
+		cypher:      objects.Cypher,
 		payments:    objects.Payments,
 	}
 

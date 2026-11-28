@@ -1,0 +1,61 @@
+/* Tools index. */
+
+.middle.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 720px;
+  margin-inline: auto;
+}
+
+.middle.tools .lede {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.65;
+}
+
+.middle.tools .tool-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.middle.tools .tool {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 1.35rem 1.5rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.middle.tools .tool h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.middle.tools .tool-description {
+  max-width: 62ch;
+  margin: 0;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.middle.tools .tool .button-link {
+  margin-top: 0.35rem;
+}
+
+@media (max-width: 560px) {
+  .middle.tools .tool {
+    padding: 1.15rem 1.25rem;
+  }
+
+  .middle.tools .tool .button-link {
+    width: 100%;
+  }
+}

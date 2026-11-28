@@ -47,7 +47,7 @@ func newPasswordRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.
 }
 
 func insertPasswordHandlerHelper(t *testing.T, store database.Store, user users.Identity,
-	doc, password string, crypt mocks.TestCrypt) records.PasswordsAuto {
+	doc, password string, cypher mocks.TestCypher) records.PasswordsAuto {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -63,7 +63,7 @@ func insertPasswordHandlerHelper(t *testing.T, store database.Store, user users.
 	})
 	must.NoError(t, err)
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(password))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(password))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
@@ -184,15 +184,15 @@ func TestPasswordHTMX_Get_List_RendersMaskedRows(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
+	cypher := mocks.NewTestCypher()
+	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -218,7 +218,7 @@ func TestPasswordHTMX_Get_List_NoPasswords(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	// a document with no passwords
 	{
@@ -239,7 +239,7 @@ func TestPasswordHTMX_Get_List_NoPasswords(t *testing.T) {
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -248,19 +248,19 @@ func TestPasswordHTMX_Get_List_NoPasswords(t *testing.T) {
 	must.StrNotContains(t, w.Body.String(), `class="password-row"`)
 }
 
-func TestPasswordHTMX_Get_List_MissingVault_Redirects(t *testing.T) {
+func TestPasswordHTMX_Get_List_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
+	cypher := mocks.NewTestCypher()
+	insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/password/list/miscellaneous/github", cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -272,7 +272,7 @@ func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -296,7 +296,7 @@ func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		url.Values{"password": {"s3cret!"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -306,14 +306,14 @@ func TestPasswordHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	doc := fetchDocPassword(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Passwords)
-	must.Eq(t, "s3cret!", doc.Passwords[0].Unlock(crypt.Vault()))
+	must.Eq(t, "s3cret!", doc.Passwords[0].Unlock(cypher.Cypher()))
 }
 
 func TestPasswordHTMX_Post_EmptyPassword_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -337,7 +337,7 @@ func TestPasswordHTMX_Post_EmptyPassword_ReturnsProblem(t *testing.T) {
 		url.Values{"password": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -353,7 +353,7 @@ func TestPasswordHTMX_Post_TooLongPassword_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -378,7 +378,7 @@ func TestPasswordHTMX_Post_TooLongPassword_ReturnsProblem(t *testing.T) {
 		url.Values{"password": {longPass}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -394,7 +394,7 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -418,7 +418,7 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 		url.Values{"password": {"  spaces  "}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -427,10 +427,10 @@ func TestPasswordHTMX_Post_PreservesWhitespace(t *testing.T) {
 
 	doc := fetchDocPassword(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Passwords)
-	must.Eq(t, "  spaces  ", doc.Passwords[0].Unlock(crypt.Vault()))
+	must.Eq(t, "  spaces  ", doc.Passwords[0].Unlock(cypher.Cypher()))
 }
 
-func TestPasswordHTMX_Post_MissingVault_Redirects(t *testing.T) {
+func TestPasswordHTMX_Post_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -443,7 +443,7 @@ func TestPasswordHTMX_Post_MissingVault_Redirects(t *testing.T) {
 		url.Values{"password": {"hunter2"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -456,7 +456,7 @@ func TestPasswordHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobPassword(t, store)
 
 	// nobody owns the document
@@ -481,7 +481,7 @@ func TestPasswordHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		url.Values{"password": {"hacked!"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -494,8 +494,8 @@ func TestPasswordEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "s3cret!", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -503,7 +503,7 @@ func TestPasswordEntryHTMX_Get_RendersEditForm(t *testing.T) {
 
 	u := passwordURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -521,8 +521,8 @@ func TestPasswordEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "oldpass", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "oldpass", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -531,7 +531,7 @@ func TestPasswordEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	u := passwordURL("update", "miscellaneous", "github", id)
 	r := postPasswordForm(t, http.MethodPut, u, url.Values{"password": {"newpass1"}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -544,15 +544,15 @@ func TestPasswordEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 
 	doc := fetchDocPassword(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Passwords)
-	must.Eq(t, "newpass1", doc.Passwords[0].Unlock(crypt.Vault()))
+	must.Eq(t, "newpass1", doc.Passwords[0].Unlock(cypher.Cypher()))
 }
 
 func TestPasswordEntryHTMX_Put_EmptyPassword_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -561,7 +561,7 @@ func TestPasswordEntryHTMX_Put_EmptyPassword_ReturnsProblem(t *testing.T) {
 	u := passwordURL("update", "miscellaneous", "github", id)
 	r := postPasswordForm(t, http.MethodPut, u, url.Values{"password": {""}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -572,16 +572,16 @@ func TestPasswordEntryHTMX_Put_EmptyPassword_ReturnsProblem(t *testing.T) {
 	// original row remains untouched
 	doc := fetchDocPassword(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Passwords)
-	must.Eq(t, "realpass", doc.Passwords[0].Unlock(crypt.Vault()))
+	must.Eq(t, "realpass", doc.Passwords[0].Unlock(cypher.Cypher()))
 }
 
 func TestPasswordEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobPassword(t, store)
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -590,7 +590,7 @@ func TestPasswordEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	u := passwordURL("update", "miscellaneous", "github", id)
 	r := postPasswordForm(t, http.MethodPut, u, url.Values{"password": {"hacked!"}})
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -603,8 +603,8 @@ func TestPasswordEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "secret", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "secret", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)
@@ -629,9 +629,9 @@ func TestPasswordEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobPassword(t, store)
-	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", crypt)
+	id := insertPasswordHandlerHelper(t, store, mocks.Nobody, "github", "realpass", cypher)
 
 	router, scache := newPasswordRouter(t, store)
 	ss := session(router, scache)

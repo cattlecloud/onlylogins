@@ -29,12 +29,12 @@ type shareHTTP struct {
 	log         *ulog.Log
 	environment runtime.Environment
 	store       database.Store
-	vault       encrypt.Vault
+	cypher      encrypt.Cypher
 	html        *template.Template
 }
 
 func (h *shareHTTP) Path() string {
-	return "/share"
+	return "/tools/share"
 }
 
 func (h *shareHTTP) Methods() []string {
@@ -104,7 +104,7 @@ func (h *shareHTTP) put(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		return problem(w, err)
 	}
 
-	uid, cerr := h.store.Shares(h.vault).Create(ctx, request)
+	uid, cerr := h.store.Shares(h.cypher).Create(ctx, request)
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}
@@ -112,7 +112,7 @@ func (h *shareHTTP) put(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 	return htmx.Write(w,
 		&htmx.Component{
 			HTML: `
-		{{$address := printf "%s/share/open/%s" .Host .UID}}
+		{{$address := printf "%s/open/%s" .Host .UID}}
 		<article>
 		<label>
 		  <span>share link</span>

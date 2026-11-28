@@ -48,9 +48,9 @@ func newWeblinkRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.S
 }
 
 // insertWeblink stands up a document under the default folder and creates a
-// weblink through the store using the supplied crypt.
+// weblink through the store using the supplied cypher.
 func insertWeblink(t *testing.T, store database.Store, user users.Identity,
-	doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
+	doc, url string, cypher mocks.TestCypher) records.WeblinksAuto {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -66,7 +66,7 @@ func insertWeblink(t *testing.T, store database.Store, user users.Identity,
 	})
 	must.NoError(t, err)
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(url))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(url))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
@@ -172,15 +172,15 @@ func TestWeblinkHTMX_Get_List_RendersLinks(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -194,7 +194,7 @@ func TestWeblinkHTMX_Get_List_MultipleLinksOrdered(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	// create a document and two weblinks directly (insertWeblink only adds one)
 	{
@@ -210,7 +210,7 @@ func TestWeblinkHTMX_Get_List_MultipleLinksOrdered(t *testing.T) {
 		must.NoError(t, err)
 
 		for _, u := range []string{"https://first.example.com", "https://second.example.com"} {
-			ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(u))
+			ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(u))
 			must.NoError(t, cerr)
 			_, err = store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
 				User: mocks.Nobody, Folder: folder, Document: "github", URL: u, Encrypted: ciphertext,
@@ -224,7 +224,7 @@ func TestWeblinkHTMX_Get_List_MultipleLinksOrdered(t *testing.T) {
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -241,7 +241,7 @@ func TestWeblinkHTMX_Get_List_NoWeblinks(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	// a document with no weblinks
 	{
@@ -262,7 +262,7 @@ func TestWeblinkHTMX_Get_List_NoWeblinks(t *testing.T) {
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -271,19 +271,19 @@ func TestWeblinkHTMX_Get_List_NoWeblinks(t *testing.T) {
 	must.StrNotContains(t, w.Body.String(), "https://")
 }
 
-func TestWeblinkHTMX_Get_List_MissingVault_Redirects(t *testing.T) {
+func TestWeblinkHTMX_Get_List_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	r := requestGet(t, "/internal/weblink/list/miscellaneous/github", cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -295,7 +295,7 @@ func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -319,7 +319,7 @@ func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		url.Values{"url": {"https://example.com"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -329,14 +329,14 @@ func TestWeblinkHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	doc := fetchDoc(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Weblinks)
-	must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+	must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(cypher.Cypher()))
 }
 
 func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -360,7 +360,7 @@ func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 		url.Values{"url": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -372,7 +372,7 @@ func TestWeblinkHTMX_Post_EmptyURL_ReturnsProblem(t *testing.T) {
 	must.SliceLen(t, 0, doc.Weblinks)
 }
 
-func TestWeblinkHTMX_Post_MissingVault_Redirects(t *testing.T) {
+func TestWeblinkHTMX_Post_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -385,7 +385,7 @@ func TestWeblinkHTMX_Post_MissingVault_Redirects(t *testing.T) {
 		url.Values{"url": {"https://example.com"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -398,7 +398,7 @@ func TestWeblinkHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBob(t, store)
 
 	// nobody owns the document
@@ -423,7 +423,7 @@ func TestWeblinkHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		url.Values{"url": {"https://attacker.example.com"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -438,8 +438,8 @@ func TestWeblinkEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -447,7 +447,7 @@ func TestWeblinkEntryHTMX_Get_RendersEditForm(t *testing.T) {
 
 	u := weblinkURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -462,8 +462,8 @@ func TestWeblinkEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -472,7 +472,7 @@ func TestWeblinkEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 	u := weblinkURL("update", "miscellaneous", "github", id)
 	r := postForm(t, http.MethodPut, u, url.Values{"url": {"https://updated.example.com"}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -484,15 +484,15 @@ func TestWeblinkEntryHTMX_Put_HappyPath_ReturnsNewRow(t *testing.T) {
 
 	doc := fetchDoc(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Weblinks)
-	must.Eq(t, "https://updated.example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+	must.Eq(t, "https://updated.example.com", doc.Weblinks[0].Unlock(cypher.Cypher()))
 }
 
 func TestWeblinkEntryHTMX_Put_InvalidURL_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://original.example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -501,7 +501,7 @@ func TestWeblinkEntryHTMX_Put_InvalidURL_ReturnsProblem(t *testing.T) {
 	u := weblinkURL("update", "miscellaneous", "github", id)
 	r := postForm(t, http.MethodPut, u, url.Values{"url": {""}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -512,16 +512,16 @@ func TestWeblinkEntryHTMX_Put_InvalidURL_ReturnsProblem(t *testing.T) {
 	// original row remains untouched
 	doc := fetchDoc(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Weblinks)
-	must.Eq(t, "https://original.example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+	must.Eq(t, "https://original.example.com", doc.Weblinks[0].Unlock(cypher.Cypher()))
 }
 
 func TestWeblinkEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBob(t, store)
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -530,7 +530,7 @@ func TestWeblinkEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	u := weblinkURL("update", "miscellaneous", "github", id)
 	r := postForm(t, http.MethodPut, u, url.Values{"url": {"https://attacker.example.com"}})
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -543,8 +543,8 @@ func TestWeblinkEntryHTMX_Delete_HappyPath_EmptyBody(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)
@@ -569,9 +569,9 @@ func TestWeblinkEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBob(t, store)
-	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", crypt)
+	id := insertWeblink(t, store, mocks.Nobody, "github", "https://example.com", cypher)
 
 	router, scache := newWeblinkRouter(t, store)
 	ss := session(router, scache)

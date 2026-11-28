@@ -70,7 +70,7 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 	ctx, cancel := scope.WithTTL(r.Context(), timeout)
 	defer cancel()
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -97,7 +97,7 @@ func (h *keyvalEntryHTMX) get(_ scope.C, w http.ResponseWriter, r *http.Request)
 	}{
 		ID:       keyvalID,
 		Key:      kv.K.Unveil(),
-		Value:    kv.Unlock(vault),
+		Value:    kv.Unlock(cypher),
 		Folder:   folder,
 		Document: document,
 	}
@@ -123,7 +123,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 		return abort(h.log, w, errors.New("no such keyval action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -138,7 +138,7 @@ func (h *keyvalEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reques
 
 	// encrypt the value plaintext into ciphertext before constructing the
 	// request, so the request struct can be a single literal
-	ciphertext, cerr := vault.Encrypt(conceal.New(value))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(value))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

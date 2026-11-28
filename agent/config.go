@@ -38,7 +38,7 @@ type Config struct {
 	HTTP     *web.Config      `toml:"http"`
 	Database *database.Config `toml:"database"`
 	Cache    *memcache.Config `toml:"memcache"`
-	Vault    *encrypt.Config  `toml:"vault"`
+	Cypher   *encrypt.Config  `toml:"vault"`
 	Crons    *crons.Configs   `toml:"crons"`
 	Stripe   *payments.Config `toml:"stripe"`
 }
@@ -62,7 +62,7 @@ func (c *Config) Validate() error {
 	if err := c.Cache.Validate(); err != nil {
 		return err
 	}
-	if err := c.Vault.Validate(); err != nil {
+	if err := c.Cypher.Validate(); err != nil {
 		return err
 	}
 	if err := c.Crons.Validate(); err != nil {
@@ -76,15 +76,15 @@ func (c *Config) Validate() error {
 
 // validateEnvironment ensures a non-local deployment is secure
 //
-// - sources vault passphrase from a TPM sealed blob
+// - sources cypher passphrase from a TPM sealed blob
 func (c *Config) validateEnvironment() error {
 	if !runtime.Setup(c.Runtime).NonLocal() {
 		return nil
 	}
-	if c.Vault.Passphrase != "" {
+	if c.Cypher.Passphrase != "" {
 		return errors.New("vault passphrase must not be set in staging or production")
 	}
-	if c.Vault.Sealed == "" {
+	if c.Cypher.Sealed == "" {
 		return errors.New("vault sealed must be set in staging or production")
 	}
 	return nil

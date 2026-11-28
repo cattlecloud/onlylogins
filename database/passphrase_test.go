@@ -37,7 +37,7 @@ func insertPassphraseUser(t *testing.T, ctx scope.C, db Store, username, passphr
 	return id, key
 }
 
-func encryptForTest(t *testing.T, v encrypt.Vault, plaintext string) *conceal.Bytes {
+func encryptForTest(t *testing.T, v encrypt.Cypher, plaintext string) *conceal.Bytes {
 	t.Helper()
 
 	ciphertext, err := v.Encrypt(conceal.New(plaintext))
@@ -46,8 +46,8 @@ func encryptForTest(t *testing.T, v encrypt.Vault, plaintext string) *conceal.By
 }
 
 // seedEncryptedContent adds one of every encrypted content type to the user's
-// "github" document, encrypted with the given vault.
-func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identity, vault encrypt.Vault) {
+// "github" document, encrypted with the given cypher.
+func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identity, cypher encrypt.Cypher) {
 	t.Helper()
 
 	const folder = "miscellaneous"
@@ -60,7 +60,7 @@ func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identit
 		Folder:    folder,
 		Document:  document,
 		URL:       "https://example.com",
-		Encrypted: encryptForTest(t, vault, "https://example.com"),
+		Encrypted: encryptForTest(t, cypher, "https://example.com"),
 	})
 	must.NoError(t, err)
 
@@ -69,7 +69,7 @@ func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identit
 		Folder:    folder,
 		Document:  document,
 		Username:  "alice-username",
-		Encrypted: encryptForTest(t, vault, "alice-username"),
+		Encrypted: encryptForTest(t, cypher, "alice-username"),
 	})
 	must.NoError(t, err)
 
@@ -77,7 +77,7 @@ func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identit
 		User:      uid,
 		Folder:    folder,
 		Document:  document,
-		Encrypted: encryptForTest(t, vault, "hunter2hunter2hunter2"),
+		Encrypted: encryptForTest(t, cypher, "hunter2hunter2hunter2"),
 	})
 	must.NoError(t, err)
 
@@ -86,7 +86,7 @@ func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identit
 		Folder:    folder,
 		Document:  document,
 		Key:       "api-key",
-		Encrypted: encryptForTest(t, vault, "secret-value"),
+		Encrypted: encryptForTest(t, cypher, "secret-value"),
 	})
 	must.NoError(t, err)
 
@@ -94,7 +94,7 @@ func seedEncryptedContent(t *testing.T, ctx scope.C, db Store, uid users.Identit
 		User:      uid,
 		Folder:    folder,
 		Document:  document,
-		Encrypted: encryptForTest(t, vault, "some note text"),
+		Encrypted: encryptForTest(t, cypher, "some note text"),
 	})
 	must.NoError(t, err)
 }
@@ -125,9 +125,9 @@ func TestUsers_ChangePassphrase(t *testing.T) {
 	const newPass = "brand new battery horse staple"
 
 	uid, oldKey := insertPassphraseUser(t, ctx, db, "alice", oldPass)
-	oldVault := encrypt.New(oldKey)
+	oldCypher := encrypt.New(oldKey)
 
-	seedEncryptedContent(t, ctx, db, uid, oldVault)
+	seedEncryptedContent(t, ctx, db, uid, oldCypher)
 
 	must.Zero(t, passphraseUpdateCount(t, db, ctx))
 
@@ -153,7 +153,7 @@ func TestUsers_ChangePassphrase(t *testing.T) {
 	must.NoError(t, err)
 	must.NotNil(t, newKey)
 
-	newVault := encrypt.New(newKey)
+	newCypher := encrypt.New(newKey)
 
 	// every content type is now readable with the new key and matches the
 	// original plaintext
@@ -164,14 +164,14 @@ func TestUsers_ChangePassphrase(t *testing.T) {
 	})
 	must.NoError(t, derr)
 
-	must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(newVault))
-	must.Eq(t, "alice-username", doc.Usernames[0].Unlock(newVault))
-	must.Eq(t, "hunter2hunter2hunter2", doc.Passwords[0].Unlock(newVault))
-	must.Eq(t, "secret-value", doc.Keyvals[0].Unlock(newVault))
-	must.Eq(t, "some note text", doc.Note.Unlock(newVault))
+	must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(newCypher))
+	must.Eq(t, "alice-username", doc.Usernames[0].Unlock(newCypher))
+	must.Eq(t, "hunter2hunter2hunter2", doc.Passwords[0].Unlock(newCypher))
+	must.Eq(t, "secret-value", doc.Keyvals[0].Unlock(newCypher))
+	must.Eq(t, "some note text", doc.Note.Unlock(newCypher))
 
 	// the old key can no longer decrypt the content
-	must.Eq(t, sitecontent.ErrNoUnlock, doc.Weblinks[0].Unlock(oldVault))
+	must.Eq(t, sitecontent.ErrNoUnlock, doc.Weblinks[0].Unlock(oldCypher))
 
 	// the change was recorded in the audit table
 	must.One(t, passphraseUpdateCount(t, db, ctx))
@@ -186,9 +186,9 @@ func TestUsers_ChangePassphrase_WrongOldPassphrase(t *testing.T) {
 	const newPass = "brand new battery horse staple"
 
 	uid, oldKey := insertPassphraseUser(t, ctx, db, "alice", oldPass)
-	oldVault := encrypt.New(oldKey)
+	oldCypher := encrypt.New(oldKey)
 
-	seedEncryptedContent(t, ctx, db, uid, oldVault)
+	seedEncryptedContent(t, ctx, db, uid, oldCypher)
 
 	request := &users.ChangePassphraseRequest{
 		Previous:   conceal.New("wrong old passphrase here"),

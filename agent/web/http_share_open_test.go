@@ -24,7 +24,7 @@ import (
 
 // openEnv bundles the test environment shared by all open-endpoint tests:
 // a single in-memory store, a session cache, a router pointing at the
-// share-open handler with a specific vault and `now`, and a pre-seeded share.
+// share-open handler with a specific cypher and `now`, and a pre-seeded share.
 type openEnv struct {
 	router   *mux.Router
 	scache   *mocks.Sessions
@@ -33,24 +33,24 @@ type openEnv struct {
 }
 
 // newOpenEnv builds an openEnv with one share pre-seeded into the store the
-// handler is going to read from. They share the same vault so decryption works.
+// handler is going to read from. They share the same cypher so decryption works.
 func newOpenEnv(t *testing.T, nowForHandler func() time.Time, secret string) *openEnv {
 	t.Helper()
 
 	store := mockdb.Open(t)
-	vault := mocks.NewTestCrypt().Vault()
+	cypher := mocks.NewTestCypher().Cypher()
 
-	uid := seedShare(t, store, vault, secret)
+	uid := seedShare(t, store, cypher, secret)
 
 	scache := mocks.NewSessions()
 	router := mux.NewRouter()
 
 	router.Handle((&shareOpenHTTP{}).Path(), &shareOpenHTTP{
-		log:   ulog.New("test"),
-		store: store,
-		vault: vault,
-		now:   nowForHandler,
-		html:  ui.Load("share_open.html"),
+		log:    ulog.New("test"),
+		store:  store,
+		cypher: cypher,
+		now:    nowForHandler,
+		html:   ui.Load("share_open.html"),
 	})
 
 	return &openEnv{
@@ -62,17 +62,17 @@ func newOpenEnv(t *testing.T, nowForHandler func() time.Time, secret string) *op
 }
 
 // seedShare inserts a single share into the given store, returning its uid.
-func seedShare(t *testing.T, store database.Store, vault encrypt.Vault, secret string) records.SharesUnique {
-	return seedShareAt(t, store, vault, secret, time.Now())
+func seedShare(t *testing.T, store database.Store, cypher encrypt.Cypher, secret string) records.SharesUnique {
+	return seedShareAt(t, store, cypher, secret, time.Now())
 }
 
 // seedShareAt is like seedShare but uses an explicit creation timestamp.
 // Useful for testing the expiration path independently of `time.Now`.
-func seedShareAt(t *testing.T, store database.Store, vault encrypt.Vault, secret string, creation time.Time) records.SharesUnique {
+func seedShareAt(t *testing.T, store database.Store, cypher encrypt.Cypher, secret string, creation time.Time) records.SharesUnique {
 	t.Helper()
 
 	ctx := t.Context()
-	uid, err := store.Shares(vault).Create(ctx, &sitecontent.CreateShareRequest{
+	uid, err := store.Shares(cypher).Create(ctx, &sitecontent.CreateShareRequest{
 		User:   mocks.Nobody,
 		Secret: conceal.New(secret),
 		TTL:    900 * time.Second,
@@ -88,7 +88,7 @@ func TestShareOpen_ServeHTTP_not_logged_in(t *testing.T) {
 	env := newOpenEnv(t, time.Now, "a top secret hush-hush thing")
 	ss := session(env.router, env.scache)
 
-	r := requestGet(t, "/share/open/"+string(env.uid), nil)
+	r := requestGet(t, "/open/"+string(env.uid), nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -105,7 +105,7 @@ func TestShareOpen_ServeHTTP_not_found(t *testing.T) {
 	_ = env // share is irrelevant; we exercise the missing-share branch
 	ss := session(env.router, env.scache)
 
-	r := requestGet(t, "/share/open/nonexistent", nil)
+	r := requestGet(t, "/open/nonexistent", nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -120,14 +120,14 @@ func TestShareOpen_ServeHTTP_already_consumed(t *testing.T) {
 	ss := session(env.router, env.scache)
 
 	// consume once
-	r := requestGet(t, "/share/open/"+string(env.uid), nil)
+	r := requestGet(t, "/open/"+string(env.uid), nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 	must.Eq(t, http.StatusOK, w.Code)
 	must.StrContains(t, w.Body.String(), env.fullText)
 
 	// consume a second time - should now be missing
-	r2 := requestGet(t, "/share/open/"+string(env.uid), nil)
+	r2 := requestGet(t, "/open/"+string(env.uid), nil)
 	w2 := httptest.NewRecorder()
 	ss.ServeHTTP(w2, r2)
 	must.Eq(t, http.StatusOK, w2.Code)
@@ -138,26 +138,26 @@ func TestShareOpen_ServeHTTP_expired(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	vault := mocks.NewTestCrypt().Vault()
+	cypher := mocks.NewTestCypher().Cypher()
 
 	// seed a share at a known time, then point the handler clock past the
 	// TTL so the expiration branch fires.
 	creation := time.Date(2026, time.November, 2, 13, 0, 0, 0, time.UTC)
-	uid := seedShareAt(t, store, vault, "an expired share", creation)
+	uid := seedShareAt(t, store, cypher, "an expired share", creation)
 
 	scache := mocks.NewSessions()
 	router := mux.NewRouter()
 
 	router.Handle((&shareOpenHTTP{}).Path(), &shareOpenHTTP{
-		log:   ulog.New("test"),
-		store: store,
-		vault: vault,
-		now:   func() time.Time { return creation.Add(901 * time.Second) },
-		html:  ui.Load("share_open.html"),
+		log:    ulog.New("test"),
+		store:  store,
+		cypher: cypher,
+		now:    func() time.Time { return creation.Add(901 * time.Second) },
+		html:   ui.Load("share_open.html"),
 	})
 
 	ss := session(router, scache)
-	r := requestGet(t, "/share/open/"+string(uid), nil)
+	r := requestGet(t, "/open/"+string(uid), nil)
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 

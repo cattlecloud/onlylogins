@@ -65,8 +65,8 @@ func newPassphraseUser(t *testing.T, store database.Store, username, passphrase 
 }
 
 // preparePassword creates a "github" document and one password encrypted with the
-// given vault.
-func preparePassword(t *testing.T, store database.Store, uid users.Identity, vault encrypt.Vault, plaintext string) {
+// given cypher.
+func preparePassword(t *testing.T, store database.Store, uid users.Identity, cypher encrypt.Cypher, plaintext string) {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -80,7 +80,7 @@ func preparePassword(t *testing.T, store database.Store, uid users.Identity, vau
 	})
 	must.NoError(t, err)
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(plaintext))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(plaintext))
 	must.NoError(t, cerr)
 
 	_, err = store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{

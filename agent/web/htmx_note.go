@@ -90,7 +90,7 @@ func (h *noteHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 
 	folder, document := h.folderDocumentFrom(r)
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -101,7 +101,7 @@ func (h *noteHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) err
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(raw))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(raw))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

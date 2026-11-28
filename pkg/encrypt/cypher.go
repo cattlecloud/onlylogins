@@ -18,31 +18,31 @@ import (
 	"github.com/shoenig/ignore"
 )
 
-type Vault interface {
+type Cypher interface {
 	Encrypt(*conceal.Text) (*conceal.Bytes, error)
 	Decrypt(*conceal.Bytes) (*conceal.Text, error)
 }
 
-type vault struct {
+type cypher struct {
 	_   [0]func()
 	key [32]byte
 }
 
-func (v *vault) String() string {
-	return "(vault)"
+func (v *cypher) String() string {
+	return "(cypher)"
 }
 
-func (v *vault) GoString() string {
-	return "encrypt.vault{}"
+func (v *cypher) GoString() string {
+	return "encrypt.cypher{}"
 }
 
-func New(key *conceal.Bytes) Vault {
+func New(key *conceal.Bytes) Cypher {
 	var k [32]byte
 	copy(k[:], key.Unveil())
-	return &vault{key: k}
+	return &cypher{key: k}
 }
 
-// NewFromConfig derives a Vault from the server-wide passphrase held in c.
+// NewFromConfig derives a Cypher from the server-wide passphrase held in c.
 //
 // When c.Passphrase is set (local development) it is used directly. Otherwise
 // the passphrase is unsealed from the TPM at c.Device using the blob at
@@ -54,7 +54,7 @@ func New(key *conceal.Bytes) Vault {
 //
 // If the passphrase cannot be resolved, the process exits with a non-zero
 // code.
-func NewFromConfig(c *Config) Vault {
+func NewFromConfig(c *Config) Cypher {
 	passphrase, err := resolvePassphrase(c)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to load vault: %v\n", err)
@@ -63,15 +63,17 @@ func NewFromConfig(c *Config) Vault {
 	return newFromPassphrase(passphrase)
 }
 
-// newFromPassphrase derives the vault key from passphrase.
-func newFromPassphrase(passphrase string) Vault {
+// newFromPassphrase derives the cypher key from passphrase.
+func newFromPassphrase(passphrase string) Cypher {
+	// NOTE: the salt string is frozen; changing it would invalidate the
+	// ciphertext of every share link already in the wild
 	sum := sha256.Sum256([]byte("onlylogins-vault-salt+" + passphrase))
 	var key [32]byte
 	copy(key[:], sum[:])
-	return &vault{key: key}
+	return &cypher{key: key}
 }
 
-// resolvePassphrase returns the vault passphrase from c, either directly or by
+// resolvePassphrase returns the cypher passphrase from c, either directly or by
 // unsealing it from the TPM.
 func resolvePassphrase(c *Config) (string, error) {
 	if c.Passphrase != "" {
@@ -107,7 +109,7 @@ func resolvePassphrase(c *Config) (string, error) {
 	return passphrase, nil
 }
 
-func (v *vault) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {
+func (v *cypher) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {
 	block, berr := aes.NewCipher(v.key[:])
 	if berr != nil {
 		return nil, fmt.Errorf("unable to create encryption cipher: %w", berr)
@@ -127,7 +129,7 @@ func (v *vault) Encrypt(message *conceal.Text) (*conceal.Bytes, error) {
 	return conceal.NewBytes(bytes), nil
 }
 
-func (v *vault) Decrypt(ciphertext *conceal.Bytes) (*conceal.Text, error) {
+func (v *cypher) Decrypt(ciphertext *conceal.Bytes) (*conceal.Text, error) {
 	block, berr := aes.NewCipher(v.key[:])
 	if berr != nil {
 		return nil, fmt.Errorf("unable to create decrpytion cipher: %w", berr)

@@ -52,7 +52,7 @@ func (h *weblinkEntryHTMX) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // get renders the inline edit form for a single weblink. The server decrypts
-// the URL using the vault cookie from the request, then renders the plaintext
+// the URL using the cypher cookie from the request, then renders the plaintext
 // directly into the form HTML so the secret never travels through the URL.
 func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Request) error {
 	session := middles.GetSession[users.Identity](r)
@@ -68,7 +68,7 @@ func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Reque
 		return abort(h.log, w, errors.New("no such weblink action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -93,7 +93,7 @@ func (h *weblinkEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Reque
 		Document string
 	}{
 		ID:       weblinkID,
-		URL:      dbWeblink.Unlock(vault),
+		URL:      dbWeblink.Unlock(cypher),
 		Folder:   folder,
 		Document: document,
 	}
@@ -121,7 +121,7 @@ func (h *weblinkEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reque
 		return abort(h.log, w, errors.New("no such weblink action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -138,7 +138,7 @@ func (h *weblinkEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Reque
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(request.URL))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(request.URL))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

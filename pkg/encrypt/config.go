@@ -11,12 +11,12 @@ import (
 // globalPassphraseRe matches a uuid4(ish) string, where we ignore version bits
 var globalPassphraseRe = regexp.MustCompile(`^[[:xdigit:]-]{36}$`)
 
-// Config is the configuration for the server-wide Vault used to encrypt
+// Config is the configuration for the server-wide Cypher used to encrypt
 // features whose ciphertext is meant to be readable by anyone (e.g. share
 // links received by a third party).
 //
 // The Passphrase is hashed (with a fixed domain-separation string) to derive
-// the 32-byte AES-GCM key stored in the Vault.
+// the 32-byte AES-GCM key stored in the Cypher.
 type Config struct {
 	// Passphrase is the plaintext passphrase, suitable only for local
 	// development. It is mutually exclusive with Sealed.

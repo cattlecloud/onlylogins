@@ -67,7 +67,7 @@ func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return abort(h.log, w, errors.New("no such password action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -92,7 +92,7 @@ func (h *passwordEntryHTMX) get(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		Document string
 	}{
 		ID:       passwordID,
-		Password: dbPassword.Unlock(vault),
+		Password: dbPassword.Unlock(cypher),
 		Folder:   folder,
 		Document: document,
 	}
@@ -118,7 +118,7 @@ func (h *passwordEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return abort(h.log, w, errors.New("no such password action"))
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -129,7 +129,7 @@ func (h *passwordEntryHTMX) put(ctx scope.C, w http.ResponseWriter, r *http.Requ
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(password))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(password))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

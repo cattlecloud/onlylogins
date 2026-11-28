@@ -102,9 +102,9 @@ func TestDocumentHTTP_Delete_NotFound(t *testing.T) {
 	must.Eq(t, http.StatusInternalServerError, w.Code)
 }
 
-// vaultCookie returns a valid encryption key cookie (32 bytes, base64) so the
+// cypherCookie returns a valid encryption key cookie (32 bytes, base64) so the
 // document page can be rendered in tests.
-func vaultCookie() *http.Cookie {
+func cypherCookie() *http.Cookie {
 	return &http.Cookie{
 		Name:  cookies.Encryption,
 		Value: base64.StdEncoding.EncodeToString(make([]byte, 32)),
@@ -132,7 +132,7 @@ func TestDocumentHTTP_Get_RendersMigrationDropdown(t *testing.T) {
 	}))
 
 	request := requestGet(t, "/folders/miscellaneous/github", cookie)
-	request.AddCookie(vaultCookie())
+	request.AddCookie(cypherCookie())
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
@@ -159,7 +159,7 @@ func TestDocumentHTTP_Get_HidesMigrationWhenNoOtherFolders(t *testing.T) {
 	must.NoError(t, err)
 
 	request := requestGet(t, "/folders/miscellaneous/github", cookie)
-	request.AddCookie(vaultCookie())
+	request.AddCookie(cypherCookie())
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
@@ -184,7 +184,7 @@ func TestDocumentHTTP_Get_NoCredentialFields(t *testing.T) {
 	must.NoError(t, err)
 
 	request := requestGet(t, "/folders/miscellaneous/github", cookie)
-	request.AddCookie(vaultCookie())
+	request.AddCookie(cypherCookie())
 	w := httptest.NewRecorder()
 	routes.ServeHTTP(w, request)
 
