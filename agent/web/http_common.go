@@ -31,26 +31,26 @@ func getUserProfile(ctx scope.C, u database.Users, session identity.UserSession[
 	return p, nil
 }
 
-// getVault reconstructs the user's encryption Vault from the key cookie
-// set during login.
+// getCypher reconstructs the user's Cypher from the key cookie set during
+// login.
 //
-// Returns ErrMissingVault when there is no encryption cookie, or
-// ErrInvalidVault when the cookie value is malformed or has the wrong length.
-func getVault(r *http.Request) (encrypt.Vault, error) {
+// Returns ErrMissingCypher when there is no encryption cookie, or
+// ErrInvalidCypher when the cookie value is malformed or has the wrong length.
+func getCypher(r *http.Request) (encrypt.Cypher, error) {
 	ck, cerr := r.Cookie(cookies.Encryption)
 	if errors.Is(cerr, http.ErrNoCookie) {
-		return nil, ErrMissingVault
+		return nil, ErrMissingCypher
 	} else if cerr != nil {
-		return nil, fmt.Errorf("unable to read vault cookie: %w", cerr)
+		return nil, fmt.Errorf("unable to read cypher cookie: %w", cerr)
 	}
 
 	raw, derr := base64.StdEncoding.DecodeString(ck.Value)
 	if derr != nil {
-		return nil, fmt.Errorf("unable to decode vault cookie: %w", derr)
+		return nil, fmt.Errorf("unable to decode cypher cookie: %w", derr)
 	}
 
 	if len(raw) != 32 {
-		return nil, ErrInvalidVault
+		return nil, ErrInvalidCypher
 	}
 
 	return encrypt.New(conceal.NewBytes(raw)), nil

@@ -90,7 +90,7 @@ func (h *keyvalHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 	folder, document := h.folderDocumentFrom(r)
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -105,7 +105,7 @@ func (h *keyvalHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 	// encrypt the value plaintext into ciphertext before constructing the
 	// request, so the request struct can be a single literal
-	ciphertext, cerr := vault.Encrypt(conceal.New(value))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(value))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

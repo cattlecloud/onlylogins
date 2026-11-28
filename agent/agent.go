@@ -85,8 +85,8 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 	council := users.NewCouncil(l.config.Users.Administrators, db.Admin())
 	council.Sync(parent) // setup administrators
 
-	// shared shares vault
-	vault := encrypt.NewFromConfig(l.config.Vault)
+	// cypher used to encrypt share links
+	cypher := encrypt.NewFromConfig(l.config.Cypher)
 
 	// stripe payments client
 	stripec := payments.New(l.config.Stripe)
@@ -101,7 +101,7 @@ func (l *OnlyLogins) Start(parent scope.C) error {
 		Metrics:     mets,
 		Mcache:      mcache,
 		Mint:        mint,
-		Vault:       vault,
+		Cypher:      cypher,
 		Payments:    stripec,
 	})
 	go webapp.Start(parent)

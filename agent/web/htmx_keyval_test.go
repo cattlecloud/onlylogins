@@ -64,7 +64,7 @@ func setupGithubDocument(t *testing.T, store database.Store, user users.Identity
 	must.NoError(t, err)
 }
 
-func insertKeyval(t *testing.T, store database.Store, user users.Identity, key, value string, crypt mocks.TestCrypt) records.KeyvalsAuto {
+func insertKeyval(t *testing.T, store database.Store, user users.Identity, key, value string, cypher mocks.TestCypher) records.KeyvalsAuto {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -78,7 +78,7 @@ func insertKeyval(t *testing.T, store database.Store, user users.Identity, key, 
 
 	must.NoError(t, sitecontent.ValidateKeyvalValue(value))
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(value))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(value))
 	must.NoError(t, cerr)
 
 	request := &sitecontent.CreateKeyvalRequest{
@@ -184,7 +184,7 @@ func TestKeyvalHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -197,7 +197,7 @@ func TestKeyvalHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		url.Values{"key": {"api_endpoint"}, "value": {"https://api.example.com"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -208,14 +208,14 @@ func TestKeyvalHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
 	must.Eq(t, "api_endpoint", doc.Keyvals[0].K.Unveil())
-	must.Eq(t, "https://api.example.com", doc.Keyvals[0].Unlock(crypt.Vault()))
+	must.Eq(t, "https://api.example.com", doc.Keyvals[0].Unlock(cypher.Cypher()))
 }
 
 func TestKeyvalHTMX_Post_EmptyKey_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -228,7 +228,7 @@ func TestKeyvalHTMX_Post_EmptyKey_ReturnsProblem(t *testing.T) {
 		url.Values{"key": {"   "}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -244,7 +244,7 @@ func TestKeyvalHTMX_Post_EmptyValue_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -257,7 +257,7 @@ func TestKeyvalHTMX_Post_EmptyValue_ReturnsProblem(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -273,7 +273,7 @@ func TestKeyvalHTMX_Post_TooLongKey_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -287,7 +287,7 @@ func TestKeyvalHTMX_Post_TooLongKey_ReturnsProblem(t *testing.T) {
 		url.Values{"key": {long}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -303,21 +303,21 @@ func TestKeyvalHTMX_Post_DuplicateKey_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
 	setupGithubDocument(t, store, mocks.Nobody)
-	insertKeyval(t, store, mocks.Nobody, "shared", "first", crypt)
+	insertKeyval(t, store, mocks.Nobody, "shared", "first", cypher)
 
 	r := postKeyvalForm(t, http.MethodPost,
 		"/internal/keyval/create/miscellaneous/github",
 		url.Values{"key": {"shared"}, "value": {"second"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -329,14 +329,14 @@ func TestKeyvalHTMX_Post_DuplicateKey_Aborts(t *testing.T) {
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
 	must.Eq(t, "shared", doc.Keyvals[0].K.Unveil())
-	must.Eq(t, "first", doc.Keyvals[0].Unlock(crypt.Vault()))
+	must.Eq(t, "first", doc.Keyvals[0].Unlock(cypher.Cypher()))
 }
 
 func TestKeyvalHTMX_Post_TrimsKeyWhitespace(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -349,7 +349,7 @@ func TestKeyvalHTMX_Post_TrimsKeyWhitespace(t *testing.T) {
 		url.Values{"key": {"  pretty_key  "}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -365,7 +365,7 @@ func TestKeyvalHTMX_Post_PreservesValueWhitespace(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -378,7 +378,7 @@ func TestKeyvalHTMX_Post_PreservesValueWhitespace(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"  spaced  "}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -387,10 +387,10 @@ func TestKeyvalHTMX_Post_PreservesValueWhitespace(t *testing.T) {
 
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
-	must.Eq(t, "  spaced  ", doc.Keyvals[0].Unlock(crypt.Vault()))
+	must.Eq(t, "  spaced  ", doc.Keyvals[0].Unlock(cypher.Cypher()))
 }
 
-func TestKeyvalHTMX_Post_MissingVault_Redirects(t *testing.T) {
+func TestKeyvalHTMX_Post_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -405,7 +405,7 @@ func TestKeyvalHTMX_Post_MissingVault_Redirects(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -418,7 +418,7 @@ func TestKeyvalHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobKeyval(t, store)
 
 	// nobody owns the document
@@ -433,7 +433,7 @@ func TestKeyvalHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"v"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -446,9 +446,9 @@ func TestKeyvalEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "redis_url", "redis://localhost:6379", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "redis_url", "redis://localhost:6379", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -456,7 +456,7 @@ func TestKeyvalEntryHTMX_Get_RendersEditForm(t *testing.T) {
 
 	u := keyvalURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -468,13 +468,13 @@ func TestKeyvalEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	must.StrContains(t, body, `value="redis://localhost:6379"`)
 }
 
-func TestKeyvalEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
+func TestKeyvalEntryHTMX_Get_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -482,7 +482,7 @@ func TestKeyvalEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
 
 	u := keyvalURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -495,9 +495,9 @@ func TestKeyvalEntryHTMX_Get_WrongKeyvalID_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -505,7 +505,7 @@ func TestKeyvalEntryHTMX_Get_WrongKeyvalID_Aborts(t *testing.T) {
 
 	u := keyvalURL("edit", "miscellaneous", "github", records.KeyvalsAuto(9999))
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -532,9 +532,9 @@ func TestKeyvalEntryHTMX_Put_HappyPath_ReturnsRow(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "oldkey", "oldvalue", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "oldkey", "oldvalue", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -545,7 +545,7 @@ func TestKeyvalEntryHTMX_Put_HappyPath_ReturnsRow(t *testing.T) {
 		url.Values{"key": {"newkey"}, "value": {"newvalue"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -561,17 +561,17 @@ func TestKeyvalEntryHTMX_Put_HappyPath_ReturnsRow(t *testing.T) {
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
 	must.Eq(t, "newkey", doc.Keyvals[0].K.Unveil())
-	must.Eq(t, "newvalue", doc.Keyvals[0].Unlock(crypt.Vault()))
+	must.Eq(t, "newvalue", doc.Keyvals[0].Unlock(cypher.Cypher()))
 }
 
 func TestKeyvalEntryHTMX_Put_DuplicateKey_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	insertKeyval(t, store, mocks.Nobody, "first", "value1", crypt)
-	id := insertKeyval(t, store, mocks.Nobody, "second", "value2", crypt)
+	insertKeyval(t, store, mocks.Nobody, "first", "value1", cypher)
+	id := insertKeyval(t, store, mocks.Nobody, "second", "value2", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -582,7 +582,7 @@ func TestKeyvalEntryHTMX_Put_DuplicateKey_Aborts(t *testing.T) {
 		url.Values{"key": {"first"}, "value": {"hijacked"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -593,16 +593,16 @@ func TestKeyvalEntryHTMX_Put_DuplicateKey_Aborts(t *testing.T) {
 
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 2, doc.Keyvals)
-	must.Eq(t, "value2", doc.Keyvals[1].Unlock(crypt.Vault())) // unchanged
+	must.Eq(t, "value2", doc.Keyvals[1].Unlock(cypher.Cypher())) // unchanged
 }
 
 func TestKeyvalEntryHTMX_Put_EmptyValue_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -613,7 +613,7 @@ func TestKeyvalEntryHTMX_Put_EmptyValue_ReturnsProblem(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -623,16 +623,16 @@ func TestKeyvalEntryHTMX_Put_EmptyValue_ReturnsProblem(t *testing.T) {
 
 	doc := fetchDocKeyvals(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.SliceLen(t, 1, doc.Keyvals)
-	must.Eq(t, "realvalue", doc.Keyvals[0].Unlock(crypt.Vault()))
+	must.Eq(t, "realvalue", doc.Keyvals[0].Unlock(cypher.Cypher()))
 }
 
 func TestKeyvalEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -643,7 +643,7 @@ func TestKeyvalEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -652,13 +652,13 @@ func TestKeyvalEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	must.Eq(t, "unable to process request", w.Body.String())
 }
 
-func TestKeyvalEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
+func TestKeyvalEntryHTMX_Put_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -669,7 +669,7 @@ func TestKeyvalEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"v"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -682,10 +682,10 @@ func TestKeyvalEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobKeyval(t, store)
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "realvalue", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -696,7 +696,7 @@ func TestKeyvalEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 		url.Values{"key": {"k"}, "value": {"hacked"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -709,9 +709,9 @@ func TestKeyvalEntryHTMX_Delete_HappyPath_ReturnsEmpty(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -736,9 +736,9 @@ func TestKeyvalEntryHTMX_Delete_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)
@@ -760,10 +760,10 @@ func TestKeyvalEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobKeyval(t, store)
 	setupGithubDocument(t, store, mocks.Nobody)
-	id := insertKeyval(t, store, mocks.Nobody, "k", "v", crypt)
+	id := insertKeyval(t, store, mocks.Nobody, "k", "v", cypher)
 
 	router, scache := makeKeyvalMux(t, store)
 	ss := session(router, scache)

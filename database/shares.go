@@ -27,16 +27,16 @@ type Shares interface {
 }
 
 type sharesql struct {
-	log   *ulog.Log
-	ldb   *litesql.LiteDB
-	vault encrypt.Vault
+	log    *ulog.Log
+	ldb    *litesql.LiteDB
+	cypher encrypt.Cypher
 }
 
-func (s *store) Shares(vault encrypt.Vault) Shares {
+func (s *store) Shares(cypher encrypt.Cypher) Shares {
 	return &sharesql{
-		log:   ulog.New("database/shares"),
-		ldb:   s.ldb,
-		vault: vault,
+		log:    ulog.New("database/shares"),
+		ldb:    s.ldb,
+		cypher: cypher,
 	}
 }
 
@@ -71,7 +71,7 @@ func (s *sharesql) Create(ctx scope.C, request *sitecontent.CreateShareRequest) 
 	seconds := request.SecondsTTL()
 	now := request.Now.Unix()
 
-	ciphertext, berr := s.vault.Encrypt(request.Secret)
+	ciphertext, berr := s.cypher.Encrypt(request.Secret)
 	if berr != nil {
 		return "", fmt.Errorf("unable to encrypt share: %w", berr)
 	}
@@ -117,7 +117,7 @@ func (s *sharesql) Consume(ctx scope.C, request *sitecontent.ConsumeShareRequest
 			return nil, err
 		}
 
-		secret, serr := s.vault.Decrypt(conceal.NewBytes(ciphertext))
+		secret, serr := s.cypher.Decrypt(conceal.NewBytes(ciphertext))
 		if serr != nil {
 			return nil, fmt.Errorf("unable to decrypt share: %w", serr)
 		}

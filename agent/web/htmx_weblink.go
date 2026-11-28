@@ -98,10 +98,10 @@ func (h *weblinkHTMX) add(w http.ResponseWriter, folder, document string) error 
 }
 
 // list renders the decrypted weblinks for a document as a read-only list. The
-// URLs are decrypted on demand using the vault cookie, so the folder page never
+// URLs are decrypted on demand using the cypher cookie, so the folder page never
 // decrypts weblink values.
 func (h *weblinkHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request, user users.Identity, folder, document string) error {
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -122,10 +122,10 @@ func (h *weblinkHTMX) list(ctx scope.C, w http.ResponseWriter, r *http.Request, 
 
 	fields := struct {
 		Weblinks []*sitecontent.Weblink
-		Vault    encrypt.Vault
+		Cypher   encrypt.Cypher
 	}{
 		Weblinks: weblinks,
-		Vault:    vault,
+		Cypher:   cypher,
 	}
 
 	return htmx.Write(w, &htmx.Template{
@@ -144,7 +144,7 @@ func (h *weblinkHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 
 	folder, document := h.folderDocumentFrom(r)
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return htmx.SetRedirect(w, "/login")
 	}
@@ -163,7 +163,7 @@ func (h *weblinkHTMX) post(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 		return problem(w, err)
 	}
 
-	ciphertext, cerr := vault.Encrypt(conceal.New(request.URL))
+	ciphertext, cerr := cypher.Encrypt(conceal.New(request.URL))
 	if cerr != nil {
 		return abort(h.log, w, cerr)
 	}

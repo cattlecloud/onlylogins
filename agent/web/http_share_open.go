@@ -33,15 +33,15 @@ type shareOpenContent struct {
 }
 
 type shareOpenHTTP struct {
-	log   *ulog.Log
-	store database.Store
-	vault encrypt.Vault
-	now   func() time.Time
-	html  *template.Template
+	log    *ulog.Log
+	store  database.Store
+	cypher encrypt.Cypher
+	now    func() time.Time
+	html   *template.Template
 }
 
 func (h *shareOpenHTTP) Path() string {
-	return "/share/open/{uid}"
+	return "/open/{uid}"
 }
 
 func (h *shareOpenHTTP) Methods() []string {
@@ -89,7 +89,7 @@ func (h *shareOpenHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request)
 	}
 
 	// share will be nil if it does not exist
-	share, serr := h.store.Shares(h.vault).Consume(ctx, request)
+	share, serr := h.store.Shares(h.cypher).Consume(ctx, request)
 	if serr != nil && !errors.Is(serr, sql.ErrNoRows) {
 		return abort(h.log, w, serr)
 	}

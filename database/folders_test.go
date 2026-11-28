@@ -133,7 +133,7 @@ func TestFolders_Delete(t *testing.T) {
 	t.Run("happy path cascades children", func(t *testing.T) {
 		db, ctx := openTestDB(t)
 		f := db.Folders()
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		// create the "work" folder
 		must.NoError(t, f.Create(ctx, &sitecontent.CreateFolderRequest{
@@ -154,7 +154,7 @@ func TestFolders_Delete(t *testing.T) {
 		})
 		must.NoError(t, err)
 
-		ct, cerr := crypt.Vault().Encrypt(conceal.New("https://example.com"))
+		ct, cerr := cypher.Cypher().Encrypt(conceal.New("https://example.com"))
 		must.NoError(t, cerr)
 		_, err = db.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
 			User:      nobody,
@@ -165,7 +165,7 @@ func TestFolders_Delete(t *testing.T) {
 		})
 		must.NoError(t, err)
 
-		cu, cerr := crypt.Vault().Encrypt(conceal.New("alice"))
+		cu, cerr := cypher.Cypher().Encrypt(conceal.New("alice"))
 		must.NoError(t, cerr)
 		_, err = db.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
 			User:      nobody,
@@ -176,7 +176,7 @@ func TestFolders_Delete(t *testing.T) {
 		})
 		must.NoError(t, err)
 
-		cp, cerr := crypt.Vault().Encrypt(conceal.New("s3cret!"))
+		cp, cerr := cypher.Cypher().Encrypt(conceal.New("s3cret!"))
 		must.NoError(t, cerr)
 		_, err = db.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
 			User:      nobody,
@@ -186,7 +186,7 @@ func TestFolders_Delete(t *testing.T) {
 		})
 		must.NoError(t, err)
 
-		cn, cerr := crypt.Vault().Encrypt(conceal.New("hi"))
+		cn, cerr := cypher.Cypher().Encrypt(conceal.New("hi"))
 		must.NoError(t, cerr)
 		_, err = db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
 			User:      nobody,

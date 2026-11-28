@@ -30,7 +30,7 @@ type exportHTTP struct {
 }
 
 func (h *exportHTTP) Path() string {
-	return "/export"
+	return "/tools/export"
 }
 
 func (h *exportHTTP) Methods() []string {
@@ -89,7 +89,7 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 		return abort(h.log, w, perr)
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return login(h.log, w, r)
 	}
@@ -141,23 +141,23 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 			}
 
 			for _, weblink := range document.Weblinks {
-				ed.Weblinks = append(ed.Weblinks, weblink.Unlock(vault))
+				ed.Weblinks = append(ed.Weblinks, weblink.Unlock(cypher))
 			}
 
 			for _, username := range document.Usernames {
-				ed.Usernames = append(ed.Usernames, username.Unlock(vault))
+				ed.Usernames = append(ed.Usernames, username.Unlock(cypher))
 			}
 
 			for _, password := range document.Passwords {
-				ed.Passwords = append(ed.Passwords, password.Unlock(vault))
+				ed.Passwords = append(ed.Passwords, password.Unlock(cypher))
 			}
 
 			for _, keyval := range document.Keyvals {
-				ed.Keyvals = append(ed.Keyvals, [2]string{keyval.K.Unveil(), keyval.Unlock(vault)})
+				ed.Keyvals = append(ed.Keyvals, [2]string{keyval.K.Unveil(), keyval.Unlock(cypher)})
 			}
 
 			if document.Note != nil {
-				ed.Note = document.Note.Unlock(vault)
+				ed.Note = document.Note.Unlock(cypher)
 			}
 
 			ef.Documents = append(ef.Documents, ed)
@@ -181,7 +181,7 @@ func (h *exportHTTP) post(ctx scope.C, w http.ResponseWriter, r *http.Request) e
 
 func (h *exportHTTP) description() string {
 	const text = `
-	Download a complete backup of your vault, including every document's
+	Download a complete backup of your account, including every document's
 	weblinks, usernames, passwords, key/value pairs, and notes, as one TOML file.`
 	return format.PageDescription(text)
 }

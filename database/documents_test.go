@@ -16,10 +16,10 @@ import (
 	"github.com/shoenig/test/must"
 )
 
-func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, url string, crypt mocks.TestCrypt) records.WeblinksAuto {
+func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, url string, cypher mocks.TestCypher) records.WeblinksAuto {
 	t.Helper()
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(url))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(url))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
@@ -33,10 +33,10 @@ func insertWeblink(t *testing.T, ctx scope.C, store Store, user users.Identity, 
 	return id
 }
 
-func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, username string, crypt mocks.TestCrypt) records.UsernamesAuto {
+func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, username string, cypher mocks.TestCypher) records.UsernamesAuto {
 	t.Helper()
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(username))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(username))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
@@ -51,10 +51,10 @@ func insertUsername(t *testing.T, ctx scope.C, store Store, user users.Identity,
 	return id
 }
 
-func insertPassword(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, password string, crypt mocks.TestCrypt) records.PasswordsAuto {
+func insertPassword(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, password string, cypher mocks.TestCypher) records.PasswordsAuto {
 	t.Helper()
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(password))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(password))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
@@ -68,10 +68,10 @@ func insertPassword(t *testing.T, ctx scope.C, store Store, user users.Identity,
 	return id
 }
 
-func insertNote(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, note string, crypt mocks.TestCrypt) records.NotesAuto {
+func insertNote(t *testing.T, ctx scope.C, store Store, user users.Identity, doc, note string, cypher mocks.TestCypher) records.NotesAuto {
 	t.Helper()
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(note))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(note))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
@@ -90,10 +90,10 @@ func TestDocuments_CreateWeblink(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
 		must.Positive(t, id)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -101,17 +101,17 @@ func TestDocuments_CreateWeblink(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Weblinks)
-		must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+		must.Eq(t, "https://example.com", doc.Weblinks[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://attacker.example.com"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://attacker.example.com"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
@@ -126,9 +126,9 @@ func TestDocuments_CreateWeblink(t *testing.T) {
 
 	t.Run("nonexistent document", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://nope.example.com"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://nope.example.com"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateWeblink(ctx, &sitecontent.CreateWeblinkRequest{
@@ -147,12 +147,12 @@ func TestDocuments_UpdateWeblink(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://original.example.com", crypt)
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://original.example.com", cypher)
 
-		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://updated.example.com"))
+		newCiphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://updated.example.com"))
 		must.NoError(t, cerr)
 
 		uerr := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
@@ -170,18 +170,18 @@ func TestDocuments_UpdateWeblink(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Weblinks)
-		must.Eq(t, "https://updated.example.com", doc.Weblinks[0].Unlock(crypt.Vault()))
+		must.Eq(t, "https://updated.example.com", doc.Weblinks[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://attacker.example.com"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://attacker.example.com"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
@@ -197,10 +197,10 @@ func TestDocuments_UpdateWeblink(t *testing.T) {
 
 	t.Run("nonexistent weblink", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("https://nowhere.example.com"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("https://nowhere.example.com"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateWeblink(ctx, &sitecontent.UpdateWeblinkRequest{
@@ -220,10 +220,10 @@ func TestDocuments_DeleteWeblink(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
@@ -248,11 +248,11 @@ func TestDocuments_DeleteWeblink(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		id := insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
 
 		err := db.Documents().DeleteWeblink(ctx, &sitecontent.DeleteWeblinkRequest{
 			ID:       id,
@@ -281,10 +281,10 @@ func TestDocuments_CreateUsername(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 		must.Positive(t, id)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -292,17 +292,17 @@ func TestDocuments_CreateUsername(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Usernames)
-		must.Eq(t, "alice", doc.Usernames[0].Unlock(crypt.Vault()))
+		must.Eq(t, "alice", doc.Usernames[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("mallory"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("mallory"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
@@ -317,9 +317,9 @@ func TestDocuments_CreateUsername(t *testing.T) {
 
 	t.Run("nonexistent document", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("stranger"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("stranger"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateUsername(ctx, &sitecontent.CreateUsernameRequest{
@@ -338,12 +338,12 @@ func TestDocuments_UpdateUsername(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
-		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("alice2"))
+		newCiphertext, cerr := cypher.Cypher().Encrypt(conceal.New("alice2"))
 		must.NoError(t, cerr)
 
 		uerr := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
@@ -361,18 +361,18 @@ func TestDocuments_UpdateUsername(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Usernames)
-		must.Eq(t, "alice2", doc.Usernames[0].Unlock(crypt.Vault()))
+		must.Eq(t, "alice2", doc.Usernames[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("mallory"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("mallory"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
@@ -388,10 +388,10 @@ func TestDocuments_UpdateUsername(t *testing.T) {
 
 	t.Run("nonexistent username", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nobody"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("nobody"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateUsername(ctx, &sitecontent.UpdateUsernameRequest{
@@ -411,10 +411,10 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
@@ -439,11 +439,11 @@ func TestDocuments_DeleteUsername(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		id := insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
 		err := db.Documents().DeleteUsername(ctx, &sitecontent.DeleteUsernameRequest{
 			ID:       id,
@@ -472,10 +472,10 @@ func TestDocuments_CreatePassword(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", cypher)
 		must.Positive(t, id)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -483,17 +483,17 @@ func TestDocuments_CreatePassword(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Passwords)
-		must.Eq(t, "s3cret!", doc.Passwords[0].Unlock(crypt.Vault()))
+		must.Eq(t, "s3cret!", doc.Passwords[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("evilpass"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("evilpass"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
@@ -507,9 +507,9 @@ func TestDocuments_CreatePassword(t *testing.T) {
 
 	t.Run("nonexistent document", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nope"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("nope"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreatePassword(ctx, &sitecontent.CreatePasswordRequest{
@@ -527,12 +527,12 @@ func TestDocuments_UpdatePassword(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "oldpass", crypt)
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "oldpass", cypher)
 
-		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("newpass1"))
+		newCiphertext, cerr := cypher.Cypher().Encrypt(conceal.New("newpass1"))
 		must.NoError(t, cerr)
 
 		uerr := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
@@ -549,18 +549,18 @@ func TestDocuments_UpdatePassword(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 1, doc.Passwords)
-		must.Eq(t, "newpass1", doc.Passwords[0].Unlock(crypt.Vault()))
+		must.Eq(t, "newpass1", doc.Passwords[0].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", crypt)
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", cypher)
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacked!"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("hacked!"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
@@ -575,10 +575,10 @@ func TestDocuments_UpdatePassword(t *testing.T) {
 
 	t.Run("nonexistent password", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("nothing"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("nothing"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdatePassword(ctx, &sitecontent.UpdatePasswordRequest{
@@ -597,10 +597,10 @@ func TestDocuments_DeletePassword(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertPassword(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "secret", cypher)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
@@ -625,11 +625,11 @@ func TestDocuments_DeletePassword(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", crypt)
+		id := insertPassword(t, ctx, db, mocks.Nobody, "github", "realpass", cypher)
 
 		err := db.Documents().DeletePassword(ctx, &sitecontent.DeletePasswordRequest{
 			ID:       id,
@@ -658,10 +658,10 @@ func TestDocuments_CreateNote(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertNote(t, ctx, db, mocks.Nobody, "github", "secret sauce", crypt)
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "secret sauce", cypher)
 		must.Positive(t, id)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
@@ -669,17 +669,17 @@ func TestDocuments_CreateNote(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.NotNil(t, doc.Note)
-		must.Eq(t, "secret sauce", doc.Note.Unlock(crypt.Vault()))
+		must.Eq(t, "secret sauce", doc.Note.Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob-note")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacker note"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("hacker note"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
@@ -693,9 +693,9 @@ func TestDocuments_CreateNote(t *testing.T) {
 
 	t.Run("nonexistent document", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("anything"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("anything"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
@@ -709,12 +709,12 @@ func TestDocuments_CreateNote(t *testing.T) {
 
 	t.Run("already exists", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertNote(t, ctx, db, mocks.Nobody, "github", "first", crypt)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "first", cypher)
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("second"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("second"))
 		must.NoError(t, cerr)
 
 		_, err := db.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
@@ -731,7 +731,7 @@ func TestDocuments_CreateNote(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.NotNil(t, doc.Note)
-		must.Eq(t, "first", doc.Note.Unlock(crypt.Vault()))
+		must.Eq(t, "first", doc.Note.Unlock(cypher.Cypher()))
 	})
 }
 
@@ -740,12 +740,12 @@ func TestDocuments_UpdateNote(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertNote(t, ctx, db, mocks.Nobody, "github", "oldtext", crypt)
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "oldtext", cypher)
 
-		newCiphertext, cerr := crypt.Vault().Encrypt(conceal.New("newtext"))
+		newCiphertext, cerr := cypher.Cypher().Encrypt(conceal.New("newtext"))
 		must.NoError(t, cerr)
 
 		uerr := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
@@ -762,18 +762,18 @@ func TestDocuments_UpdateNote(t *testing.T) {
 		})
 		must.NoError(t, err)
 		must.NotNil(t, doc.Note)
-		must.Eq(t, "newtext", doc.Note.Unlock(crypt.Vault()))
+		must.Eq(t, "newtext", doc.Note.Unlock(cypher.Cypher()))
 	})
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob-note")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", crypt)
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", cypher)
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("hacked"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("hacked"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
@@ -788,10 +788,10 @@ func TestDocuments_UpdateNote(t *testing.T) {
 
 	t.Run("nonexistent note", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
 
-		ciphertext, cerr := crypt.Vault().Encrypt(conceal.New("anything"))
+		ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New("anything"))
 		must.NoError(t, cerr)
 
 		err := db.Documents().UpdateNote(ctx, &sitecontent.UpdateNoteRequest{
@@ -810,10 +810,10 @@ func TestDocuments_DeleteNote(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", cypher)
 
 		doc, err := db.Documents().Get(ctx, &sitecontent.GetDocumentRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
@@ -838,11 +838,11 @@ func TestDocuments_DeleteNote(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob-note")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", crypt)
+		id := insertNote(t, ctx, db, mocks.Nobody, "github", "realtext", cypher)
 
 		err := db.Documents().DeleteNote(ctx, &sitecontent.DeleteNoteRequest{
 			ID:       id,
@@ -874,17 +874,17 @@ func TestDocuments_GetNote(t *testing.T) {
 
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertNote(t, ctx, db, mocks.Nobody, "github", "hello\nworld", crypt)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "hello\nworld", cypher)
 
 		note, err := db.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
 		})
 		must.NoError(t, err)
 		must.NotNil(t, note)
-		must.Eq(t, "hello\nworld", note.Unlock(crypt.Vault()))
+		must.Eq(t, "hello\nworld", note.Unlock(cypher.Cypher()))
 	})
 
 	t.Run("no note", func(t *testing.T) {
@@ -900,11 +900,11 @@ func TestDocuments_GetNote(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		bob := insertUser(t, ctx, db, "bob-note")
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", crypt)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "secret", cypher)
 
 		note, err := db.Documents().GetNote(ctx, &sitecontent.GetNoteRequest{
 			User: bob, Folder: "miscellaneous", Document: "github",
@@ -1131,13 +1131,13 @@ func TestDocuments_List_HasWeblinks(t *testing.T) {
 
 	db, ctx := openTestDB(t)
 	d := db.Documents()
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
 
 	insertDocument(t, ctx, db, mocks.Nobody, "empty")
 
 	insertDocument(t, ctx, db, mocks.Nobody, "linked")
-	insertWeblink(t, ctx, db, mocks.Nobody, "linked", "https://example.com", crypt)
+	insertWeblink(t, ctx, db, mocks.Nobody, "linked", "https://example.com", cypher)
 
 	list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
 		User:   mocks.Nobody,
@@ -1159,19 +1159,19 @@ func TestDocuments_ListWeblinks(t *testing.T) {
 
 	t.Run("ordered by id", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://first.example.com", crypt)
-		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://second.example.com", crypt)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://first.example.com", cypher)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://second.example.com", cypher)
 
 		links, err := db.Documents().ListWeblinks(ctx, &sitecontent.ListWeblinksRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 2, links)
-		must.Eq(t, "https://first.example.com", links[0].Unlock(crypt.Vault()))
-		must.Eq(t, "https://second.example.com", links[1].Unlock(crypt.Vault()))
+		must.Eq(t, "https://first.example.com", links[0].Unlock(cypher.Cypher()))
+		must.Eq(t, "https://second.example.com", links[1].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("no weblinks", func(t *testing.T) {
@@ -1188,10 +1188,10 @@ func TestDocuments_ListWeblinks(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
 		bob := insertUser(t, ctx, db, "bob")
 
 		links, err := db.Documents().ListWeblinks(ctx, &sitecontent.ListWeblinksRequest{
@@ -1207,13 +1207,13 @@ func TestDocuments_List_HasPasswords(t *testing.T) {
 
 	db, ctx := openTestDB(t)
 	d := db.Documents()
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	folder := miscFolderOf(t, ctx, db, mocks.Nobody)
 
 	insertDocument(t, ctx, db, mocks.Nobody, "empty")
 
 	insertDocument(t, ctx, db, mocks.Nobody, "secured")
-	insertPassword(t, ctx, db, mocks.Nobody, "secured", "s3cret!", crypt)
+	insertPassword(t, ctx, db, mocks.Nobody, "secured", "s3cret!", cypher)
 
 	list, err := d.List(ctx, &sitecontent.ListDocumentsRequest{
 		User:   mocks.Nobody,
@@ -1235,19 +1235,19 @@ func TestDocuments_ListPasswords(t *testing.T) {
 
 	t.Run("ordered by id", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertPassword(t, ctx, db, mocks.Nobody, "github", "first", crypt)
-		insertPassword(t, ctx, db, mocks.Nobody, "github", "second", crypt)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "first", cypher)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "second", cypher)
 
 		passwords, err := db.Documents().ListPasswords(ctx, &sitecontent.ListPasswordsRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
 		})
 		must.NoError(t, err)
 		must.SliceLen(t, 2, passwords)
-		must.Eq(t, "first", passwords[0].Unlock(crypt.Vault()))
-		must.Eq(t, "second", passwords[1].Unlock(crypt.Vault()))
+		must.Eq(t, "first", passwords[0].Unlock(cypher.Cypher()))
+		must.Eq(t, "second", passwords[1].Unlock(cypher.Cypher()))
 	})
 
 	t.Run("no passwords", func(t *testing.T) {
@@ -1264,10 +1264,10 @@ func TestDocuments_ListPasswords(t *testing.T) {
 
 	t.Run("wrong user", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", cypher)
 		bob := insertUser(t, ctx, db, "bob")
 
 		passwords, err := db.Documents().ListPasswords(ctx, &sitecontent.ListPasswordsRequest{
@@ -1283,13 +1283,13 @@ func TestDocuments_Delete(t *testing.T) {
 
 	t.Run("happy path cascades children", func(t *testing.T) {
 		db, ctx := openTestDB(t)
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		id := insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", crypt)
-		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
-		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", crypt)
-		insertNote(t, ctx, db, mocks.Nobody, "github", "hi", crypt)
+		insertWeblink(t, ctx, db, mocks.Nobody, "github", "https://example.com", cypher)
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
+		insertPassword(t, ctx, db, mocks.Nobody, "github", "s3cret!", cypher)
+		insertNote(t, ctx, db, mocks.Nobody, "github", "hi", cypher)
 
 		err := db.Documents().Delete(ctx, &sitecontent.DeleteDocumentRequest{
 			ID:   id,
@@ -1345,10 +1345,10 @@ func TestDocuments_Rename(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
 		d := db.Documents()
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
 		before, err := d.Get(ctx, &sitecontent.GetDocumentRequest{
 			User: mocks.Nobody, Folder: "miscellaneous", Document: "github",
@@ -1494,10 +1494,10 @@ func TestDocuments_Migrate(t *testing.T) {
 	t.Run("happy path", func(t *testing.T) {
 		db, ctx := openTestDB(t)
 		d := db.Documents()
-		crypt := mocks.NewTestCrypt()
+		cypher := mocks.NewTestCypher()
 
 		insertDocument(t, ctx, db, mocks.Nobody, "github")
-		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", crypt)
+		insertUsername(t, ctx, db, mocks.Nobody, "github", "alice", cypher)
 
 		must.NoError(t, db.Folders().Create(ctx, &sitecontent.CreateFolderRequest{
 			User:  mocks.Nobody,

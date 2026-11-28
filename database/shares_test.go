@@ -18,11 +18,11 @@ import (
 
 func insertShare(
 	t *testing.T, ctx scope.C, store Store,
-	user users.Identity, secret string, when time.Time, crypt mocks.TestCrypt,
+	user users.Identity, secret string, when time.Time, cypher mocks.TestCypher,
 ) records.SharesUnique {
 	t.Helper()
 
-	uid, err := store.Shares(crypt.Vault()).Create(ctx, &sitecontent.CreateShareRequest{
+	uid, err := store.Shares(cypher.Cypher()).Create(ctx, &sitecontent.CreateShareRequest{
 		User:   user,
 		Secret: conceal.New(secret),
 		TTL:    5 * time.Minute,
@@ -39,16 +39,16 @@ func TestShares_Count(t *testing.T) {
 	t.Parallel()
 
 	db, ctx := openTestDB(t)
-	crypt := mocks.NewTestCrypt()
-	s := db.Shares(crypt.Vault())
+	cypher := mocks.NewTestCypher()
+	s := db.Shares(cypher.Cypher())
 
 	count, err := s.Count(ctx)
 	must.NoError(t, err)
 	must.Zero(t, count)
 
-	insertShare(t, ctx, db, mocks.Nobody, "alpha", time.Now(), crypt)
-	insertShare(t, ctx, db, mocks.Nobody, "beta", time.Now(), crypt)
-	insertShare(t, ctx, db, mocks.Nobody, "gamma", time.Now(), crypt)
+	insertShare(t, ctx, db, mocks.Nobody, "alpha", time.Now(), cypher)
+	insertShare(t, ctx, db, mocks.Nobody, "beta", time.Now(), cypher)
+	insertShare(t, ctx, db, mocks.Nobody, "gamma", time.Now(), cypher)
 
 	count, err = s.Count(ctx)
 	must.NoError(t, err)
@@ -59,8 +59,8 @@ func TestShares_Create(t *testing.T) {
 	t.Parallel()
 
 	db, ctx := openTestDB(t)
-	crypt := mocks.NewTestCrypt()
-	s := db.Shares(crypt.Vault())
+	cypher := mocks.NewTestCypher()
+	s := db.Shares(cypher.Cypher())
 
 	uid, err := s.Create(ctx, &sitecontent.CreateShareRequest{
 		User:   mocks.Nobody,
@@ -81,10 +81,10 @@ func TestShares_Consume(t *testing.T) {
 	t.Parallel()
 
 	db, ctx := openTestDB(t)
-	crypt := mocks.NewTestCrypt()
-	s := db.Shares(crypt.Vault())
+	cypher := mocks.NewTestCypher()
+	s := db.Shares(cypher.Cypher())
 
-	uid := insertShare(t, ctx, db, mocks.Nobody, "the-secret", time.Now(), crypt)
+	uid := insertShare(t, ctx, db, mocks.Nobody, "the-secret", time.Now(), cypher)
 
 	share, err := s.Consume(ctx, &sitecontent.ConsumeShareRequest{
 		UUID: uid,
@@ -106,12 +106,12 @@ func TestShares_Prune(t *testing.T) {
 	t.Parallel()
 
 	db, ctx := openTestDB(t)
-	crypt := mocks.NewTestCrypt()
-	s := db.Shares(crypt.Vault())
+	cypher := mocks.NewTestCypher()
+	s := db.Shares(cypher.Cypher())
 
 	now := time.Now()
-	_ = insertShare(t, ctx, db, mocks.Nobody, "old-secret", now.Add(-5*time.Hour), crypt)
-	newUID := insertShare(t, ctx, db, mocks.Nobody, "new-secret", now, crypt)
+	_ = insertShare(t, ctx, db, mocks.Nobody, "old-secret", now.Add(-5*time.Hour), cypher)
+	newUID := insertShare(t, ctx, db, mocks.Nobody, "new-secret", now, cypher)
 
 	count, err := s.Count(ctx)
 	must.NoError(t, err)

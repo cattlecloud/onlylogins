@@ -47,7 +47,7 @@ func newNoteRouter(t *testing.T, store database.Store) (*mux.Router, *mocks.Sess
 }
 
 func insertNoteHandlerHelper(t *testing.T, store database.Store, user users.Identity,
-	doc, note string, crypt mocks.TestCrypt) records.NotesAuto {
+	doc, note string, cypher mocks.TestCypher) records.NotesAuto {
 	t.Helper()
 
 	ctx, cancel := scope.TTL(testwait)
@@ -63,7 +63,7 @@ func insertNoteHandlerHelper(t *testing.T, store database.Store, user users.Iden
 	})
 	must.NoError(t, err)
 
-	ciphertext, cerr := crypt.Vault().Encrypt(conceal.New(note))
+	ciphertext, cerr := cypher.Cypher().Encrypt(conceal.New(note))
 	must.NoError(t, cerr)
 
 	id, err := store.Documents().CreateNote(ctx, &sitecontent.CreateNoteRequest{
@@ -162,7 +162,7 @@ func TestNoteHTMX_Post_HappyPath_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -187,7 +187,7 @@ func TestNoteHTMX_Post_HappyPath_Redirects(t *testing.T) {
 		url.Values{"note": {note}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -197,14 +197,14 @@ func TestNoteHTMX_Post_HappyPath_Redirects(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, note, doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, note, doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteHTMX_Post_EmptyNote_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -228,7 +228,7 @@ func TestNoteHTMX_Post_EmptyNote_ReturnsProblem(t *testing.T) {
 		url.Values{"note": {""}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -244,7 +244,7 @@ func TestNoteHTMX_Post_TooLongNote_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -269,7 +269,7 @@ func TestNoteHTMX_Post_TooLongNote_ReturnsProblem(t *testing.T) {
 		url.Values{"note": {long}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -285,7 +285,7 @@ func TestNoteHTMX_Post_PreservesWhitespace(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -309,7 +309,7 @@ func TestNoteHTMX_Post_PreservesWhitespace(t *testing.T) {
 		url.Values{"note": {"  spaced  "}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -318,14 +318,14 @@ func TestNoteHTMX_Post_PreservesWhitespace(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, "  spaced  ", doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, "  spaced  ", doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteHTMX_Post_PreservesNewlines(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -350,7 +350,7 @@ func TestNoteHTMX_Post_PreservesNewlines(t *testing.T) {
 		url.Values{"note": {multi}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -359,27 +359,27 @@ func TestNoteHTMX_Post_PreservesNewlines(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, multi, doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, multi, doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteHTMX_Post_AlreadyExists_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
-	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first", crypt)
+	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first", cypher)
 
 	r := postNoteForm(t, http.MethodPost,
 		"/internal/note/create/miscellaneous/github",
 		url.Values{"note": {"second"}},
 	)
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -391,10 +391,10 @@ func TestNoteHTMX_Post_AlreadyExists_Aborts(t *testing.T) {
 	// original is preserved
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, "first", doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, "first", doc.Note.Unlock(cypher.Cypher()))
 }
 
-func TestNoteHTMX_Post_MissingVault_Redirects(t *testing.T) {
+func TestNoteHTMX_Post_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
@@ -407,7 +407,7 @@ func TestNoteHTMX_Post_MissingVault_Redirects(t *testing.T) {
 		url.Values{"note": {"hi"}},
 	)
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -420,7 +420,7 @@ func TestNoteHTMX_Post_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobNote(t, store)
 
 	// nobody owns the document
@@ -445,7 +445,7 @@ func TestNoteHTMX_Post_WrongUser_Aborts(t *testing.T) {
 		url.Values{"note": {"hacked"}},
 	)
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -458,17 +458,17 @@ func TestNoteEntryHTMX_Get_RendersEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "something clever", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "something clever", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
 	cookie := scache.Create(mocks.Nobody, 1*time.Minute)
 
-	// server decrypts the note itself using the vault cookie, so no ?note= query param
+	// server decrypts the note itself using the cypher cookie, so no ?note= query param
 	u := noteURL("edit", "miscellaneous", "github", id)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -484,8 +484,8 @@ func TestNoteEntryHTMX_Get_PreservesNewlinesInEditForm(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first\nsecond", crypt)
+	cypher := mocks.NewTestCypher()
+	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "first\nsecond", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -501,7 +501,7 @@ func TestNoteEntryHTMX_Get_PreservesNewlinesInEditForm(t *testing.T) {
 
 	u := noteURL("edit", "miscellaneous", "github", doc.Note.ID)
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -511,12 +511,12 @@ func TestNoteEntryHTMX_Get_PreservesNewlinesInEditForm(t *testing.T) {
 	must.StrContains(t, body, "first\nsecond")
 }
 
-func TestNoteEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
+func TestNoteEntryHTMX_Get_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "anything", crypt)
+	cypher := mocks.NewTestCypher()
+	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "anything", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -532,7 +532,7 @@ func TestNoteEntryHTMX_Get_MissingVault_Redirects(t *testing.T) {
 
 	u := noteURL("edit", "miscellaneous", "github", doc.Note.ID)
 	r := requestGet(t, u, cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -545,8 +545,8 @@ func TestNoteEntryHTMX_Get_WrongNoteID_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	cypher := mocks.NewTestCypher()
+	insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -554,7 +554,7 @@ func TestNoteEntryHTMX_Get_WrongNoteID_Aborts(t *testing.T) {
 
 	u := noteURL("edit", "miscellaneous", "github", records.NotesAuto(9999))
 	r := requestGet(t, u, cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
 
@@ -581,8 +581,8 @@ func TestNoteEntryHTMX_Put_HappyPath_ReturnsPanel(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -591,7 +591,7 @@ func TestNoteEntryHTMX_Put_HappyPath_ReturnsPanel(t *testing.T) {
 	u := noteURL("update", "miscellaneous", "github", id)
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {"newtext"}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -605,15 +605,15 @@ func TestNoteEntryHTMX_Put_HappyPath_ReturnsPanel(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, "newtext", doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, "newtext", doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteEntryHTMX_Put_PreservesNewlines(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "oldtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -623,7 +623,7 @@ func TestNoteEntryHTMX_Put_PreservesNewlines(t *testing.T) {
 	multi := "line1\nline2\n\tindented"
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {multi}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -632,15 +632,15 @@ func TestNoteEntryHTMX_Put_PreservesNewlines(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, multi, doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, multi, doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteEntryHTMX_Put_EmptyNote_ReturnsProblem(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -649,7 +649,7 @@ func TestNoteEntryHTMX_Put_EmptyNote_ReturnsProblem(t *testing.T) {
 	u := noteURL("update", "miscellaneous", "github", id)
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {""}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -659,15 +659,15 @@ func TestNoteEntryHTMX_Put_EmptyNote_ReturnsProblem(t *testing.T) {
 
 	doc := fetchDocNote(t, store, mocks.Nobody, "miscellaneous", "github")
 	must.NotNil(t, doc.Note)
-	must.Eq(t, "realtext", doc.Note.Unlock(crypt.Vault()))
+	must.Eq(t, "realtext", doc.Note.Unlock(cypher.Cypher()))
 }
 
 func TestNoteEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -676,7 +676,7 @@ func TestNoteEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	u := noteURL("what", "miscellaneous", "github", id)
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {"hi"}})
 	r.AddCookie(cookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -685,12 +685,12 @@ func TestNoteEntryHTMX_Put_UnknownAction_Aborts(t *testing.T) {
 	must.Eq(t, "unable to process request", w.Body.String())
 }
 
-func TestNoteEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
+func TestNoteEntryHTMX_Put_MissingCypher_Redirects(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -699,7 +699,7 @@ func TestNoteEntryHTMX_Put_MissingVault_Redirects(t *testing.T) {
 	u := noteURL("update", "miscellaneous", "github", id)
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {"hi"}})
 	r.AddCookie(cookie)
-	// intentionally no vault cookie
+	// intentionally no cypher cookie
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -712,9 +712,9 @@ func TestNoteEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobNote(t, store)
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -723,7 +723,7 @@ func TestNoteEntryHTMX_Put_WrongUser_Aborts(t *testing.T) {
 	u := noteURL("update", "miscellaneous", "github", id)
 	r := postNoteForm(t, http.MethodPut, u, url.Values{"note": {"hacked"}})
 	r.AddCookie(bobCookie)
-	r.AddCookie(crypt.Cookie())
+	r.AddCookie(cypher.Cookie())
 
 	w := httptest.NewRecorder()
 	ss.ServeHTTP(w, r)
@@ -736,8 +736,8 @@ func TestNoteEntryHTMX_Delete_HappyPath_RestoresAddButton(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "secret", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "secret", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -766,8 +766,8 @@ func TestNoteEntryHTMX_Delete_UnknownAction_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	cypher := mocks.NewTestCypher()
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)
@@ -789,9 +789,9 @@ func TestNoteEntryHTMX_Delete_WrongUser_Aborts(t *testing.T) {
 	t.Parallel()
 
 	store := mockdb.Open(t)
-	crypt := mocks.NewTestCrypt()
+	cypher := mocks.NewTestCypher()
 	bob := ensureBobNote(t, store)
-	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", crypt)
+	id := insertNoteHandlerHelper(t, store, mocks.Nobody, "github", "realtext", cypher)
 
 	router, scache := newNoteRouter(t, store)
 	ss := session(router, scache)

@@ -1,0 +1,22 @@
+{{define "middle"}}
+<div class="middle tools">
+  <section class="page-head">
+    <h1>Tools</h1>
+
+    <p class="lede">
+      One-off utilities for working with the data in your account. Pick a tool
+      to get started.
+    </p>
+  </section>
+
+  <section class="tool-list">
+    {{range .Section.Tools}}
+    <article class="tool">
+      <h2>{{.Name}}</h2>
+      <p class="tool-description">{{.Description}}</p>
+      <a class="button-link" href="{{.Path}}">{{.Action}}</a>
+    </article>
+    {{end}}
+  </section>
+</div>
+{{end}}

@@ -27,7 +27,7 @@ import (
 
 type documentContent struct {
 	Document *sitecontent.Document
-	Vault    encrypt.Vault
+	Cypher   encrypt.Cypher
 	Folders  []*sitecontent.Folder
 }
 
@@ -90,7 +90,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 		return abort(h.log, w, derr)
 	}
 
-	vault, verr := getVault(r)
+	cypher, verr := getCypher(r)
 	if verr != nil {
 		return login(h.log, w, r)
 	}
@@ -109,7 +109,7 @@ func (h *documentHTTP) get(ctx scope.C, w http.ResponseWriter, r *http.Request) 
 
 	middle := &documentContent{
 		Document: document,
-		Vault:    vault,
+		Cypher:   cypher,
 		Folders:  excludeFolder(folders, document.FolderSlug),
 	}
 

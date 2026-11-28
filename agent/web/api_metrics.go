@@ -39,7 +39,7 @@ func (a *Application) periodicMetrics() {
 	a.gaugeCount("ol_users", a.store.Users().Count)
 	a.gaugeCount("ol_documents", a.store.Documents().Count)
 	a.gaugeCount("ol_folders", a.store.Folders().Count)
-	a.gaugeCount("ol_shares", a.store.Shares(a.vault).Count)
+	a.gaugeCount("ol_shares", a.store.Shares(a.cypher).Count)
 }
 
 // gaugeCount registers a gauge named name whose value is obtained by calling

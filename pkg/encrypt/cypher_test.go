@@ -10,7 +10,7 @@ import (
 	"github.com/shoenig/test/must"
 )
 
-func TestVault_EncryptDecrypt(t *testing.T) {
+func TestCypher_EncryptDecrypt(t *testing.T) {
 	t.Parallel()
 
 	v := New(conceal.NewBytes([]byte{1, 2, 3, 4, 5}))
@@ -24,10 +24,10 @@ func TestVault_EncryptDecrypt(t *testing.T) {
 	must.Eq(t, original.Unveil(), decrypted.Unveil())
 }
 
-func TestVault_NewFromConfig(t *testing.T) {
+func TestCypher_NewFromConfig(t *testing.T) {
 	t.Parallel()
 
-	// two vaults built from the same passphrase must round-trip
+	// two cyphers built from the same passphrase must round-trip
 	a := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
 	b := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
 
@@ -40,7 +40,7 @@ func TestVault_NewFromConfig(t *testing.T) {
 	must.Eq(t, original.Unveil(), decrypted.Unveil())
 }
 
-func TestVault_NewFromConfig_DifferentPassphrasesDoNotMatch(t *testing.T) {
+func TestCypher_NewFromConfig_DifferentPassphrasesDoNotMatch(t *testing.T) {
 	t.Parallel()
 
 	a := NewFromConfig(&Config{Passphrase: "11111111-2222-3333-4444-555555555555"})
@@ -54,7 +54,7 @@ func TestVault_NewFromConfig_DifferentPassphrasesDoNotMatch(t *testing.T) {
 	must.Error(t, derr)
 }
 
-func TestVault_ConfigValidate(t *testing.T) {
+func TestCypher_ConfigValidate(t *testing.T) {
 	t.Parallel()
 
 	t.Run("nil config", func(t *testing.T) {
